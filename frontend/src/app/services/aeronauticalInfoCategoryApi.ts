@@ -1,0 +1,101 @@
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+
+export interface AeronauticalInfoCategory {
+  id: number;
+  name: string;
+  nameEn?: string;
+  nameBe?: string;
+  description?: string;
+  descriptionEn?: string;
+  descriptionBe?: string;
+  pageType: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAeronauticalInfoCategoryRequest {
+  name: string;
+  nameEn?: string;
+  nameBe?: string;
+  description?: string;
+  descriptionEn?: string;
+  descriptionBe?: string;
+  pageType: string;
+  isActive?: boolean;
+  sortOrder?: number;
+}
+
+export interface UpdateAeronauticalInfoCategoryRequest extends CreateAeronauticalInfoCategoryRequest {
+  id: number;
+}
+
+export interface UpdateCategoriesOrderRequest {
+  categories: Array<{ id: number; sortOrder: number }>;
+}
+
+export const aeronauticalInfoCategoryApi = createApi({
+  reducerPath: 'aeronauticalInfoCategoryApi',
+  baseQuery: fetchBaseQuery({
+    baseUrl: 'http://localhost:8000/api',
+    prepareHeaders: (headers) => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
+  tagTypes: ['AeronauticalInfoCategory'],
+  endpoints: (builder) => ({
+    getAeronauticalInfoCategories: builder.query<AeronauticalInfoCategory[], void>({
+      query: () => '/aeronautical-info-categories',
+      providesTags: ['AeronauticalInfoCategory'],
+    }),
+    getAeronauticalInfoCategory: builder.query<AeronauticalInfoCategory, number>({
+      query: (id) => `/aeronautical-info-categories/${id}`,
+      providesTags: (result, error, id) => [{ type: 'AeronauticalInfoCategory', id }],
+    }),
+    createAeronauticalInfoCategory: builder.mutation<AeronauticalInfoCategory, CreateAeronauticalInfoCategoryRequest>({
+      query: (category) => ({
+        url: '/aeronautical-info-categories',
+        method: 'POST',
+        body: category,
+      }),
+      invalidatesTags: ['AeronauticalInfoCategory'],
+    }),
+    updateAeronauticalInfoCategory: builder.mutation<AeronauticalInfoCategory, UpdateAeronauticalInfoCategoryRequest>({
+      query: ({ id, ...category }) => ({
+        url: `/aeronautical-info-categories/${id}`,
+        method: 'PUT',
+        body: category,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'AeronauticalInfoCategory', id }],
+    }),
+    deleteAeronauticalInfoCategory: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/aeronautical-info-categories/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['AeronauticalInfoCategory'],
+    }),
+    updateCategoriesOrder: builder.mutation<void, UpdateCategoriesOrderRequest>({
+      query: (data) => ({
+        url: '/aeronautical-info-categories/order',
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['AeronauticalInfoCategory'],
+    }),
+  }),
+});
+
+export const {
+  useGetAeronauticalInfoCategoriesQuery,
+  useGetAeronauticalInfoCategoryQuery,
+  useCreateAeronauticalInfoCategoryMutation,
+  useUpdateAeronauticalInfoCategoryMutation,
+  useDeleteAeronauticalInfoCategoryMutation,
+  useUpdateCategoriesOrderMutation,
+} = aeronauticalInfoCategoryApi;

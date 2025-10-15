@@ -1,0 +1,201 @@
+const prisma = require('../prisma/prisma-client');
+const ScheduleParser = require('../utils/scheduleParser');
+
+const ManagementController = {
+    // Получить всех руководителей
+    getManagers: async (req, res) => {
+        try {
+            const managers = await prisma.management.findMany({
+                orderBy: {
+                    createdAt: 'desc'
+                }
+            });
+            return res.status(200).json({ managers });
+        } catch (error) {
+            console.error('getManagers error', error);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+    },
+
+    // Получить руководителя по ID
+    getManagerById: async (req, res) => {
+        const { id } = req.params;
+        const managerId = parseInt(id, 10);
+
+        if (isNaN(managerId)) {
+            return res.status(400).json({ error: 'Неверный формат ID' });
+        }
+
+        try {
+            const manager = await prisma.management.findUnique({
+                where: { id: managerId }
+            });
+
+            if (!manager) {
+                return res.status(404).json({ error: 'Руководитель не найден' });
+            }
+
+            return res.status(200).json({ manager });
+        } catch (error) {
+            console.error('getManagerById error', error);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+    },
+
+    // Создать нового руководителя
+    createManager: async (req, res) => {
+        const { name, position, phone, offices, receptionSchedule, receptionScheduleEn, receptionScheduleBe, images } = req.body;
+
+        if (!name || !position || !phone || !receptionSchedule) {
+            return res.status(400).json({ error: 'Название, должность, телефон и расписание приема обязательны' });
+        }
+
+        try {
+            const newManager = await prisma.management.create({
+                data: {
+                    name,
+                    position,
+                    phone,
+                    offices: offices || null,
+                    receptionSchedule,
+                    receptionScheduleEn: receptionScheduleEn || null,
+                    receptionScheduleBe: receptionScheduleBe || null,
+                    images: images || []
+                }
+            });
+
+            return res.status(201).json({
+                message: 'Руководитель успешно создан',
+                manager: newManager
+            });
+        } catch (error) {
+            console.error('createManager error', error);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+    },
+
+    // Обновить руководителя
+    updateManager: async (req, res) => {
+        const { id } = req.params;
+        const managerId = parseInt(id, 10);
+        const { name, position, phone, offices, receptionSchedule, receptionScheduleEn, receptionScheduleBe, images } = req.body;
+
+        if (isNaN(managerId)) {
+            return res.status(400).json({ error: 'Неверный формат ID' });
+        }
+
+        try {
+            const existingManager = await prisma.management.findUnique({
+                where: { id: managerId }
+            });
+
+            if (!existingManager) {
+                return res.status(404).json({ error: 'Руководитель не найден' });
+            }
+
+            const updatedManager = await prisma.management.update({
+                where: { id: managerId },
+                data: {
+                    name: name || existingManager.name,
+                    position: position || existingManager.position,
+                    phone: phone || existingManager.phone,
+                    offices: offices !== undefined ? offices : existingManager.offices,
+                    receptionSchedule: receptionSchedule || existingManager.receptionSchedule,
+                    receptionScheduleEn: receptionScheduleEn !== undefined ? receptionScheduleEn : existingManager.receptionScheduleEn,
+                    receptionScheduleBe: receptionScheduleBe !== undefined ? receptionScheduleBe : existingManager.receptionScheduleBe,
+                    images: images !== undefined ? images : existingManager.images
+                }
+            });
+
+            return res.status(200).json({
+                message: 'Руководитель успешно обновлен',
+                manager: updatedManager
+            });
+        } catch (error) {
+            console.error('updateManager error', error);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+    },
+
+    // Удалить руководителя
+    deleteManager: async (req, res) => {
+        const { id } = req.params;
+        const managerId = parseInt(id, 10);
+
+        if (isNaN(managerId)) {
+            return res.status(400).json({ error: 'Неверный формат ID' });
+        }
+
+        try {
+            const existingManager = await prisma.management.findUnique({
+                where: { id: managerId }
+            });
+
+            if (!existingManager) {
+                return res.status(404).json({ error: 'Руководитель не найден' });
+            }
+
+            await prisma.management.delete({
+                where: { id: managerId }
+            });
+
+            return res.status(200).json({ message: 'Руководитель успешно удален' });
+        } catch (error) {
+            console.error('deleteManager error', error);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+    },
+
+    // Получить доступные слоты для записи на прием
+    getAvailableSlots: async (req, res) => {
+        const { id } = req.params;
+        const { startDate, endDate } = req.query;
+        const managerId = parseInt(id, 10);
+
+        if (isNaN(managerId)) {
+            return res.status(400).json({ error: 'Неверный формат ID' });
+        }
+
+        try {
+            const manager = await prisma.management.findUnique({
+                where: { id: managerId }
+            });
+
+            if (!manager) {
+                return res.status(404).json({ error: 'Руководитель не найден' });
+            }
+
+            if (!manager.receptionSchedule) {
+                return res.status(400).json({ error: 'Расписание приема не настроено' });
+            }
+
+            // Устанавливаем диапазон дат для генерации слотов
+            const start = startDate ? new Date(startDate) : new Date();
+            const end = endDate ? new Date(endDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+            // Генерируем доступные слоты
+            const receptionData = ScheduleParser.parseSchedule(manager.receptionSchedule);
+            const availableSlots = ScheduleParser.generateTimeSlots(receptionData, start, end);
+
+            return res.status(200).json({
+                manager: {
+                    id: manager.id,
+                    name: manager.name,
+                    position: manager.position,
+                    receptionSchedule: manager.receptionSchedule
+                },
+                scheduleData: receptionData,
+                availableSlots,
+                dateRange: {
+                    start: start,
+                    end: end
+                }
+            });
+        } catch (error) {
+            console.error('getAvailableSlots error', error);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+};
+
+module.exports = ManagementController;

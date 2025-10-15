@@ -1,0 +1,40 @@
+{
+  "name": "aero",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "server": "nodemon ./bin/www",
+    "prisma:generate": "node -e \"try{require('fs').rmSync('node_modules/.prisma/client',{recursive:true,force:true})}catch(e){}; require('child_process').execSync('npx prisma generate',{stdio:'inherit'})\"",
+    "prisma:migrate": "prisma migrate deploy",
+    "prisma:seed": "node prisma/seed.js",
+    "db:init": "node scripts/initialize-db.js",
+    "db:seed-news": "node scripts/seed-news-categories.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.13.0",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "~1.4.4",
+    "cors": "^2.8.5",
+    "debug": "~2.6.9",
+    "dotenv": "^17.2.1",
+    "express": "~4.16.1",
+    "http-errors": "~1.6.3",
+    "jade": "~1.11.0",
+    "jdenticon": "^3.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "~1.9.1",
+    "multer": "^2.0.2",
+    "nodemon": "^3.1.10"
+  },
+  "main": "app.js",
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "prisma": "^6.13.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

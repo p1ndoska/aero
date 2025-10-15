@@ -1,0 +1,406 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  email       String    @unique
+  password    String
+  firstName   String?
+  lastName    String?
+  phone       String?   @unique
+  avatar      String?
+  isActive    Boolean   @default(true)
+  lastLoginAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  roleId      Int
+  role        Role @relation(fields: [roleId], references: [id])
+  
+  // Дополнительные поля для личного кабинета
+  middleName  String?   // Отчество
+  birthDate   DateTime? // Дата рождения
+  gender      String?   // Пол (male, female, other)
+  address     String?   // Адрес
+  position    String?   // Должность
+  department  String?   // Отдел
+  bio         String?   // Биография
+  preferences Json?     // Настройки пользователя (тема, уведомления и т.д.)
+  isEmailVerified Boolean @default(false) // Подтверждение email
+  emailVerificationToken String? // Токен для подтверждения email
+  resetPasswordToken String? // Токен для сброса пароля
+  resetPasswordExpires DateTime? // Время истечения токена сброса
+}
+
+model Role {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  users       User[]
+}
+
+model News {
+  id         Int      @id @default(autoincrement())
+  name       String
+  nameEn     String?  // Название на английском
+  nameBe     String?  // Название на беларуском
+  content    String?
+  contentEn  String?  // Контент на английском
+  contentBe  String?  // Контент на беларуском
+  photo      String?
+  images     String[] // Массив путей к дополнительным изображениям
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  categoryId Int
+  newsCategory NewsCategory @relation(fields: [categoryId], references:[id])
+}
+
+model NewsCategory {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  nameEn    String?  // Название на английском
+  nameBe    String?  // Название на беларуском
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  news  News[]
+}
+
+model IncidentReport {
+  id                       Int       @id @default(autoincrement())
+  fullName                 String
+  organization             String
+  eventDateTime            DateTime
+  location                 String
+  description              String
+  reportDateTime           DateTime
+  recurrenceProbability    String
+  consequences             String
+  captchaCode              String
+  fileUrl                  String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  @@unique([fullName, organization, eventDateTime])
+}
+
+model Branch {
+  id          Int       @id @default(autoincrement())
+  name        String
+  nameEn      String?   // Название на английском
+  nameBe      String?   // Название на беларуском
+  address     String
+  addressEn   String?   // Адрес на английском
+  addressBe   String?   // Адрес на беларуском
+  phone       String
+  email       String
+  description String?
+  descriptionEn String? // Описание на английском
+  descriptionBe String? // Описание на беларуском
+  workHours   Json?     // Для хранения разного графика работы
+  services    Json?     // Для хранения разных услуг
+  coordinates Json?     // Для хранения координат на карте
+  images      String[]  // Массив путей к изображениям
+  content     Json?     // Для хранения контента конструктора (абзацы, заголовки, ссылки, фото)
+  contentEn   Json?     // Контент на английском
+  contentBe   Json?     // Контент на беларуском
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Management {
+  id          Int       @id @default(autoincrement())
+  name        String
+  nameEn      String?   // Имя на английском
+  nameBe      String?   // Имя на беларуском
+  position    String
+  positionEn  String?   // Должность на английском
+  positionBe  String?   // Должность на беларуском
+  receptionSchedule String @default("каждую первую пятницу месяца в 14.00")  // Расписание приема для отображения
+  receptionScheduleEn String? @default("every first Friday of the month at 14.00") // Расписание приема на английском
+  receptionScheduleBe String? @default("кожную першую пятніцу месяца ў 14.00") // Расписание приема на беларуском
+  phone         String
+  offices       String?
+  officesEn     String? // Кабинеты на английском
+  officesBe     String? // Кабинеты на беларуском
+  images      String[]  // Массив путей к изображениям
+  receptionSlots ReceptionSlot[] // Слоты для записи на прием
+  recurringScheduleTemplates RecurringScheduleTemplate[] // Шаблоны повторяющегося расписания
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ReceptionSlot {
+  id          Int       @id @default(autoincrement())
+  managementId Int      // ID руководителя
+  management  Management @relation(fields: [managementId], references: [id], onDelete: Cascade)
+  date        DateTime  // Дата приема
+  startTime   DateTime  // Время начала слота
+  endTime     DateTime  // Время окончания слота
+  isAvailable Boolean   @default(true) // Доступен ли слот для записи
+  isBooked    Boolean   @default(false) // Забронирован ли слот
+  bookedBy    String?   // Email пользователя, который забронировал
+  notes       String?   // Дополнительные заметки
+  isRecurring Boolean   @default(false) // Является ли слот частью повторяющегося расписания
+  recurringTemplateId String? // ID шаблона повторяющегося расписания
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@index([managementId, date])
+  @@index([date, isAvailable])
+  @@index([recurringTemplateId])
+}
+
+model RecurringScheduleTemplate {
+  id          String    @id @default(cuid()) // Уникальный ID шаблона
+  managementId Int      // ID руководителя
+  management  Management @relation(fields: [managementId], references: [id], onDelete: Cascade)
+  weekday     Int       // День недели (0 = воскресенье, 1 = понедельник, ...)
+  weekNumber  Int       // Номер недели в месяце (1 = первая, 2 = вторая, ...)
+  startTime   String    // Время начала (HH:MM)
+  endTime     String    // Время окончания (HH:MM)
+  slotDuration Int      @default(10) // Длительность слота в минутах
+  monthsAhead Int       @default(3) // На сколько месяцев вперед создавать слоты
+  isActive    Boolean   @default(true) // Активен ли шаблон
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@index([managementId])
+  @@index([weekday, weekNumber])
+}
+
+model Vacancy {
+  id                Int                 @id @default(autoincrement())
+  title             String              // Заголовок вакансии
+  titleEn           String?             // Заголовок на английском
+  titleBe           String?             // Заголовок на беларуском
+  description       String              // Описание вакансии
+  descriptionEn     String?             // Описание на английском
+  descriptionBe     String?             // Описание на беларуском
+  requirements      String?             // Требования
+  requirementsEn    String?             // Требования на английском
+  requirementsBe    String?             // Требования на беларуском
+  conditions        String?             // Условия работы
+  conditionsEn      String?             // Условия на английском
+  conditionsBe      String?             // Условия на беларуском
+  salary            String?             // Зарплата
+  salaryEn          String?             // Зарплата на английском
+  salaryBe          String?             // Зарплата на беларуском
+  location          String?             // Местоположение
+  locationEn        String?             // Местоположение на английском
+  locationBe        String?             // Местоположение на беларуском
+  employmentType    String?             // Тип занятости (полная, частичная и т.д.)
+  employmentTypeEn  String?             // Тип занятости на английском
+  employmentTypeBe  String?             // Тип занятости на беларуском
+  content           Json?               // Контент конструктор (параграфы, списки, заголовки)
+  contentEn         Json?               // Контент на английском
+  contentBe         Json?               // Контент на беларуском
+  images            String[]            // Массив путей к изображениям
+  files             String[]            // Массив путей к файлам
+  isActive          Boolean             @default(true) // Активна ли вакансия
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  applications      VacancyApplication[]
+}
+
+model VacancyApplication {
+  id                Int       @id @default(autoincrement())
+  vacancyId         Int
+  fullName          String
+  email             String
+  phone             String
+  coverLetter       String?   // Сопроводительное письмо
+  resumeUrl         String?   // Путь к резюме
+  status            String    @default("NEW") // NEW, VIEWED, ACCEPTED, REJECTED
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  vacancy           Vacancy   @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+}
+
+model VacancyPageContent {
+  id          Int       @id @default(autoincrement())
+  title       String    @default("Открытые вакансии")
+  titleEn     String?   // Заголовок на английском
+  titleBe     String?   // Заголовок на беларуском
+  subtitle    String?   // Подзаголовок страницы
+  subtitleEn  String?   // Подзаголовок на английском
+  subtitleBe  String?   // Подзаголовок на беларуском
+  content     Json?     // Контент конструктор (параграфы, списки, заголовки, изображения)
+  contentEn   Json?     // Контент на английском
+  contentBe   Json?     // Контент на беларуском
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model HistoryPageContent {
+  id          Int       @id @default(autoincrement())
+  title       String    @default("История предприятия")
+  titleEn     String?   // Заголовок на английском
+  titleBe     String?   // Заголовок на беларуском
+  subtitle    String?   // Подзаголовок страницы
+  subtitleEn  String?   // Подзаголовок на английском
+  subtitleBe  String?   // Подзаголовок на беларуском
+  content     Json?     // Контент конструктор (параграфы, списки, заголовки, изображения)
+  contentEn   Json?     // Контент на английском
+  contentBe   Json?     // Контент на беларуском
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model AboutCompanyPageContent {
+  id          Int       @id @default(autoincrement())
+  title       String    @default("О предприятии")
+  titleEn     String?   // Заголовок на английском
+  titleBe     String?   // Заголовок на беларуском
+  subtitle    String?   // Подзаголовок страницы
+  subtitleEn  String?   // Подзаголовок на английском
+  subtitleBe  String?   // Подзаголовок на беларуском
+  content     Json?     // Контент конструктор (параграфы, списки, заголовки, изображения)
+  contentEn   Json?     // Контент на английском
+  contentBe   Json?     // Контент на беларуском
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model SecurityPolicyPageContent {
+  id          Int       @id @default(autoincrement())
+  title       String    @default("Политика безопасности")
+  titleEn     String?   // Заголовок на английском
+  titleBe     String?   // Заголовок на беларуском
+  subtitle    String?   // Подзаголовок страницы
+  subtitleEn  String?   // Подзаголовок на английском
+  subtitleBe  String?   // Подзаголовок на беларуском
+  content     Json?     // Контент конструктор (параграфы, списки, заголовки, изображения)
+  contentEn   Json?     // Контент на английском
+  contentBe   Json?     // Контент на беларуском
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model OrganizationLogo {
+  id          Int       @id @default(autoincrement())
+  name        String    // Название организации
+  nameEn      String?   // Название на английском
+  nameBe      String?   // Название на беларуском
+  logoUrl     String    // URL логотипа
+  internalPath String?  // Путь к внутренней странице сайта (например: /about/company)
+  isActive    Boolean   @default(true) // Активна ли организация
+  sortOrder   Int       @default(0) // Порядок сортировки
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model SocialWorkCategory {
+  id          Int       @id @default(autoincrement())
+  name        String    // Название категории
+  nameEn      String?   // Название на английском
+  nameBe      String?   // Название на беларуском
+  description String?   // Описание категории
+  descriptionEn String? // Описание на английском
+  descriptionBe String? // Описание на беларуском
+  pageType    String    @unique // Уникальный тип страницы (например: trade-union, belaya-rus)
+  isActive    Boolean   @default(true) // Активна ли категория
+  sortOrder   Int       @default(0) // Порядок сортировки
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model AboutCompanyCategory {
+  id          Int       @id @default(autoincrement())
+  name        String    // Название категории
+  nameEn      String?   // Название на английском
+  nameBe      String?   // Название на беларуском
+  description String?   // Описание категории
+  descriptionEn String? // Описание на английском
+  descriptionBe String? // Описание на беларуском
+  pageType    String    @unique // Уникальный тип страницы (например: management, structure, branches)
+  isActive    Boolean   @default(true) // Активна ли категория
+  sortOrder   Int       @default(0) // Порядок сортировки
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model SocialWorkPageContent {
+  id          Int       @id @default(autoincrement())
+  pageType    String    @unique // Уникальный тип страницы (например: trade-union, belaya-rus)
+  title       String    @default("Социальная работа")
+  titleEn     String?   // Заголовок на английском
+  titleBe     String?   // Заголовок на беларуском
+  subtitle    String?   // Подзаголовок страницы
+  subtitleEn  String?   // Подзаголовок на английском
+  subtitleBe  String?   // Подзаголовок на беларуском
+  content     Json?     // Контент конструктор (параграфы, списки, заголовки, изображения)
+  contentEn   Json?     // Контент на английском
+  contentBe   Json?     // Контент на беларуском
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model AeronauticalInfoCategory {
+  id          Int       @id @default(autoincrement())
+  name        String    // Название категории
+  nameEn      String?   // Название на английском
+  nameBe      String?   // Название на беларуском
+  description String?   // Описание категории
+  descriptionEn String? // Описание на английском
+  descriptionBe String? // Описание на беларуском
+  pageType    String    @unique // Уникальный тип страницы (например: eaip, eaip-vfr, etod)
+  isActive    Boolean   @default(true) // Активна ли категория
+  sortOrder   Int       @default(0) // Порядок сортировки
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model AeronauticalInfoPageContent {
+  id          Int       @id @default(autoincrement())
+  pageType    String    @unique // Уникальный тип страницы (например: eaip, eaip-vfr, etod)
+  title       String    @default("Аэронавигационная информация")
+  titleEn     String?   // Заголовок на английском
+  titleBe     String?   // Заголовок на беларуском
+  subtitle    String?   // Подзаголовок страницы
+  subtitleEn  String?   // Подзаголовок на английском
+  subtitleBe  String?   // Подзаголовок на беларуском
+  content     Json?     // Контент конструктор (параграфы, списки, заголовки, изображения)
+  contentEn   Json?     // Контент на английском
+  contentBe   Json?     // Контент на беларуском
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// Категории для вкладки "Обращения"
+model AppealsCategory {
+  id            Int      @id @default(autoincrement())
+  name          String
+  nameEn        String?
+  nameBe        String?
+  description   String?
+  descriptionEn String?
+  descriptionBe String?
+  pageType      String   @unique // Уникальный тип (например: e-appeals, voluntary-report, submission-methods, schedules, customer-questionnaire)
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Категории для вкладки "Услуги"
+model ServicesCategory {
+  id            Int      @id @default(autoincrement())
+  name          String
+  nameEn        String?
+  nameBe        String?
+  description   String?
+  descriptionEn String?
+  descriptionBe String?
+  pageType      String   @unique // Уникальный тип (например: air-traffic-control, weather-services, navigation-aids, etc.)
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+

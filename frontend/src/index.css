@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+/* Отключение автоматического перевода браузера */
+html {
+  translate: no;
+}
+
+/* Отключение перевода для всех элементов */
+* {
+  translate: no;
+}
+
+/* Дополнительная защита от перевода */
+body {
+  translate: no;
+}
+
+/* Отключение перевода для текстовых элементов */
+p, h1, h2, h3, h4, h5, h6, span, div, a, button, input, textarea, label {
+  translate: no;
+}
+
+/* Принудительный перенос длинных слов */
+.force-break {
+  word-break: break-all;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Перенос для всех текстовых элементов в модальных окнах */
+.dialog-content * {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}

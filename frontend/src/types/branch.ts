@@ -1,0 +1,108 @@
+// Типы для элементов конструктора контента
+export interface ContentElement {
+  id: string;
+  type: 'paragraph' | 'heading' | 'link' | 'image' | 'list' | 'table' | 'file';
+  content: string;
+  props?: {
+    level?: number; // Для заголовков (1-6)
+    color?: string; // Цвет заголовка
+    textIndent?: boolean; // Красная строка для абзаца
+    href?: string; // Для ссылок
+    target?: string; // Для ссылок
+    alt?: string; // Для изображений
+    src?: string; // Для изображений
+    items?: string[]; // Для списков
+    rows?: TableRow[]; // Для таблиц
+    headers?: string[]; // Заголовки таблицы
+    fileName?: string; // Для файлов
+    fileUrl?: string; // URL файла
+    fileSize?: number; // Размер файла
+    fileType?: string; // Тип файла
+  };
+}
+
+// Тип для строки таблицы
+export interface TableRow {
+  id: string;
+  cells: string[];
+}
+
+// Основной интерфейс филиала
+export interface Branch {
+  id: number;
+  name: string;
+  nameEn?: string;
+  nameBe?: string;
+  address: string;
+  addressEn?: string;
+  addressBe?: string;
+  phone: string;
+  email: string;
+  description?: string;
+  descriptionEn?: string;
+  descriptionBe?: string;
+  workHours?: any; // JSON объект для графика работы
+  services?: any; // JSON объект для услуг
+  coordinates?: any; // JSON объект для координат
+  images: string[]; // Массив путей к изображениям
+  content?: ContentElement[]; // Массив элементов контента конструктора
+  contentEn?: ContentElement[]; // Контент на английском
+  contentBe?: ContentElement[]; // Контент на беларуском
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Запрос на создание филиала
+export interface CreateBranchRequest {
+  name: string;
+  nameEn?: string;
+  nameBe?: string;
+  address: string;
+  addressEn?: string;
+  addressBe?: string;
+  phone: string;
+  email: string;
+  description?: string;
+  descriptionEn?: string;
+  descriptionBe?: string;
+  workHours?: any;
+  services?: any;
+  coordinates?: any;
+  images?: string[];
+  content?: ContentElement[];
+  contentEn?: ContentElement[];
+  contentBe?: ContentElement[];
+}
+
+// Запрос на обновление филиала
+export interface UpdateBranchRequest {
+  name?: string;
+  nameEn?: string;
+  nameBe?: string;
+  address?: string;
+  addressEn?: string;
+  addressBe?: string;
+  phone?: string;
+  email?: string;
+  description?: string;
+  descriptionEn?: string;
+  descriptionBe?: string;
+  workHours?: any;
+  services?: any;
+  coordinates?: any;
+  images?: string[];
+  content?: ContentElement[];
+  contentEn?: ContentElement[];
+  contentBe?: ContentElement[];
+}
+
+// Ответ API для филиалов
+export interface BranchResponse {
+  branches: Branch[];
+}
+
+export interface SingleBranchResponse {
+  branch: Branch;
+}
+
+
