@@ -26,6 +26,9 @@ interface CreateNewsRequest {
 export default function NewsManagement() {
   const { data: news, refetch, isLoading } = useGetAllNewsQuery();
   const { data: categories } = useGetCategoriesQuery();
+  
+  // Отладочная информация
+  console.log('NewsManagement - categories:', categories);
   const [createNews, { isLoading: isCreating }] = useCreateNewsMutation();
   const [updateNews, { isLoading: isUpdating }] = useUpdateNewsMutation();
   const [deleteNews, { isLoading: isDeleting }] = useDeleteNewsMutation();
@@ -107,10 +110,10 @@ export default function NewsManagement() {
         formDataToSend.append('photo', formData.photo);
       }
 
-      // Добавляем дополнительные изображения - временно отключено
-      // selectedImages.forEach((image, index) => {
-      //   formDataToSend.append(`images`, image);
-      // });
+      // Добавляем дополнительные изображения
+      selectedImages.forEach((image, index) => {
+        formDataToSend.append(`images`, image);
+      });
 
       await createNews(formDataToSend).unwrap();
       toast.success('Новость успешно создана');
@@ -154,6 +157,11 @@ export default function NewsManagement() {
       if (formData.photo) {
         formDataToSend.append('photo', formData.photo);
       }
+
+      // Добавляем дополнительные изображения
+      selectedImages.forEach((image, index) => {
+        formDataToSend.append(`images`, image);
+      });
 
       await updateNews({ id: editingNews.id, formData: formDataToSend }).unwrap();
       toast.success('Новость успешно обновлена');
@@ -228,11 +236,17 @@ export default function NewsManagement() {
               <SelectValue placeholder="Выберите категорию" />
             </SelectTrigger>
             <SelectContent>
-              {categories?.map((category) => (
-                <SelectItem key={category.id} value={category.id.toString()}>
-                  {category.name}
+              {categories && categories.length > 0 ? (
+                categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id.toString()}>
+                    {category.name}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="" disabled>
+                  Загрузка категорий...
                 </SelectItem>
-              ))}
+              )}
             </SelectContent>
           </Select>
         </div>
@@ -377,11 +391,16 @@ export default function NewsManagement() {
             </DialogHeader>
             {renderForm()}
             <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+              <Button 
+                type="button"
+                variant="outline" 
+                onClick={() => setIsCreateDialogOpen(false)}
+              >
                 Отмена
               </Button>
               <Button 
-                type="submit"
+                type="button"
+                onClick={handleCreate}
                 disabled={isCreating}
                 className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
               >
@@ -477,11 +496,16 @@ export default function NewsManagement() {
           </DialogHeader>
           {renderForm(true)}
           <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+            <Button 
+              type="button"
+              variant="outline" 
+              onClick={() => setIsEditDialogOpen(false)}
+            >
               Отмена
             </Button>
             <Button 
-              type="submit"
+              type="button"
+              onClick={handleUpdate}
               disabled={isUpdating}
               className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
             >

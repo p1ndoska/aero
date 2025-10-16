@@ -56,6 +56,14 @@ export const aboutCompanyPageContentApi = api.injectEndpoints({
       }),
       invalidatesTags: ['AboutCompanyPageContent'],
     }),
+    createAboutCompanyPageContent: builder.mutation<AboutCompanyPageContent, UpdateAboutCompanyPageContentRequest>({
+      query: (body) => ({
+        url: '/about-company-page-content',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['AboutCompanyPageContent'],
+    }),
   }),
 });
 
@@ -63,5 +71,6 @@ export const {
   useGetAboutCompanyPageContentQuery, 
   useGetAboutCompanyPageContentByPageTypeQuery,
   useUpdateAboutCompanyPageContentMutation,
-  useUpdateAboutCompanyPageContentByPageTypeMutation 
+  useUpdateAboutCompanyPageContentByPageTypeMutation,
+  useCreateAboutCompanyPageContentMutation
 } = aboutCompanyPageContentApi;

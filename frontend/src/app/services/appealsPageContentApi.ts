@@ -1,4 +1,5 @@
 import { api } from './api';
+import type { ContentElement } from '@/types/branch';
 
 export interface AppealsPageContent {
   id: number;
@@ -6,27 +7,14 @@ export interface AppealsPageContent {
   title: string;
   titleEn?: string;
   titleBe?: string;
-  subtitle: string;
-  subtitleEn?: string;
-  subtitleBe?: string;
-  content: any[];
-  contentEn?: any[];
-  contentBe?: any[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateAppealsPageContentRequest {
-  pageType: string;
-  title: string;
-  titleEn?: string;
-  titleBe?: string;
   subtitle?: string;
   subtitleEn?: string;
   subtitleBe?: string;
-  content?: any[];
-  contentEn?: any[];
-  contentBe?: any[];
+  content?: ContentElement[];
+  contentEn?: ContentElement[];
+  contentBe?: ContentElement[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface UpdateAppealsPageContentRequest {
@@ -37,30 +25,45 @@ export interface UpdateAppealsPageContentRequest {
   subtitle?: string;
   subtitleEn?: string;
   subtitleBe?: string;
-  content?: any[];
-  contentEn?: any[];
-  contentBe?: any[];
+  content?: ContentElement[];
+  contentEn?: ContentElement[];
+  contentBe?: ContentElement[];
 }
 
 export const appealsPageContentApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    getAppealsPageContent: builder.query<AppealsPageContent, string>({
-      query: (pageType) => `/appeals-page-content/${pageType}`,
+    getAppealsPageContent: builder.query<AppealsPageContent[], void>({
+      query: () => '/appeals-page-content',
       providesTags: ['AppealsPageContent'],
     }),
-    createAppealsPageContent: builder.mutation<AppealsPageContent, CreateAppealsPageContentRequest>({
-      query: (data) => ({
+    getAppealsPageContentByPageType: builder.query<AppealsPageContent, string>({
+      query: (pageType) => `/appeals-page-content/${pageType}`,
+      providesTags: (result, error, pageType) => [{ type: 'AppealsPageContent', id: pageType }],
+    }),
+    updateAppealsPageContent: builder.mutation<AppealsPageContent, UpdateAppealsPageContentRequest>({
+      query: (body) => ({
         url: '/appeals-page-content',
-        method: 'POST',
-        body: data,
+        method: 'PUT',
+        body,
       }),
       invalidatesTags: ['AppealsPageContent'],
     }),
-    updateAppealsPageContent: builder.mutation<AppealsPageContent, UpdateAppealsPageContentRequest>({
-      query: ({ pageType, ...data }) => ({
+    updateAppealsPageContentByPageType: builder.mutation<AppealsPageContent, { pageType: string; body: UpdateAppealsPageContentRequest }>({
+      query: ({ pageType, body }) => ({
         url: `/appeals-page-content/${pageType}`,
         method: 'PUT',
-        body: data,
+        body,
+      }),
+      invalidatesTags: (result, error, { pageType }) => [
+        { type: 'AppealsPageContent', id: pageType },
+        { type: 'AppealsPageContent', id: 'LIST' }
+      ],
+    }),
+    createAppealsPageContent: builder.mutation<AppealsPageContent, UpdateAppealsPageContentRequest>({
+      query: (body) => ({
+        url: '/appeals-page-content',
+        method: 'POST',
+        body,
       }),
       invalidatesTags: ['AppealsPageContent'],
     }),
@@ -76,7 +79,9 @@ export const appealsPageContentApi = api.injectEndpoints({
 
 export const {
   useGetAppealsPageContentQuery,
-  useCreateAppealsPageContentMutation,
+  useGetAppealsPageContentByPageTypeQuery,
   useUpdateAppealsPageContentMutation,
+  useUpdateAppealsPageContentByPageTypeMutation,
+  useCreateAppealsPageContentMutation,
   useDeleteAppealsPageContentMutation,
 } = appealsPageContentApi;

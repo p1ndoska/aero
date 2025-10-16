@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Trash2, Edit, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGetAeronauticalInfoCategoriesQuery, useCreateAeronauticalInfoCategoryMutation, useUpdateAeronauticalInfoCategoryMutation, useDeleteAeronauticalInfoCategoryMutation, useUpdateCategoriesOrderMutation } from '@/app/services/aeronauticalInfoCategoryApi';
+import { canAccessAdminPanel } from '@/utils/roleUtils';
 
 interface AeronauticalInfoCategoryFormData {
   name: string;
@@ -39,15 +40,12 @@ export default function AeronauticalInfoCategoryManagement() {
   const [deleteCategory] = useDeleteAeronauticalInfoCategoryMutation();
   const [updateOrder] = useUpdateCategoriesOrderMutation();
 
-  // Debug information
-  console.log('AeronauticalInfoCategoryManagement - categories:', categories);
-  console.log('AeronauticalInfoCategoryManagement - error:', error);
-  console.log('AeronauticalInfoCategoryManagement - isLoading:', isLoading);
+  // Debug information отключена
 
   const { isAuthenticated, user } = useSelector((state: any) => state.auth);
   const roleValue = user?.role;
   const roleName = (typeof roleValue === 'string' ? roleValue : roleValue?.name) ?? '';
-  const isAdmin = ['SUPER_ADMIN', 'ABOUT_ADMIN'].includes(roleName.toString().toUpperCase());
+  const isAdmin = canAccessAdminPanel(roleName);
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);

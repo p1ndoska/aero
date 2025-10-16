@@ -16,6 +16,9 @@ const NewsDetailPage: React.FC = () => {
   }
 
   const { data: news, isLoading, error } = useGetNewsByIdQuery(newsId);
+  
+  // Отладочная информация
+  console.log('NewsDetailPage - news:', news);
 
   // Функции для прокрутки стрелками в галерее
   const scrollLeft = () => {

@@ -42,6 +42,25 @@ const ServicesCategoryController = {
                     sortOrder: sortOrder || 0
                 }
             });
+
+            // Автоматическое создание страницы контента
+            try {
+                await prisma.servicesPageContent.upsert({
+                    where: { pageType },
+                    update: {},
+                    create: {
+                        pageType,
+                        title: name || 'Услуги',
+                        titleEn: nameEn || 'Services',
+                        titleBe: nameBe || 'Паслугі',
+                        subtitle: '',
+                        content: []
+                    }
+                });
+            } catch (e) {
+                console.warn('servicesPageContent upsert failed (non-critical):', e?.message);
+            }
+
             res.json(created);
         } catch (error) {
             console.error('Error creating services category:', error);

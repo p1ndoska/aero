@@ -10,16 +10,16 @@ import { getTranslatedField } from '../utils/translationHelpers';
 import ContentConstructor from './admin/ContentConstructor';
 
 // Импорты для API запросов
-import { useGetAboutCompanyPageContentByPageTypeQuery, useUpdateAboutCompanyPageContentByPageTypeMutation } from '@/app/services/aboutCompanyPageContentApi';
-// Временные заглушки для API сервисов
-const useGetAeronauticalInfoPageContentQuery = (_pageType: string) => ({ data: null, refetch: () => {}, isLoading: false, error: null });
-const useUpdateAeronauticalInfoPageContentMutation = () => [() => Promise.resolve({ unwrap: () => Promise.resolve() }), { isLoading: false }];
-const useGetAppealsPageContentQuery = (_pageType: string) => ({ data: null, refetch: () => {}, isLoading: false, error: null });
-const useUpdateAppealsPageContentMutation = () => [() => Promise.resolve({ unwrap: () => Promise.resolve() }), { isLoading: false }];
+import { useGetAboutCompanyPageContentByPageTypeQuery, useUpdateAboutCompanyPageContentByPageTypeMutation, useCreateAboutCompanyPageContentMutation } from '@/app/services/aboutCompanyPageContentApi';
+import { useGetAeronauticalInfoPageContentByPageTypeQuery, useUpdateAeronauticalInfoPageContentByPageTypeMutation, useCreateAeronauticalInfoPageContentMutation } from '@/app/services/aeronauticalInfoPageContentApi';
+import { useGetAppealsPageContentByPageTypeQuery, useUpdateAppealsPageContentByPageTypeMutation, useCreateAppealsPageContentMutation } from '@/app/services/appealsPageContentApi';
+import { useGetServicesPageContentQuery, useUpdateServicesPageContentMutation, useCreateServicesPageContentMutation } from '@/app/services/servicesPageContentApi';
 import SocialWorkPage from './SocialWorkPage';
+import VoluntaryReportForm from './VoluntaryReportForm';
+import { getRolePermissions } from '@/utils/roleUtils';
 
 interface DynamicPageProps {
-  pageType: 'about' | 'aeronautical' | 'appeals' | 'social';
+  pageType: 'about' | 'aeronautical' | 'appeals' | 'social' | 'services';
 }
 
 export default function DynamicPage({ pageType }: DynamicPageProps) {
@@ -30,11 +30,32 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
     return <SocialWorkPage pageType={urlPageType || ''} />;
   }
   
+  // Для страницы добровольного сообщения используем специальную форму
+  if (pageType === 'appeals' && urlPageType === 'voluntary-report') {
+    return <VoluntaryReportForm />;
+  }
+  
   const { language } = useLanguage();
   const { isAuthenticated, user } = useSelector((state: any) => state.auth);
   const roleValue = user?.role;
   const roleName = (typeof roleValue === 'string' ? roleValue : roleValue?.name) ?? '';
-  const isAdmin = ['SUPER_ADMIN', 'ABOUT_ADMIN', 'AERONAUTICAL_ADMIN', 'APPEALS_ADMIN', 'SOCIAL_ADMIN'].includes(roleName.toString().toUpperCase());
+  const permissions = getRolePermissions(roleName);
+  
+  // Проверяем доступ в зависимости от типа страницы
+  const isAdmin = (() => {
+    switch (pageType) {
+      case 'about':
+        return permissions.canManageAbout;
+      case 'aeronautical':
+        return permissions.canManageAirNav;
+      case 'appeals':
+        return permissions.canManageAppeals;
+      case 'services':
+        return permissions.canManageServices;
+      default:
+        return false;
+    }
+  })();
 
   const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
   const [editableTitle, setEditableTitle] = useState('');
@@ -42,29 +63,40 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
   const [editableContent, setEditableContent] = useState<any[]>([]);
 
   // Определяем какой API использовать в зависимости от типа страницы
-  let pageContentQuery, updatePageContentMutation, defaultTitle, defaultSubtitle, icon;
+  let pageContentQuery, updatePageContentMutation, defaultTitle, defaultSubtitle, icon, createPageContentMutation;
 
   switch (pageType) {
     case 'about':
       pageContentQuery = useGetAboutCompanyPageContentByPageTypeQuery(urlPageType || '');
       updatePageContentMutation = useUpdateAboutCompanyPageContentByPageTypeMutation();
+      createPageContentMutation = useCreateAboutCompanyPageContentMutation();
       defaultTitle = 'О предприятии';
       defaultSubtitle = 'Информация о нашем предприятии, его структуре, целях и принципах работы в сфере аэронавигационного обслуживания воздушного движения.';
       icon = Building2;
       break;
     case 'aeronautical':
-      pageContentQuery = useGetAeronauticalInfoPageContentQuery(urlPageType || '');
-      updatePageContentMutation = useUpdateAeronauticalInfoPageContentMutation();
+      pageContentQuery = useGetAeronauticalInfoPageContentByPageTypeQuery(urlPageType || '');
+      updatePageContentMutation = useUpdateAeronauticalInfoPageContentByPageTypeMutation();
+      createPageContentMutation = useCreateAeronauticalInfoPageContentMutation();
       defaultTitle = 'Аэронавигационная информация';
       defaultSubtitle = 'Информация о правилах и процедурах аэронавигационного обслуживания воздушного движения.';
       icon = Plane;
       break;
     case 'appeals':
-      pageContentQuery = useGetAppealsPageContentQuery(urlPageType || '');
-      updatePageContentMutation = useUpdateAppealsPageContentMutation();
+      pageContentQuery = useGetAppealsPageContentByPageTypeQuery(urlPageType || '');
+      updatePageContentMutation = useUpdateAppealsPageContentByPageTypeMutation();
+      createPageContentMutation = useCreateAppealsPageContentMutation();
       defaultTitle = 'Обращения';
       defaultSubtitle = 'Информация о порядке подачи и рассмотрения обращений граждан и юридических лиц.';
       icon = MessageSquare;
+      break;
+    case 'services':
+      pageContentQuery = useGetServicesPageContentQuery(urlPageType || '');
+      updatePageContentMutation = useUpdateServicesPageContentMutation();
+      createPageContentMutation = useCreateServicesPageContentMutation();
+      defaultTitle = 'Услуги';
+      defaultSubtitle = 'Информация об услугах предприятия.';
+      icon = FileText;
       break;
     default:
       pageContentQuery = { data: null, refetch: () => {} };
@@ -76,13 +108,20 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
 
   const { data: pageContent, refetch: refetchPageContent } = pageContentQuery;
   const [updatePageContent, mutationState] = updatePageContentMutation;
+  const [createPageContent] = (createPageContentMutation as any) || [null];
   const isUpdatingContent = (mutationState as any)?.isLoading || false;
 
+  // Приводим pageContent к общему типу
+  const content = pageContent as any;
+  
+  // Отладочная информация
+  console.log('DynamicPage content:', { pageType, urlPageType, content, pageContent });
+
   const handleOpenContentEditor = () => {
-    if (pageContent) {
-      setEditableTitle(getTranslatedField(pageContent, 'title', language) || defaultTitle);
-      setEditableSubtitle(getTranslatedField(pageContent, 'subtitle', language) || '');
-      setEditableContent(getTranslatedField(pageContent, 'content', language) || []);
+    if (content) {
+      setEditableTitle(getTranslatedField(content, 'title', language) || defaultTitle);
+      setEditableSubtitle(getTranslatedField(content, 'subtitle', language) || '');
+      setEditableContent(getTranslatedField(content, 'content', language) || []);
     } else {
       setEditableTitle(defaultTitle);
       setEditableSubtitle('');
@@ -117,20 +156,42 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
 
       if (typeof updatePageContent === 'function') {
         try {
-          const result = await updatePageContent(updateData);
-          // Проверяем, есть ли метод unwrap
-          if (result && 'unwrap' in result && typeof result.unwrap === 'function') {
-            await result.unwrap();
+          let result;
+          if (pageType === 'aeronautical' || pageType === 'appeals') {
+            // Для аэронавигационных страниц и обращений используем updateByPageType
+            // @ts-ignore
+            result = await updatePageContent({ pageType: urlPageType || '', body: { ...updateData, title: editableTitle } });
+          } else if (pageType === 'about') {
+            // Для страниц о предприятии используем updateByPageType с title
+            // @ts-ignore
+            result = await updatePageContent({ 
+              pageType: urlPageType || '', 
+              body: { ...updateData, title: editableTitle } 
+            });
+          } else {
+            // Для остальных страниц используем обычный update
+            result = await updatePageContent({ ...updateData, title: editableTitle });
           }
-        } catch (error) {
-          console.error('Error updating page content:', error);
-          throw error;
+          
+          if (result && 'unwrap' in result && typeof (result as any).unwrap === 'function') {
+            await (result as any).unwrap();
+          }
+        } catch (error: any) {
+          const status = error?.status || error?.data?.statusCode;
+        if ((pageType === 'services' || pageType === 'about' || pageType === 'aeronautical' || pageType === 'appeals') && status === 404 && typeof createPageContent === 'function') {
+          // Создаём запись и не падаем с ошибкой
+          await (createPageContent as any)({ pageType: urlPageType, title: editableTitle, subtitle: editableSubtitle, content: editableContent });
+          } else {
+            console.error('Error updating page content:', error);
+            throw error;
+          }
         }
       } else {
         console.warn('Update function not available for this page type');
       }
+      console.log('Content saved successfully, refetching...');
       toast.success('Контент страницы успешно обновлен');
-      refetchPageContent();
+      await refetchPageContent();
       setIsContentEditorOpen(false);
     } catch (error: any) {
       toast.error(error.data?.error || 'Ошибка при сохранении контента');
@@ -277,7 +338,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
             <div className="flex items-center justify-center gap-3 mb-4">
               <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3">
                 <IconComponent className="w-10 h-10 text-blue-600" />
-                {getTranslatedField(pageContent, 'title', language) || defaultTitle}
+                {getTranslatedField(content, 'title', language) || defaultTitle}
               </h1>
               {isAuthenticated && isAdmin && (
                 <Button
@@ -292,15 +353,15 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
               )}
             </div>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              {getTranslatedField(pageContent, 'subtitle', language) || defaultSubtitle}
+              {getTranslatedField(content, 'subtitle', language) || defaultSubtitle}
             </p>
           </div>
 
           {/* Дополнительный контент */}
-          {pageContent?.content && Array.isArray(pageContent.content) && pageContent.content.length > 0 && (
+          {content?.content && Array.isArray(content.content) && content.content.length > 0 && (
             <div className="w-full mb-12">
               <div className="py-8">
-                {getTranslatedField(pageContent, 'content', language).map((element: any) => (
+                {getTranslatedField(content, 'content', language).map((element: any) => (
                   <div key={element.id}>
                     {renderContentElement(element)}
                   </div>
@@ -310,7 +371,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
           )}
 
           {/* Заглушка контента, если нет динамического контента */}
-          {(!pageContent?.content || pageContent.content.length === 0) && (
+          {(!content?.content || content.content.length === 0) && (
             <div className="w-full">
               <div className="bg-blue-50 py-12 text-center rounded-lg">
                 <IconComponent className="w-16 h-16 mx-auto mb-4 text-gray-400" />

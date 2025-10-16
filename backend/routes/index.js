@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const {UserController, AdminController, NewsController, CategoryController, RoleController, ManagementController, IncidentReportController, BranchController, VacancyController, VacancyPageContentController, HistoryPageContentController, AboutCompanyPageContentController, SecurityPolicyPageContentController, SocialWorkPageContentController, OrganizationLogoController, SocialWorkCategoryController, AboutCompanyCategoryController, AeronauticalInfoCategoryController, AppealsCategoryController, ServicesCategoryController, ReceptionSlotController, UserProfileController, AeronauticalInfoPageContentController, AppealsPageContentController} = require("../controllers");
+const {UserController, AdminController, NewsController, CategoryController, RoleController, ManagementController, IncidentReportController, BranchController, VacancyController, VacancyPageContentController, HistoryPageContentController, AboutCompanyPageContentController, SecurityPolicyPageContentController, SocialWorkPageContentController, OrganizationLogoController, SocialWorkCategoryController, AboutCompanyCategoryController, AeronauticalInfoCategoryController, AppealsCategoryController, ServicesCategoryController, ReceptionSlotController, UserProfileController, AeronauticalInfoPageContentController, AppealsPageContentController, ServicesPageContentController} = require("../controllers");
 const {authenticationToken} = require("../middleware/auth");
 const checkRole = require('../middleware/checkRole');
 
@@ -106,11 +106,17 @@ router.delete('/users/:id', authenticationToken, checkRole(['SUPER_ADMIN']), Use
 router.get('/users', authenticationToken, checkRole(['SUPER_ADMIN']), UserController.getAllUsers);
 
 //news
-router.post('/news/create', authenticationToken, checkRole(['SUPER_ADMIN','NEWS_ADMIN']), upload.single('photo'), NewsController.createNews);
+router.post('/news/create', authenticationToken, checkRole(['SUPER_ADMIN','NEWS_ADMIN']), uploadAnyFile.fields([
+  { name: 'photo', maxCount: 1 },
+  { name: 'images', maxCount: 10 }
+]), NewsController.createNews);
 router.get('/news', NewsController.getAllNews);
 router.get('/news/detail/:id', NewsController.getNewsById);
 router.get('/news/category/:categoryId', NewsController.getNewsByCategory);
-router.put('/news/:id', authenticationToken, checkRole(['SUPER_ADMIN','NEWS_ADMIN']), NewsController.updateNews);
+router.put('/news/:id', authenticationToken, checkRole(['SUPER_ADMIN','NEWS_ADMIN']), uploadAnyFile.fields([
+  { name: 'photo', maxCount: 1 },
+  { name: 'images', maxCount: 10 }
+]), NewsController.updateNews);
 router.delete('/news/:id', authenticationToken, checkRole(['SUPER_ADMIN','NEWS_ADMIN']), NewsController.deleteNews);
 
 //category
@@ -128,33 +134,33 @@ router.put('/role/:id', authenticationToken, checkRole(['SUPER_ADMIN']), RoleCon
 router.delete('/role/:id', authenticationToken, checkRole(['SUPER_ADMIN']), RoleController.deleteRole);
 
 //management
-router.post('/management/create', authenticationToken, checkRole(['SUPER_ADMIN','ABOUT_ADMIN']), ManagementController.createManager);
-router.get('/management/:id', authenticationToken, checkRole(['SUPER_ADMIN','ABOUT_ADMIN']), ManagementController.getManagerById);
+router.post('/management/create', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ManagementController.createManager);
+router.get('/management/:id', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ManagementController.getManagerById);
 router.get('/management/:id/available-slots', ManagementController.getAvailableSlots);
 router.get('/management', ManagementController.getManagers);
-router.put('/management/:id', authenticationToken, checkRole(['SUPER_ADMIN','ABOUT_ADMIN']), ManagementController.updateManager);
-router.delete('/management/:id', authenticationToken, checkRole(['SUPER_ADMIN','ABOUT_ADMIN']), ManagementController.deleteManager);
+router.put('/management/:id', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ManagementController.updateManager);
+router.delete('/management/:id', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ManagementController.deleteManager);
 
 //reception slots
 router.get('/reception-slots/:managementId', ReceptionSlotController.getSlotsByManager);
-router.post('/reception-slots/:managementId', authenticationToken, checkRole(['SUPER_ADMIN','ABOUT_ADMIN']), ReceptionSlotController.createSlots);
+router.post('/reception-slots/:managementId', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ReceptionSlotController.createSlots);
 router.post('/reception-slots/:slotId/book', ReceptionSlotController.bookSlot);
 router.post('/reception-slots/:slotId/cancel', ReceptionSlotController.cancelBooking);
-router.delete('/reception-slots/:managementId', authenticationToken, checkRole(['SUPER_ADMIN','ABOUT_ADMIN']), ReceptionSlotController.deleteSlots);
-router.get('/reception-slots/:managementId/booked', authenticationToken, checkRole(['SUPER_ADMIN','ABOUT_ADMIN']), ReceptionSlotController.getBookedSlots);
+router.delete('/reception-slots/:managementId', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ReceptionSlotController.deleteSlots);
+router.get('/reception-slots/:managementId/booked', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ReceptionSlotController.getBookedSlots);
 
 //recurring schedules
-router.post('/reception-slots/:managementId/recurring', authenticationToken, checkRole(['SUPER_ADMIN','ABOUT_ADMIN']), ReceptionSlotController.createRecurringSchedule);
-router.get('/reception-slots/:managementId/recurring-templates', authenticationToken, checkRole(['SUPER_ADMIN','ABOUT_ADMIN']), ReceptionSlotController.getRecurringTemplates);
-router.delete('/reception-slots/recurring-templates/:templateId', authenticationToken, checkRole(['SUPER_ADMIN','ABOUT_ADMIN']), ReceptionSlotController.deleteRecurringTemplate);
-router.put('/reception-slots/recurring-templates/:templateId', authenticationToken, checkRole(['SUPER_ADMIN','ABOUT_ADMIN']), ReceptionSlotController.updateRecurringTemplate);
+router.post('/reception-slots/:managementId/recurring', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ReceptionSlotController.createRecurringSchedule);
+router.get('/reception-slots/:managementId/recurring-templates', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ReceptionSlotController.getRecurringTemplates);
+router.delete('/reception-slots/recurring-templates/:templateId', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ReceptionSlotController.deleteRecurringTemplate);
+router.put('/reception-slots/recurring-templates/:templateId', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ReceptionSlotController.updateRecurringTemplate);
 
 //branch
-router.get('/branch', authenticationToken, checkRole(['SUPER_ADMIN']), BranchController.getAllBranches);
-router.post('/branch', authenticationToken, checkRole(['SUPER_ADMIN']), BranchController.createBranch);
-router.get('/branch/:id', authenticationToken, checkRole(['SUPER_ADMIN']), BranchController.getBranchById);
-router.put('/branch/:id', authenticationToken, checkRole(['SUPER_ADMIN']), BranchController.updateBranch);
-router.delete('/branch/:id', authenticationToken, checkRole(['SUPER_ADMIN']), BranchController.deleteBranch);
+router.get('/branch', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), BranchController.getAllBranches);
+router.post('/branch', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), BranchController.createBranch);
+router.get('/branch/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), BranchController.getBranchById);
+router.put('/branch/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), BranchController.updateBranch);
+router.delete('/branch/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), BranchController.deleteBranch);
 
 // //incident report
 // router.post('/report/create', IncidentReportController.createReport);
@@ -163,22 +169,22 @@ router.delete('/branch/:id', authenticationToken, checkRole(['SUPER_ADMIN']), Br
 // router.delete('/report/:id', IncidentReportController.deleteReport);
 
 //vacancies
-router.post('/vacancies', authenticationToken, checkRole(['SUPER_ADMIN', 'HR_ADMIN']), VacancyController.createVacancy);
+router.post('/vacancies', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), VacancyController.createVacancy);
 router.get('/vacancies', VacancyController.getAllVacancies);
 router.get('/vacancies/:id', VacancyController.getVacancyById);
-router.put('/vacancies/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'HR_ADMIN']), VacancyController.updateVacancy);
-router.delete('/vacancies/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'HR_ADMIN']), VacancyController.deleteVacancy);
+router.put('/vacancies/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), VacancyController.updateVacancy);
+router.delete('/vacancies/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), VacancyController.deleteVacancy);
 
 //vacancy applications
 router.post('/vacancy-applications', uploadDocument.single('resume'), VacancyController.createApplication);
-router.get('/vacancy-applications', authenticationToken, checkRole(['SUPER_ADMIN', 'HR_ADMIN']), VacancyController.getAllApplications);
-router.get('/vacancy-applications/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'HR_ADMIN']), VacancyController.getApplicationById);
-router.put('/vacancy-applications/:id/status', authenticationToken, checkRole(['SUPER_ADMIN', 'HR_ADMIN']), VacancyController.updateApplicationStatus);
-router.delete('/vacancy-applications/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'HR_ADMIN']), VacancyController.deleteApplication);
+router.get('/vacancy-applications', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), VacancyController.getAllApplications);
+router.get('/vacancy-applications/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), VacancyController.getApplicationById);
+router.put('/vacancy-applications/:id/status', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), VacancyController.updateApplicationStatus);
+router.delete('/vacancy-applications/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), VacancyController.deleteApplication);
 
 //vacancy page content
 router.get('/vacancy-page-content', VacancyPageContentController.getPageContent);
-router.put('/vacancy-page-content', authenticationToken, checkRole(['SUPER_ADMIN', 'HR_ADMIN']), VacancyPageContentController.updatePageContent);
+router.put('/vacancy-page-content', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), VacancyPageContentController.updatePageContent);
 
 //user profile routes
 router.get('/profile', authenticationToken, UserProfileController.getProfile);
@@ -194,6 +200,7 @@ router.put('/history-page-content', authenticationToken, checkRole(['SUPER_ADMIN
 
 //about company page content routes
 router.get('/about-company-page-content', AboutCompanyPageContentController.getAboutCompanyPageContent);
+router.post('/about-company-page-content', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), AboutCompanyPageContentController.createAboutCompanyPageContent);
 router.get('/about-company-page-content/:pageType', AboutCompanyPageContentController.getAboutCompanyPageContentByPageType);
 router.put('/about-company-page-content', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), AboutCompanyPageContentController.updateAboutCompanyPageContent);
 router.put('/about-company-page-content/:pageType', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), AboutCompanyPageContentController.updateAboutCompanyPageContentByPageType);
@@ -210,18 +217,18 @@ router.get('/social-work-pages', SocialWorkPageContentController.getAllSocialWor
 //organization logos routes
 router.get('/organization-logos', OrganizationLogoController.getAllOrganizationLogos);
 router.get('/organization-logos/:id', OrganizationLogoController.getOrganizationLogo);
-router.post('/organization-logos', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), OrganizationLogoController.createOrganizationLogo);
-router.put('/organization-logos/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), OrganizationLogoController.updateOrganizationLogo);
-router.delete('/organization-logos/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), OrganizationLogoController.deleteOrganizationLogo);
-router.put('/organization-logos/order', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), OrganizationLogoController.updateLogosOrder);
+router.post('/organization-logos', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), OrganizationLogoController.createOrganizationLogo);
+router.put('/organization-logos/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), OrganizationLogoController.updateOrganizationLogo);
+router.delete('/organization-logos/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), OrganizationLogoController.deleteOrganizationLogo);
+router.put('/organization-logos/order', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), OrganizationLogoController.updateLogosOrder);
 
 //social work categories routes
 router.get('/social-work-categories', SocialWorkCategoryController.getAllSocialWorkCategories);
 router.get('/social-work-categories/:id', SocialWorkCategoryController.getSocialWorkCategory);
-router.post('/social-work-categories', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), SocialWorkCategoryController.createSocialWorkCategory);
-router.put('/social-work-categories/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), SocialWorkCategoryController.updateSocialWorkCategory);
-router.delete('/social-work-categories/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), SocialWorkCategoryController.deleteSocialWorkCategory);
-router.put('/social-work-categories/order', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), SocialWorkCategoryController.updateCategoriesOrder);
+router.post('/social-work-categories', authenticationToken, checkRole(['SUPER_ADMIN', 'SOCIAL_ADMIN']), SocialWorkCategoryController.createSocialWorkCategory);
+router.put('/social-work-categories/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'SOCIAL_ADMIN']), SocialWorkCategoryController.updateSocialWorkCategory);
+router.delete('/social-work-categories/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'SOCIAL_ADMIN']), SocialWorkCategoryController.deleteSocialWorkCategory);
+router.put('/social-work-categories/order', authenticationToken, checkRole(['SUPER_ADMIN', 'SOCIAL_ADMIN']), SocialWorkCategoryController.updateCategoriesOrder);
 
 //about company categories routes
 router.get('/about-company-categories', AboutCompanyCategoryController.getAllCategories);
@@ -233,37 +240,43 @@ router.delete('/about-company-categories/:id', authenticationToken, checkRole(['
 //aeronautical info categories routes
 router.get('/aeronautical-info-categories', AeronauticalInfoCategoryController.getAllAeronauticalInfoCategories);
 router.get('/aeronautical-info-categories/:id', AeronauticalInfoCategoryController.getAeronauticalInfoCategory);
-router.post('/aeronautical-info-categories', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), AeronauticalInfoCategoryController.createAeronauticalInfoCategory);
-router.put('/aeronautical-info-categories/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), AeronauticalInfoCategoryController.updateAeronauticalInfoCategory);
-router.delete('/aeronautical-info-categories/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), AeronauticalInfoCategoryController.deleteAeronauticalInfoCategory);
-router.put('/aeronautical-info-categories/order', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), AeronauticalInfoCategoryController.updateCategoriesOrder);
+router.post('/aeronautical-info-categories', authenticationToken, checkRole(['SUPER_ADMIN', 'AIRNAV_ADMIN']), AeronauticalInfoCategoryController.createAeronauticalInfoCategory);
+router.put('/aeronautical-info-categories/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'AIRNAV_ADMIN']), AeronauticalInfoCategoryController.updateAeronauticalInfoCategory);
+router.delete('/aeronautical-info-categories/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'AIRNAV_ADMIN']), AeronauticalInfoCategoryController.deleteAeronauticalInfoCategory);
+router.put('/aeronautical-info-categories/order', authenticationToken, checkRole(['SUPER_ADMIN', 'AIRNAV_ADMIN']), AeronauticalInfoCategoryController.updateCategoriesOrder);
 
 // appeals categories routes
 router.get('/appeals-categories', AppealsCategoryController.getAll);
 router.get('/appeals-categories/:id', AppealsCategoryController.getById);
-router.post('/appeals-categories', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), AppealsCategoryController.create);
-router.put('/appeals-categories/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), AppealsCategoryController.update);
-router.delete('/appeals-categories/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), AppealsCategoryController.remove);
-router.put('/appeals-categories/order', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), AppealsCategoryController.updateOrder);
+router.post('/appeals-categories', authenticationToken, checkRole(['SUPER_ADMIN', 'APPEALS_ADMIN']), AppealsCategoryController.create);
+router.put('/appeals-categories/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'APPEALS_ADMIN']), AppealsCategoryController.update);
+router.delete('/appeals-categories/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'APPEALS_ADMIN']), AppealsCategoryController.remove);
+router.put('/appeals-categories/order', authenticationToken, checkRole(['SUPER_ADMIN', 'APPEALS_ADMIN']), AppealsCategoryController.updateOrder);
 
 //services categories routes
 router.get('/services-categories', ServicesCategoryController.getAll);
 router.get('/services-categories/:id', ServicesCategoryController.getById);
-router.post('/services-categories', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), ServicesCategoryController.create);
-router.put('/services-categories/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), ServicesCategoryController.update);
-router.delete('/services-categories/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), ServicesCategoryController.remove);
-router.put('/services-categories/order', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), ServicesCategoryController.updateOrder);
+router.post('/services-categories', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServicesCategoryController.create);
+router.put('/services-categories/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServicesCategoryController.update);
+router.delete('/services-categories/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServicesCategoryController.remove);
+router.put('/services-categories/order', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServicesCategoryController.updateOrder);
 
 //aeronautical info page content routes
-router.get('/aeronautical-info-page-content/:pageType', AeronauticalInfoPageContentController.getAeronauticalInfoPageContent);
-router.post('/aeronautical-info-page-content', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), AeronauticalInfoPageContentController.createAeronauticalInfoPageContent);
-router.put('/aeronautical-info-page-content/:pageType', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), AeronauticalInfoPageContentController.updateAeronauticalInfoPageContent);
-router.delete('/aeronautical-info-page-content/:pageType', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), AeronauticalInfoPageContentController.deleteAeronauticalInfoPageContent);
+router.get('/aeronautical-info-page-content/:pageType', AeronauticalInfoPageContentController.getAeronauticalInfoPageContentByPageType);
+router.post('/aeronautical-info-page-content', authenticationToken, checkRole(['SUPER_ADMIN', 'AIRNAV_ADMIN']), AeronauticalInfoPageContentController.createAeronauticalInfoPageContent);
+router.put('/aeronautical-info-page-content/:pageType', authenticationToken, checkRole(['SUPER_ADMIN', 'AIRNAV_ADMIN']), AeronauticalInfoPageContentController.updateAeronauticalInfoPageContentByPageType);
+router.delete('/aeronautical-info-page-content/:pageType', authenticationToken, checkRole(['SUPER_ADMIN', 'AIRNAV_ADMIN']), AeronauticalInfoPageContentController.deleteAeronauticalInfoPageContent);
 
 //appeals page content routes
-router.get('/appeals-page-content/:pageType', AppealsPageContentController.getAppealsPageContent);
-router.post('/appeals-page-content', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), AppealsPageContentController.createAppealsPageContent);
-router.put('/appeals-page-content/:pageType', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), AppealsPageContentController.updateAppealsPageContent);
-router.delete('/appeals-page-content/:pageType', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), AppealsPageContentController.deleteAppealsPageContent);
+router.get('/appeals-page-content/:pageType', AppealsPageContentController.getAppealsPageContentByPageType);
+router.post('/appeals-page-content', authenticationToken, checkRole(['SUPER_ADMIN', 'APPEALS_ADMIN']), AppealsPageContentController.createAppealsPageContent);
+router.put('/appeals-page-content/:pageType', authenticationToken, checkRole(['SUPER_ADMIN', 'APPEALS_ADMIN']), AppealsPageContentController.updateAppealsPageContentByPageType);
+router.delete('/appeals-page-content/:pageType', authenticationToken, checkRole(['SUPER_ADMIN', 'APPEALS_ADMIN']), AppealsPageContentController.deleteAppealsPageContent);
+
+//services page content routes
+router.get('/services-page-content/:pageType', ServicesPageContentController.getServicesPageContent);
+router.post('/services-page-content', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServicesPageContentController.createServicesPageContent);
+router.put('/services-page-content/:pageType', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServicesPageContentController.updateServicesPageContent);
+router.delete('/services-page-content/:pageType', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServicesPageContentController.deleteServicesPageContent);
 
 module.exports = router;

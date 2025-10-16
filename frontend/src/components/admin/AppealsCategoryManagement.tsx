@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Trash2, Edit, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGetAppealsCategoriesQuery, useCreateAppealsCategoryMutation, useUpdateAppealsCategoryMutation, useDeleteAppealsCategoryMutation, useUpdateCategoriesOrderMutation } from '@/app/services/appealsCategoryApi';
+import { canAccessAdminPanel } from '@/utils/roleUtils';
 
 interface FormData {
   name: string; nameEn: string; nameBe: string;
@@ -25,7 +26,7 @@ export default function AppealsCategoryManagement() {
 
   const { user } = useSelector((s: any) => s.auth);
   const role = (typeof user?.role === 'string' ? user.role : user?.role?.name) ?? '';
-  const isAdmin = ['SUPER_ADMIN', 'ABOUT_ADMIN'].includes(role.toString().toUpperCase());
+  const isAdmin = canAccessAdminPanel(role);
 
   const [isCreateOpen, setCreateOpen] = useState(false);
   const [isEditOpen, setEditOpen] = useState(false);

@@ -1,4 +1,5 @@
 import { api } from './api';
+import type { ContentElement } from '@/types/branch';
 
 export interface AeronauticalInfoPageContent {
   id: number;
@@ -6,27 +7,14 @@ export interface AeronauticalInfoPageContent {
   title: string;
   titleEn?: string;
   titleBe?: string;
-  subtitle: string;
-  subtitleEn?: string;
-  subtitleBe?: string;
-  content: any[];
-  contentEn?: any[];
-  contentBe?: any[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateAeronauticalInfoPageContentRequest {
-  pageType: string;
-  title: string;
-  titleEn?: string;
-  titleBe?: string;
   subtitle?: string;
   subtitleEn?: string;
   subtitleBe?: string;
-  content?: any[];
-  contentEn?: any[];
-  contentBe?: any[];
+  content?: ContentElement[];
+  contentEn?: ContentElement[];
+  contentBe?: ContentElement[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface UpdateAeronauticalInfoPageContentRequest {
@@ -37,30 +25,45 @@ export interface UpdateAeronauticalInfoPageContentRequest {
   subtitle?: string;
   subtitleEn?: string;
   subtitleBe?: string;
-  content?: any[];
-  contentEn?: any[];
-  contentBe?: any[];
+  content?: ContentElement[];
+  contentEn?: ContentElement[];
+  contentBe?: ContentElement[];
 }
 
 export const aeronauticalInfoPageContentApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    getAeronauticalInfoPageContent: builder.query<AeronauticalInfoPageContent, string>({
-      query: (pageType) => `/aeronautical-info-page-content/${pageType}`,
+    getAeronauticalInfoPageContent: builder.query<AeronauticalInfoPageContent[], void>({
+      query: () => '/aeronautical-info-page-content',
       providesTags: ['AeronauticalInfoPageContent'],
     }),
-    createAeronauticalInfoPageContent: builder.mutation<AeronauticalInfoPageContent, CreateAeronauticalInfoPageContentRequest>({
-      query: (data) => ({
+    getAeronauticalInfoPageContentByPageType: builder.query<AeronauticalInfoPageContent, string>({
+      query: (pageType) => `/aeronautical-info-page-content/${pageType}`,
+      providesTags: (result, error, pageType) => [{ type: 'AeronauticalInfoPageContent', id: pageType }],
+    }),
+    updateAeronauticalInfoPageContent: builder.mutation<AeronauticalInfoPageContent, UpdateAeronauticalInfoPageContentRequest>({
+      query: (body) => ({
         url: '/aeronautical-info-page-content',
-        method: 'POST',
-        body: data,
+        method: 'PUT',
+        body,
       }),
       invalidatesTags: ['AeronauticalInfoPageContent'],
     }),
-    updateAeronauticalInfoPageContent: builder.mutation<AeronauticalInfoPageContent, UpdateAeronauticalInfoPageContentRequest>({
-      query: ({ pageType, ...data }) => ({
+    updateAeronauticalInfoPageContentByPageType: builder.mutation<AeronauticalInfoPageContent, { pageType: string; body: UpdateAeronauticalInfoPageContentRequest }>({
+      query: ({ pageType, body }) => ({
         url: `/aeronautical-info-page-content/${pageType}`,
         method: 'PUT',
-        body: data,
+        body,
+      }),
+      invalidatesTags: (result, error, { pageType }) => [
+        { type: 'AeronauticalInfoPageContent', id: pageType },
+        { type: 'AeronauticalInfoPageContent', id: 'LIST' }
+      ],
+    }),
+    createAeronauticalInfoPageContent: builder.mutation<AeronauticalInfoPageContent, UpdateAeronauticalInfoPageContentRequest>({
+      query: (body) => ({
+        url: '/aeronautical-info-page-content',
+        method: 'POST',
+        body,
       }),
       invalidatesTags: ['AeronauticalInfoPageContent'],
     }),
@@ -76,7 +79,9 @@ export const aeronauticalInfoPageContentApi = api.injectEndpoints({
 
 export const {
   useGetAeronauticalInfoPageContentQuery,
-  useCreateAeronauticalInfoPageContentMutation,
+  useGetAeronauticalInfoPageContentByPageTypeQuery,
   useUpdateAeronauticalInfoPageContentMutation,
+  useUpdateAeronauticalInfoPageContentByPageTypeMutation,
+  useCreateAeronauticalInfoPageContentMutation,
   useDeleteAeronauticalInfoPageContentMutation,
 } = aeronauticalInfoPageContentApi;

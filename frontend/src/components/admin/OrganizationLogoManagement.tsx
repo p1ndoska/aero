@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { useGetAllOrganizationLogosQuery, useCreateOrganizationLogoMutation, useUpdateOrganizationLogoMutation, useDeleteOrganizationLogoMutation, useUpdateLogosOrderMutation } from '@/app/services/organizationLogoApi';
 import { useUploadImageMutation } from '@/app/services/uploadApi';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { canAccessAdminPanel } from '@/utils/roleUtils';
 import { getTranslatedField } from '../../utils/translationHelpers';
 import { INTERNAL_PAGES, getPagesByCategory } from '../../utils/internalPages';
 import LogoUpload from './LogoUpload';
@@ -48,7 +49,7 @@ export default function OrganizationLogoManagement() {
   const { isAuthenticated, user } = useSelector((state: any) => state.auth);
   const roleValue = user?.role;
   const roleName = (typeof roleValue === 'string' ? roleValue : roleValue?.name) ?? '';
-  const isAdmin = ['SUPER_ADMIN', 'ABOUT_ADMIN'].includes(roleName.toString().toUpperCase());
+  const isAdmin = canAccessAdminPanel(roleName);
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);

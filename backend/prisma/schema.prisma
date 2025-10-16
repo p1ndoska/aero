@@ -254,6 +254,7 @@ model HistoryPageContent {
 
 model AboutCompanyPageContent {
   id          Int       @id @default(autoincrement())
+  pageType    String    @unique @default("default") // Связь с AboutCompanyCategory.pageType
   title       String    @default("О предприятии")
   titleEn     String?   // Заголовок на английском
   titleBe     String?   // Заголовок на беларуском
@@ -372,6 +373,22 @@ model AeronauticalInfoPageContent {
   updatedAt   DateTime  @updatedAt
 }
 
+model AppealsPageContent {
+  id          Int       @id @default(autoincrement())
+  pageType    String    @unique // Уникальный тип страницы
+  title       String    @default("Обращения")
+  titleEn     String?   // Заголовок на английском
+  titleBe     String?   // Заголовок на беларуском
+  subtitle    String?   // Подзаголовок страницы
+  subtitleEn  String?   // Подзаголовок на английском
+  subtitleBe  String?   // Подзаголовок на беларуском
+  content     Json?     // Контент конструктор (параграфы, списки, заголовки, изображения)
+  contentEn   Json?     // Контент на английском
+  contentBe   Json?     // Контент на беларуском
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
 // Категории для вкладки "Обращения"
 model AppealsCategory {
   id            Int      @id @default(autoincrement())
@@ -402,5 +419,22 @@ model ServicesCategory {
   sortOrder     Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+// Контент страниц услуг
+model ServicesPageContent {
+  id          Int       @id @default(autoincrement())
+  pageType    String    @unique // Связь с ServicesCategory.pageType
+  title       String    @default("Услуги")
+  titleEn     String?   // Заголовок на английском
+  titleBe     String?   // Заголовок на беларуском
+  subtitle    String?   // Подзаголовок страницы
+  subtitleEn  String?   // Подзаголовок на английском
+  subtitleBe  String?   // Подзаголовок на беларуском
+  content     Json?     // Контент конструктор (параграфы, списки, заголовки, изображения)
+  contentEn   Json?     // Контент на английском
+  contentBe   Json?     // Контент на беларуском
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 

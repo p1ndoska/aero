@@ -14,14 +14,13 @@ import {
     useDeleteCategoryMutation,
 } from "@/app/services/categoryApi";
 import { useGetAllNewsQuery } from "@/app/services/newsApi";
+import { canAccessAdminPanel } from "@/utils/roleUtils";
 
 const CategoriesAdminPage = () => {
     const { user } = useSelector((state: any) => state.auth);
     const roleValue = user?.role;
     const roleName = (typeof roleValue === "string" ? roleValue : roleValue?.name) ?? "";
-    const isAdmin = roleName.toString().toUpperCase() === "SUPER_ADMIN" || 
-                   roleName.toString().toLowerCase() === "admin" || 
-                   roleName.toString().toLowerCase() === "administrator";
+    const isAdmin = canAccessAdminPanel(roleName);
 
     const { data, isLoading, refetch } = useGetCategoriesQuery();
     const { data: allNews } = useGetAllNewsQuery();

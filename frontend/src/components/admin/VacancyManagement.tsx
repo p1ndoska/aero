@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Edit, Trash2, Briefcase, Eye, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSelector } from 'react-redux';
+import { canAccessAdminPanel } from '@/utils/roleUtils';
 import {
   useGetAllVacanciesQuery,
   useCreateVacancyMutation,
@@ -24,7 +25,7 @@ export default function VacancyManagement() {
   const { isAuthenticated, user } = useSelector((state: any) => state.auth);
   const roleValue = user?.role;
   const roleName = (typeof roleValue === 'string' ? roleValue : roleValue?.name) ?? '';
-  const isAdmin = ['SUPER_ADMIN', 'HR_ADMIN'].includes(roleName.toString().toUpperCase());
+  const isAdmin = canAccessAdminPanel(roleName);
 
   const { data: vacancies, refetch: refetchVacancies, isLoading } = useGetAllVacanciesQuery({});
   const { data: applications, refetch: refetchApplications } = useGetAllApplicationsQuery({});

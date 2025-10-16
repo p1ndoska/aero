@@ -10,6 +10,7 @@ import { useGetSocialWorkPageContentQuery, useUpdateSocialWorkPageContentMutatio
 import ContentConstructor from './admin/ContentConstructor';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getTranslatedField } from '../utils/translationHelpers';
+import { getRolePermissions } from '@/utils/roleUtils';
 
 // Маппинг типов страниц на иконки и названия
 const PAGE_CONFIG = {
@@ -62,7 +63,8 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
   const { isAuthenticated, user } = useSelector((state: any) => state.auth);
   const roleValue = user?.role;
   const roleName = (typeof roleValue === 'string' ? roleValue : roleValue?.name) ?? '';
-  const isAdmin = ['SUPER_ADMIN', 'ABOUT_ADMIN'].includes(roleName.toString().toUpperCase());
+  const permissions = getRolePermissions(roleName);
+  const isAdmin = permissions.canManageSocial;
 
   const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
   const [editableTitle, setEditableTitle] = useState('');

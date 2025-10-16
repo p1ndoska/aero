@@ -14,7 +14,7 @@ import { Textarea } from '../ui/textarea';
 import { Switch } from '../ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { Plus, Edit, Trash2, GripVertical, Save, X } from 'lucide-react';
+import { Plus, Edit, Trash2, GripVertical, Save, X, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ServicesCategory {
@@ -354,6 +354,14 @@ const ServicesCategoryManagement = () => {
                   </div>
                 </div>
                 <div className="flex gap-2 ml-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => window.open(`/services/${category.pageType}`, '_blank')}
+                    title="Открыть страницу"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </Button>
                   <Button variant="outline" size="sm" onClick={() => handleEdit(category)}>
                     <Edit className="w-4 h-4" />
                   </Button>

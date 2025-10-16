@@ -11,23 +11,26 @@ const NewsController = {
         let additionalImages = [];
 
         // Основное фото
-        if(req.file && req.file.path){
-            filePath = req.file.path;
+        if(req.files && req.files.photo && req.files.photo[0]){
+            filePath = req.files.photo[0].path;
         }
 
-        // Дополнительные изображения - временно отключено для тестирования
-        // if(req.files && req.files.images) {
-        //     const files = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
-        //     additionalImages = files.map(file => file.path);
-        // }
-        
-        // Альтернативный способ обработки дополнительных изображений
-        // if(req.files && Array.isArray(req.files)) {
-        //     const imageFiles = req.files.filter(file => file.fieldname === 'images');
-        //     if(imageFiles.length > 0) {
-        //         additionalImages = imageFiles.map(file => file.path);
-        //     }
-        // }
+        // Дополнительные изображения
+        if(req.files && req.files.images) {
+            try {
+                // Проверяем, является ли images массивом
+                if (Array.isArray(req.files.images)) {
+                    additionalImages = req.files.images.map(file => file.path);
+                } else {
+                    // Если это не массив, создаем массив из одного элемента
+                    additionalImages = [req.files.images.path];
+                }
+                console.log('Additional images processed:', additionalImages);
+            } catch (error) {
+                console.error('Error processing additional images:', error);
+                additionalImages = [];
+            }
+        }
 
         try{
             console.log('Creating news with data:', {
@@ -35,8 +38,16 @@ const NewsController = {
                 content,
                 categoryId,
                 filePath,
-                additionalImages
+                additionalImages,
+                files: req.files,
+                body: req.body
             });
+            
+            // Проверяем, что categoryId является числом
+            if (!categoryId || isNaN(Number(categoryId))) {
+                console.error('Invalid categoryId:', categoryId);
+                return res.status(400).json({error: 'Неверный ID категории'});
+            }
             
             const existingNewsCategory = await prisma.newsCategory.findUnique({
                 where: {
@@ -47,7 +58,7 @@ const NewsController = {
                 return res.status(400).json({error:"Категория не найдена"})
             }
 
-            // Сначала создаем новость без дополнительных изображений
+            // Создаем новость с дополнительными изображениями
             const newsData = {
                 name: name,
                 nameEn: nameEn || null,
@@ -56,6 +67,7 @@ const NewsController = {
                 contentEn: contentEn || null,
                 contentBe: contentBe || null,
                 photo: filePath,
+                images: additionalImages, // Добавляем дополнительные изображения
                 newsCategory: {
                     connect: { id: Number(categoryId) }
                 }
@@ -69,7 +81,15 @@ const NewsController = {
             return res.status(200).json(news);
         }catch(error){
             console.error('create news error', error);
-            return res.status(500).json({error:'Internal server error'});
+            console.error('Error details:', {
+                message: error.message,
+                code: error.code,
+                meta: error.meta
+            });
+            return res.status(500).json({
+                error: 'Internal server error',
+                details: error.message
+            });
         }
     },
     updateNews: async (req, res) => {
@@ -112,12 +132,19 @@ const NewsController = {
                 categoryId: Number(categoryId),
             };
 
-            // Обрабатываем файл, если он был загружен
-            if (req.file && req.file.path) {
-                updateData.photo = req.file.path;
+            // Обрабатываем основное фото
+            if (req.files && req.files.photo && req.files.photo[0]) {
+                updateData.photo = req.files.photo[0].path;
             } else if (req.body.photo !== undefined) {
                 // Если photo передано как текст (например, URL)
                 updateData.photo = req.body.photo || null;
+            }
+
+            // Обрабатываем дополнительные изображения
+            let additionalImages = [];
+            if (req.files && req.files.images) {
+                additionalImages = req.files.images.map(file => file.path);
+                updateData.images = additionalImages; // Добавляем дополнительные изображения
             }
 
             // Обновляем новость

@@ -12,6 +12,17 @@ export const userApi = api.injectEndpoints({
             }),
         }),
 
+        // Эндпоинт для регистрации (только SUPER_ADMIN)
+        register: builder.mutation<User, { firstName: string; lastName: string; email: string; password: string; role: string }>(
+            {
+                query: (userData) => ({
+                    url: "/register",
+                    method: "POST",
+                    body: userData,
+                }),
+            }
+        ),
+
         // Эндпоинт для получения пользователя по ID
         getUserById: builder.query<{ user: User }, number>({
             query: (id) => `/users/${id}`,
@@ -43,6 +54,7 @@ export const userApi = api.injectEndpoints({
 
 export const {
     useLoginMutation,
+    useRegisterMutation,
     useGetUserByIdQuery,
     useGetAllUsersQuery,
     useUpdateUserMutation,

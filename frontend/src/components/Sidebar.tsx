@@ -23,6 +23,7 @@ import { useGetCategoriesQuery } from "@/app/services/categoryApi";
 import FloatingLanguageSwitcher from "./FloatingLanguageSwitcher";
 import { useLanguage } from "../contexts/LanguageContext";
 import { getTranslatedField } from "../utils/translationHelpers";
+import { canAccessAdminPanel } from "../utils/roleUtils";
 import { useGetAllSocialWorkCategoriesQuery } from '../app/services/socialWorkCategoryApi';
 import { useGetAllAboutCompanyCategoriesQuery } from '../app/services/aboutCompanyCategoryApi';
 import { useGetAeronauticalInfoCategoriesQuery } from '../app/services/aeronauticalInfoCategoryApi';
@@ -37,7 +38,7 @@ export const Sidebar = () => {
 
     const dispatch = useDispatch();
     const { isAuthenticated, user } = useSelector((state: any) => state.auth);
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
 
     const handleLogout = () => {
         dispatch(logout());
@@ -46,6 +47,8 @@ export const Sidebar = () => {
     const roleValue = user?.role;
     const roleName = (typeof roleValue === 'string' ? roleValue : roleValue?.name) ?? '';
     const roleLower = roleName.toString().toLowerCase();
+    
+    // Отладочная информация отключена
 
     const { data: categories, isLoading: isCategoriesLoading, error: categoriesError } = useGetCategoriesQuery(undefined, {
         refetchOnMountOrArgChange: true,
@@ -57,21 +60,21 @@ export const Sidebar = () => {
     const { data: servicesCategories } = useGetAllServicesCategoriesQuery();
 
     const newsSubmenu = categories && Array.isArray(categories) && categories.length > 0
-        ? [{ name: "Все новости", href: "/news" }, ...categories.map((c: any) => ({ name: c.name, href: `/news/category/${c.id}` }))]
+        ? [{ name: t('all_news') || "Все новости", href: "/news" }, ...categories.map((c: any) => ({ name: getTranslatedField(c, 'name', language), href: `/news/category/${c.id}` }))]
         : [
-            { name: "Все новости", href: "/news" },
-            { name: "Новости предприятия", href: "/news/company" },
-            { name: "Безопасность полетов", href: "/news/flight-safety" },
-            { name: "Информационная безопасность", href: "/news/information-security" },
-            { name: "МЧС информирует", href: "/news/emergency" },
-            { name: "МВД информирует", href: "/news/police" },
-            { name: "Энергосбережение", href: "/news/energy-saving" },
+            { name: t('all_news') || "Все новости", href: "/news" },
+            { name: t('news_company') || "Новости предприятия", href: "/news/company" },
+            { name: t('flight_safety') || "Безопасность полетов", href: "/news/flight-safety" },
+            { name: t('information_security') || "Информационная безопасность", href: "/news/information-security" },
+            { name: t('mchs_informs') || "МЧС информирует", href: "/news/emergency" },
+            { name: t('mvd_informs') || "МВД информирует", href: "/news/police" },
+            { name: t('energy_saving') || "Энергосбережение", href: "/news/energy-saving" },
         ];
 
     // Создаем динамическое подменю для социальной работы
     const socialWorkSubmenu = socialWorkCategories && Array.isArray(socialWorkCategories) && socialWorkCategories.length > 0
         ? socialWorkCategories.map((category: any) => ({ 
-            name: getTranslatedField(category, 'name', 'ru'), 
+            name: getTranslatedField(category, 'name', language), 
             href: `/social/${category.pageType}` 
         }))
         : [
@@ -90,10 +93,10 @@ export const Sidebar = () => {
             .filter((c: any) => c.isActive)
             .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
             .map((category: any) => ({
-                name: getTranslatedField(category, 'name', 'ru'),
+                name: getTranslatedField(category, 'name', language),
                 href: `/services/${category.pageType}`
             }))
-        : [];
+        : null; // null вместо пустого массива, чтобы не показывать подменю
 
     // Динамическое подменю "О предприятии"
     const aboutSubmenu = aboutCompanyCategories && Array.isArray(aboutCompanyCategories) && aboutCompanyCategories.length > 0
@@ -101,7 +104,7 @@ export const Sidebar = () => {
             .filter((c: any) => c.isActive)
             .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
             .map((category: any) => ({
-                name: getTranslatedField(category, 'name', 'ru'),
+                name: getTranslatedField(category, 'name', language),
                 href: `/about/${category.pageType}`
             }))
         : [];
@@ -112,7 +115,7 @@ export const Sidebar = () => {
             .filter((c: any) => c.isActive)
             .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
             .map((category: any) => ({
-                name: getTranslatedField(category, 'name', 'ru'),
+                name: getTranslatedField(category, 'name', language),
                 href: `/air-navigation/${category.pageType}`
             }))
         : [];
@@ -123,8 +126,11 @@ export const Sidebar = () => {
             .filter((c: any) => c.isActive)
             .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
             .map((category: any) => ({
-                name: getTranslatedField(category, 'name', 'ru'),
-                href: `/appeals/${category.pageType}`
+                name: getTranslatedField(category, 'name', language),
+                href: category.pageType === 'e-appeals' 
+                    ? 'https://xn--80abnmycp7evc.xn--90ais/' 
+                    : `/appeals/${category.pageType}`,
+                external: category.pageType === 'e-appeals'
             }))
         : [];
 
@@ -244,7 +250,7 @@ export const Sidebar = () => {
                                 <li
                                     key={item.href}
                                     className="relative"
-                                    onMouseEnter={() => (Array.isArray(item.submenu) && item.submenu.length > 0) ? setActiveSubmenu(item.href) : undefined}
+                                    onMouseEnter={() => (item.submenu && Array.isArray(item.submenu) && item.submenu.length > 0) ? setActiveSubmenu(item.href) : undefined}
                                     onMouseLeave={() => setActiveSubmenu(null)}
                                 >
                                     <Link
@@ -253,7 +259,7 @@ export const Sidebar = () => {
                                     >
                                         {item.name}
                                     </Link>
-                                    {Array.isArray(item.submenu) && item.submenu.length > 0 && activeSubmenu === item.href && (
+                                    {item.submenu && Array.isArray(item.submenu) && item.submenu.length > 0 && activeSubmenu === item.href && (
                                         <div className="absolute left-full top-0 ml-1 w-64 bg-[#eff6ff] border rounded-md shadow-lg z-50 py-2">
                                             <ul>
                                                 {item.submenu.map((subItem: any) => (
@@ -314,7 +320,7 @@ export const Sidebar = () => {
                                 </Button>
                             ) : (
                                 <>
-                                    {roleLower === 'super_admin' && (
+                                    {canAccessAdminPanel(roleName) && (
                                         <Link to="/admin" className="text-left">
                                             <Button variant="outline" size="sm" className="w-full">{t('admin_panel')}</Button>
                                         </Link>
@@ -385,11 +391,11 @@ export const Sidebar = () => {
                                     <details className="group">
                                         <summary className="flex justify-between items-center px-3 py-2 cursor-pointer text-[#213659] hover:bg-[#B1D1E0] rounded-md">
                                             {item.name}
-                                            {Array.isArray(item.submenu) && item.submenu.length > 0 && (
+                                            {item.submenu && Array.isArray(item.submenu) && item.submenu.length > 0 && (
                                                 <span className="ml-2 transition-transform group-open:rotate-180">▼</span>
                                             )}
                                         </summary>
-                                        {Array.isArray(item.submenu) && item.submenu.length > 0 && (
+                                        {item.submenu && Array.isArray(item.submenu) && item.submenu.length > 0 && (
                                             <ul className="pl-4 space-y-1 mt-1">
                                                 {item.submenu.map((subItem: any) => (
                                                     <li key={subItem.href}>

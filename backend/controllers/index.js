@@ -22,6 +22,7 @@ const ReceptionSlotController = require('./ReceptionSlotController');
 const UserProfileController = require('./UserProfileController');
 const AeronauticalInfoPageContentController = require('./AeronauticalInfoPageContentController');
 const AppealsPageContentController = require('./AppealsPageContentController');
+const ServicesPageContentController = require('./ServicesPageContentController');
 
 module.exports = {
     UserController,
@@ -48,4 +49,5 @@ module.exports = {
     UserProfileController,
     AeronauticalInfoPageContentController,
     AppealsPageContentController,
+    ServicesPageContentController,
 }

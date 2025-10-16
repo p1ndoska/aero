@@ -34,6 +34,7 @@ import HealthyLifestylePage from "@/components/social/HealthyLifestylePage";
 import ImprovementYearPage from "@/components/social/ImprovementYearPage";
 import MemoryPage from "@/components/social/MemoryPage";
 import DynamicPage from "@/components/DynamicPage";
+import ServicesPage from "@/components/ServicesPage";
 
 const router = createBrowserRouter([
     {
@@ -44,6 +45,7 @@ const router = createBrowserRouter([
             { path: "/news", element: <NewsAllPage /> },
             { path: "/news/:id", element: <NewsDetailPage /> },
             { path: "/news/category/:id", element: <NewsCategoryByIdPage /> },
+            { path: "/services", element: <ServicesPage /> },
             { path: "/news/company", element: <NewsCompany/> },
             { path: "/news/flight-safety", element: <NewsCategoryPage title="Безопасность Полетов" categoryName="Безопасность полетов" /> },
             { path: "/news/information-security", element: <NewsCategoryPage title="Информационная Безопасность" categoryName="Информационная безопасность" /> },
@@ -68,6 +70,7 @@ const router = createBrowserRouter([
             { path: "/social/:pageType", element: <DynamicPage pageType="social" /> },
             { path: "/air-navigation/:pageType", element: <DynamicPage pageType="aeronautical" /> },
             { path: "/appeals/:pageType", element: <DynamicPage pageType="appeals" /> },
+            { path: "/services/:pageType", element: <DynamicPage pageType="services" /> },
             { path: "/cookie-policy", element: <CookiePolicyPage /> },
             { path: "/profile", element: <UserProfile /> },
             { path: "/admin/news/categories", element: <CategoriesAdminPage /> },

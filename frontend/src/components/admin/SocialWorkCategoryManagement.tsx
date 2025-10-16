@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Trash2, Edit, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGetAllSocialWorkCategoriesQuery, useCreateSocialWorkCategoryMutation, useUpdateSocialWorkCategoryMutation, useDeleteSocialWorkCategoryMutation } from '@/app/services/socialWorkCategoryApi';
+import { canAccessAdminPanel } from '@/utils/roleUtils';
 
 interface SocialWorkCategoryFormData {
   name: string;
@@ -41,7 +42,7 @@ export default function SocialWorkCategoryManagement() {
   const { isAuthenticated, user } = useSelector((state: any) => state.auth);
   const roleValue = user?.role;
   const roleName = (typeof roleValue === 'string' ? roleValue : roleValue?.name) ?? '';
-  const isAdmin = ['SUPER_ADMIN', 'ABOUT_ADMIN'].includes(roleName.toString().toUpperCase());
+  const isAdmin = canAccessAdminPanel(roleName);
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
