@@ -3,6 +3,7 @@ export interface ContentElement {
   id: string;
   type: 'paragraph' | 'heading' | 'link' | 'image' | 'list' | 'table' | 'file';
   content: string;
+  isPrivate?: boolean; // Только для авторизованных пользователей
   props?: {
     level?: number; // Для заголовков (1-6)
     color?: string; // Цвет заголовка

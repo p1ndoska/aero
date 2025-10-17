@@ -22,6 +22,7 @@ import AboutCompanyCategoryManagement from "./AboutCompanyCategoryManagement";
 import AeronauticalInfoCategoryManagement from "./AeronauticalInfoCategoryManagement";
 import AppealsCategoryManagement from "./AppealsCategoryManagement";
 import ServicesCategoryManagement from "./ServicesCategoryManagement";
+import ServiceRequestManagement from "./ServiceRequestManagement";
 
 // lightweight hooks wrapper, since userApi doesn't export getAllUsers and updateUser hooks in current file
 // We'll implement a tiny adapter in /components/admin/hooks/useUsersApi.ts
@@ -55,7 +56,7 @@ export default function SuperAdminDashboard() {
         return 'roles';
     };
 
-    const [activeTab, setActiveTab] = useState<'roles' | 'users' | 'categories' | 'branches' | 'news' | 'management' | 'vacancies' | 'logos' | 'social-categories' | 'about-company-categories' | 'aeronautical-info-categories' | 'appeals-categories' | 'services-categories'>(getFirstAvailableTab());
+    const [activeTab, setActiveTab] = useState<'roles' | 'users' | 'categories' | 'branches' | 'news' | 'management' | 'vacancies' | 'logos' | 'social-categories' | 'about-company-categories' | 'aeronautical-info-categories' | 'appeals-categories' | 'services-categories' | 'service-requests'>(getFirstAvailableTab());
 
     // Принудительное обновление данных при переключении на вкладку логотипов
     useEffect(() => {
@@ -325,6 +326,25 @@ export default function SuperAdminDashboard() {
                                </div>
                            </div>
                        )}
+
+                       {/* Заявки на услуги - SERVICES_ADMIN и SUPER_ADMIN */}
+                       {permissions.canManageServices && (
+                           <div
+                               className={`bg-white rounded-xl p-6 cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl border-2 ${
+                                   activeTab === 'service-requests'
+                                       ? 'border-[#2A52BE] bg-[#E8F0FF]'
+                                       : 'border-gray-200 hover:border-[#2A52BE]'
+                               }`}
+                               onClick={() => setActiveTab('service-requests')}
+                           >
+                               <div className="text-center">
+                                   <Mail className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
+                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                       Заявки на услуги
+                                   </h3>
+                               </div>
+                           </div>
+                       )}
                    </div>
 
             {/* Контент вкладок */}
@@ -342,6 +362,7 @@ export default function SuperAdminDashboard() {
                 {activeTab === 'aeronautical-info-categories' && permissions.canManageAirNav && <AeronauticalInfoCategoryManagement />}
                 {activeTab === 'appeals-categories' && permissions.canManageAppeals && <AppealsCategoryManagement />}
                 {activeTab === 'services-categories' && permissions.canManageServices && <ServicesCategoryManagement />}
+                {activeTab === 'service-requests' && permissions.canManageServices && <ServiceRequestManagement />}
             </div>
         </div>
     );

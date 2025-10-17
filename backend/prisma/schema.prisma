@@ -440,3 +440,31 @@ model ServicesPageContent {
   updatedAt   DateTime  @updatedAt
 }
 
+// Заявки на услуги
+model ServiceRequest {
+  id              Int       @id @default(autoincrement())
+  serviceType     String    // Тип услуги (air-traffic-control, weather-services, etc.)
+  serviceName     String    // Название услуги
+  fullName        String    // ФИО заявителя
+  email           String    // Email заявителя
+  phone           String?   // Телефон заявителя
+  organization    String?   // Организация
+  position        String?   // Должность
+  subject         String    // Тема заявки
+  description     String    // Описание заявки
+  priority        String    @default("medium") // low, medium, high, urgent
+  status          String    @default("pending") // pending, in_progress, completed, cancelled
+  preferredDate   DateTime? // Предпочтительная дата выполнения
+  budget          String?   // Бюджет
+  notes           String?   // Дополнительные заметки
+  assignedTo      Int?      // ID назначенного сотрудника
+  response        String?   // Ответ администратора
+  responseDate    DateTime? // Дата ответа
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([serviceType])
+  @@index([status])
+  @@index([createdAt])
+}
+

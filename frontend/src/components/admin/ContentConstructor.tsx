@@ -5,7 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, MoveUp, MoveDown, Type, Heading, Link, Image, Upload, List, Table, FileText } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Plus, Trash2, MoveUp, MoveDown, Type, Heading, Link, Image, Upload, List, Table, FileText, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUploadImageMutation, useUploadFileMutation } from '@/app/services/uploadApi';
 import type { ContentElement } from '@/types/branch';
@@ -833,6 +834,27 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                   )}
                 </div>
               )}
+
+              {/* Настройка приватности блока */}
+              <div className="border-t pt-4 mt-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`isPrivate-${element.id}`}
+                    checked={element.isPrivate || false}
+                    onCheckedChange={(checked) => updateElement(element.id, { isPrivate: !!checked })}
+                  />
+                  <Label htmlFor={`isPrivate-${element.id}`} className="flex items-center gap-2 text-sm">
+                    <Lock className="w-4 h-4" />
+                    Только для авторизованных пользователей
+                  </Label>
+                </div>
+                {element.isPrivate && (
+                  <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                    <Lock className="w-3 h-3" />
+                    Этот блок будет скрыт для неавторизованных пользователей
+                  </p>
+                )}
+              </div>
             </div>
           ) : (
             <div className="min-h-[50px] border rounded p-3 bg-gray-50">

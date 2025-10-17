@@ -278,6 +278,141 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             return { success: false, error: error.message };
         }
     }
+
+    // Уведомление о новой заявке на услугу (администратору)
+    async sendServiceRequestNotification(serviceRequest) {
+        try {
+            const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
+            
+            const mailOptions = {
+                from: `"ГП «Белаэронавигация»" <${process.env.SMTP_USER || 'noreply@belaeronavigatsia.by'}>`,
+                to: adminEmail,
+                subject: `Новая заявка на услугу #${serviceRequest.id}`,
+                html: `
+                    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                        <div style="background-color: #213659; padding: 20px; text-align: center;">
+                            <h1 style="color: #ffffff;">Новая заявка на услугу</h1>
+                        </div>
+                        <div style="padding: 20px; border: 1px solid #eee; border-top: none;">
+                            <h2 style="color: #213659;">Детали заявки #${serviceRequest.id}</h2>
+                            
+                            <h3>Контактная информация:</h3>
+                            <ul>
+                                <li><strong>ФИО:</strong> ${serviceRequest.fullName}</li>
+                                <li><strong>Email:</strong> ${serviceRequest.email}</li>
+                                ${serviceRequest.phone ? `<li><strong>Телефон:</strong> ${serviceRequest.phone}</li>` : ''}
+                                ${serviceRequest.organization ? `<li><strong>Организация:</strong> ${serviceRequest.organization}</li>` : ''}
+                                ${serviceRequest.position ? `<li><strong>Должность:</strong> ${serviceRequest.position}</li>` : ''}
+                            </ul>
+                            
+                            <h3>Информация о заявке:</h3>
+                            <ul>
+                                <li><strong>Тип услуги:</strong> ${serviceRequest.serviceType}</li>
+                                <li><strong>Название услуги:</strong> ${serviceRequest.serviceName}</li>
+                                <li><strong>Тема:</strong> ${serviceRequest.subject}</li>
+                                <li><strong>Приоритет:</strong> ${serviceRequest.priority}</li>
+                                <li><strong>Статус:</strong> ${serviceRequest.status}</li>
+                                ${serviceRequest.preferredDate ? `<li><strong>Предпочтительная дата:</strong> ${new Date(serviceRequest.preferredDate).toLocaleDateString('ru-RU')}</li>` : ''}
+                                ${serviceRequest.budget ? `<li><strong>Бюджет:</strong> ${serviceRequest.budget}</li>` : ''}
+                            </ul>
+                            
+                            <h3>Описание:</h3>
+                            <p style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #213659;">
+                                ${serviceRequest.description}
+                            </p>
+                            
+                            ${serviceRequest.notes ? `
+                            <h3>Дополнительные заметки:</h3>
+                            <p style="background-color: #f0f8ff; padding: 15px; border-left: 4px solid #007bff;">
+                                ${serviceRequest.notes}
+                            </p>
+                            ` : ''}
+                            
+                            <p><strong>Дата создания:</strong> ${new Date(serviceRequest.createdAt).toLocaleString('ru-RU')}</p>
+                            
+                            <div style="margin-top: 20px; padding: 15px; background-color: #e8f4fd; border-radius: 5px;">
+                                <p><strong>Действие:</strong> Пожалуйста, обработайте заявку в административной панели.</p>
+                            </div>
+                        </div>
+                        <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 0.8em; color: #666;">
+                            <p>Это автоматическое сообщение от системы управления заявками.</p>
+                        </div>
+                    </div>
+                `,
+            };
+            
+            const result = await this.transporter.sendMail(mailOptions);
+            console.log('✅ Service request notification sent:', result.messageId);
+            return { success: true, messageId: result.messageId };
+            
+        } catch (error) {
+            console.error('❌ Service request notification error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Подтверждение заявки заявителю
+    async sendServiceRequestConfirmation(serviceRequest) {
+        try {
+            const mailOptions = {
+                from: `"ГП «Белаэронавигация»" <${process.env.SMTP_USER || 'noreply@belaeronavigatsia.by'}>`,
+                to: serviceRequest.email,
+                subject: `Подтверждение заявки #${serviceRequest.id}`,
+                html: `
+                    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                        <div style="background-color: #213659; padding: 20px; text-align: center;">
+                            <h1 style="color: #ffffff;">Подтверждение заявки</h1>
+                        </div>
+                        <div style="padding: 20px; border: 1px solid #eee; border-top: none;">
+                            <p>Уважаемый(ая) <strong>${serviceRequest.fullName}</strong>,</p>
+                            <p>Ваша заявка на услугу успешно принята и зарегистрирована под номером <strong>#${serviceRequest.id}</strong>.</p>
+                            
+                            <h2 style="color: #213659;">Детали заявки:</h2>
+                            <ul>
+                                <li><strong>Тема:</strong> ${serviceRequest.subject}</li>
+                                <li><strong>Услуга:</strong> ${serviceRequest.serviceName}</li>
+                                <li><strong>Статус:</strong> В обработке</li>
+                                <li><strong>Дата подачи:</strong> ${new Date(serviceRequest.createdAt).toLocaleString('ru-RU')}</li>
+                            </ul>
+                            
+                            <h3>Описание заявки:</h3>
+                            <p style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #213659;">
+                                ${serviceRequest.description}
+                            </p>
+                            
+                            <div style="margin-top: 20px; padding: 15px; background-color: #e8f5e8; border-radius: 5px;">
+                                <p><strong>Что дальше?</strong></p>
+                                <ul>
+                                    <li>Наша команда рассмотрит вашу заявку в течение 1-2 рабочих дней</li>
+                                    <li>Мы свяжемся с вами по указанному email или телефону</li>
+                                    <li>При необходимости мы можем запросить дополнительную информацию</li>
+                                </ul>
+                            </div>
+                            
+                            <p>Если у вас есть вопросы, пожалуйста, свяжитесь с нами:</p>
+                            <ul>
+                                <li><strong>Телефон:</strong> +375 17 215-40-52</li>
+                                <li><strong>Email:</strong> info@belaeronavigatsia.by</li>
+                            </ul>
+                            
+                            <p>С уважением,<br>Команда ГП «Белаэронавигация»</p>
+                        </div>
+                        <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 0.8em; color: #666;">
+                            <p>Это автоматическое сообщение, пожалуйста, не отвечайте на него.</p>
+                        </div>
+                    </div>
+                `,
+            };
+            
+            const result = await this.transporter.sendMail(mailOptions);
+            console.log('✅ Service request confirmation sent:', result.messageId);
+            return { success: true, messageId: result.messageId };
+            
+        } catch (error) {
+            console.error('❌ Service request confirmation error:', error);
+            return { success: false, error: error.message };
+        }
+    }
 }
 
 module.exports = new EmailService();

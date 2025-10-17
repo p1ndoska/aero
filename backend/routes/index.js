@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const {UserController, AdminController, NewsController, CategoryController, RoleController, ManagementController, IncidentReportController, BranchController, VacancyController, VacancyPageContentController, HistoryPageContentController, AboutCompanyPageContentController, SecurityPolicyPageContentController, SocialWorkPageContentController, OrganizationLogoController, SocialWorkCategoryController, AboutCompanyCategoryController, AeronauticalInfoCategoryController, AppealsCategoryController, ServicesCategoryController, ReceptionSlotController, UserProfileController, AeronauticalInfoPageContentController, AppealsPageContentController, ServicesPageContentController} = require("../controllers");
+const {UserController, AdminController, NewsController, CategoryController, RoleController, ManagementController, IncidentReportController, BranchController, VacancyController, VacancyPageContentController, HistoryPageContentController, AboutCompanyPageContentController, SecurityPolicyPageContentController, SocialWorkPageContentController, OrganizationLogoController, SocialWorkCategoryController, AboutCompanyCategoryController, AeronauticalInfoCategoryController, AppealsCategoryController, ServicesCategoryController, ReceptionSlotController, UserProfileController, AeronauticalInfoPageContentController, AppealsPageContentController, ServicesPageContentController, ServiceRequestController} = require("../controllers");
 const {authenticationToken} = require("../middleware/auth");
 const checkRole = require('../middleware/checkRole');
 
@@ -278,5 +278,13 @@ router.get('/services-page-content/:pageType', ServicesPageContentController.get
 router.post('/services-page-content', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServicesPageContentController.createServicesPageContent);
 router.put('/services-page-content/:pageType', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServicesPageContentController.updateServicesPageContent);
 router.delete('/services-page-content/:pageType', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServicesPageContentController.deleteServicesPageContent);
+
+//service requests routes
+router.post('/service-requests', ServiceRequestController.createServiceRequest);
+router.get('/service-requests', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServiceRequestController.getAllServiceRequests);
+router.get('/service-requests/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServiceRequestController.getServiceRequestById);
+router.put('/service-requests/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServiceRequestController.updateServiceRequest);
+router.delete('/service-requests/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServiceRequestController.deleteServiceRequest);
+router.get('/service-requests-stats', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServiceRequestController.getServiceRequestStats);
 
 module.exports = router;

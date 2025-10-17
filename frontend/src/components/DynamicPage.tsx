@@ -3,11 +3,12 @@ import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Building2, Settings, FileText, Plane, MessageSquare } from 'lucide-react';
+import { Building2, Settings, FileText, Plane, MessageSquare, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getTranslatedField } from '../utils/translationHelpers';
 import ContentConstructor from './admin/ContentConstructor';
+import ServiceRequestForm from './ServiceRequestForm';
 
 // Импорты для API запросов
 import { useGetAboutCompanyPageContentByPageTypeQuery, useUpdateAboutCompanyPageContentByPageTypeMutation, useCreateAboutCompanyPageContentMutation } from '@/app/services/aboutCompanyPageContentApi';
@@ -58,6 +59,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
   })();
 
   const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
+  const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
   const [editableTitle, setEditableTitle] = useState('');
   const [editableSubtitle, setEditableSubtitle] = useState('');
   const [editableContent, setEditableContent] = useState<any[]>([]);
@@ -128,6 +130,10 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
       setEditableContent([]);
     }
     setIsContentEditorOpen(true);
+  };
+
+  const handleRequestService = () => {
+    setIsRequestDialogOpen(true);
   };
 
   const handleSaveContent = async () => {
@@ -340,17 +346,29 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
                 <IconComponent className="w-10 h-10 text-blue-600" />
                 {getTranslatedField(content, 'title', language) || defaultTitle}
               </h1>
-              {isAuthenticated && isAdmin && (
-                <Button
-                  onClick={handleOpenContentEditor}
-                  variant="outline"
-                  size="sm"
-                  className="ml-4"
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Управление контентом
-                </Button>
-              )}
+              <div className="flex gap-2">
+                {pageType === 'services' && (
+                  <Button
+                    onClick={handleRequestService}
+                    variant="outline"
+                    size="sm"
+                    className="bg-[#213659] hover:bg-[#1a2a4a] text-white border-[#213659]"
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    {language === 'en' ? 'Request Service' : language === 'be' ? 'Запытаць паслугу' : 'Подать заявку'}
+                  </Button>
+                )}
+                {isAuthenticated && isAdmin && (
+                  <Button
+                    onClick={handleOpenContentEditor}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Управление контентом
+                  </Button>
+                )}
+              </div>
             </div>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               {getTranslatedField(content, 'subtitle', language) || defaultSubtitle}
@@ -361,11 +379,37 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
           {content?.content && Array.isArray(content.content) && content.content.length > 0 && (
             <div className="w-full mb-12">
               <div className="py-8">
-                {getTranslatedField(content, 'content', language).map((element: any) => (
-                  <div key={element.id}>
-                    {renderContentElement(element)}
-                  </div>
-                ))}
+                {getTranslatedField(content, 'content', language).map((element: any) => {
+                  // Проверяем, является ли блок приватным и авторизован ли пользователь
+                  if (element.isPrivate && !isAuthenticated) {
+                    return (
+                      <div key={element.id} className="mb-4 p-6 bg-amber-50 border border-amber-200 rounded-lg">
+                        <div className="flex items-center gap-3 text-amber-800">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                          </svg>
+                          <div>
+                            <p className="font-medium">Доступ ограничен</p>
+                            <p className="text-sm text-amber-700">
+                              {language === 'en' 
+                                ? 'This content is available only to authorized users. Please log in to view.' 
+                                : language === 'be' 
+                                ? 'Гэты кантэнт даступны толькі аўтарызаваным карыстальнікам. Калі ласка, увайдзіце ў сістэму для прагляду.'
+                                : 'Этот контент доступен только авторизованным пользователям. Пожалуйста, войдите в систему для просмотра.'
+                              }
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  
+                  return (
+                    <div key={element.id}>
+                      {renderContentElement(element)}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -441,6 +485,24 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Диалог подачи заявки на услугу */}
+      {pageType === 'services' && (
+        <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {language === 'en' ? 'Service Request' : language === 'be' ? 'Заяўка на паслугу' : 'Заявка на услугу'}
+              </DialogTitle>
+            </DialogHeader>
+            <ServiceRequestForm
+              serviceType={urlPageType || ''}
+              serviceName={getTranslatedField(content, 'title', language) || defaultTitle}
+              onClose={() => setIsRequestDialogOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

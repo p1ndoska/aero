@@ -10,10 +10,8 @@ import {
     FaUserCircle,
     FaLowVision,
     FaGlobe,
-    FaFacebook,
     FaInstagram,
     FaTelegram,
-    FaYoutube,
 } from "react-icons/fa";
 
 import {LoginForm} from "@/components/LoginForm.tsx";
@@ -216,17 +214,11 @@ export const Sidebar = () => {
                 {/* Соцсети */}
                 {showSocialMedia && (
                     <div className="flex flex-col gap-2 mt-2 bg-white p-2 rounded-lg shadow-md border border-gray-200">
-                        <a href="#" className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
-                            <FaFacebook className="text-gray-600 text-sm" />
-                        </a>
-                        <a href="#" className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
-                            <FaInstagram className="text-gray-600 text-sm" />
-                        </a>
-                        <a href="#" className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
+                        <a href="https://t.me/gp_belaeronavigatsia" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
                             <FaTelegram className="text-gray-600 text-sm" />
                         </a>
-                        <a href="#" className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
-                            <FaYoutube className="text-gray-600 text-sm" />
+                        <a href="https://www.instagram.com/gp_belaeronavigatsia/" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
+                            <FaInstagram className="text-gray-600 text-sm" />
                         </a>
                     </div>
                 )}

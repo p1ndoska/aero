@@ -1,19 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useGetAllServicesCategoriesQuery } from '../app/services/servicesCategoryApi';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { FileText, ArrowRight } from 'lucide-react';
+import { FileText, ArrowRight, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import ServiceRequestForm from './ServiceRequestForm';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 
 const ServicesPage = () => {
   const { t, language } = useLanguage();
   const { data: categories = [], isLoading, error } = useGetAllServicesCategoriesQuery();
+  const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<{ type: string; name: string } | null>(null);
 
   const getTranslatedField = (item: any, field: string) => {
     if (language === 'en' && item[`${field}En`]) return item[`${field}En`];
     if (language === 'be' && item[`${field}Be`]) return item[`${field}Be`];
     return item[field] || item[`${field}En`] || item[`${field}Be`] || '';
+  };
+
+  const handleRequestService = (serviceType: string, serviceName: string) => {
+    setSelectedService({ type: serviceType, name: serviceName });
+    setIsRequestDialogOpen(true);
+  };
+
+  const handleCloseRequestDialog = () => {
+    setIsRequestDialogOpen(false);
+    setSelectedService(null);
   };
 
   if (isLoading) {
@@ -98,18 +112,45 @@ const ServicesPage = () => {
                       {getTranslatedField(category, 'description')}
                     </p>
                   )}
-                  <Link to={`/services/${category.pageType}`}>
-                    <Button className="w-full transition-colors bg-[#213659] text-white hover:bg-[#1a2a4a] focus:ring-2 focus:ring-offset-2 focus:ring-[#213659]">
-                      {language === 'en' ? 'Learn more' : language === 'be' ? 'Даведацца больш' : 'Подробнее'}
-                      <ArrowRight className="w-4 h-4 ml-2" />
+                  <div className="flex gap-2">
+                    <Link to={`/services/${category.pageType}`} className="flex-1">
+                      <Button className="w-full transition-colors bg-[#213659] text-white hover:bg-[#1a2a4a] focus:ring-2 focus:ring-offset-2 focus:ring-[#213659]">
+                        {language === 'en' ? 'Learn more' : language === 'be' ? 'Даведацца больш' : 'Подробнее'}
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleRequestService(category.pageType, getTranslatedField(category, 'name'))}
+                      className="px-4 transition-colors border-[#213659] text-[#213659] hover:bg-[#213659] hover:text-white"
+                    >
+                      <Send className="w-4 h-4" />
                     </Button>
-                  </Link>
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
       </div>
+
+      {/* Диалог подачи заявки */}
+      <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {language === 'en' ? 'Service Request' : language === 'be' ? 'Заяўка на паслугу' : 'Заявка на услугу'}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedService && (
+            <ServiceRequestForm
+              serviceType={selectedService.type}
+              serviceName={selectedService.name}
+              onClose={handleCloseRequestDialog}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

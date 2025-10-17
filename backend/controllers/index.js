@@ -23,6 +23,7 @@ const UserProfileController = require('./UserProfileController');
 const AeronauticalInfoPageContentController = require('./AeronauticalInfoPageContentController');
 const AppealsPageContentController = require('./AppealsPageContentController');
 const ServicesPageContentController = require('./ServicesPageContentController');
+const ServiceRequestController = require('./ServiceRequestController');
 
 module.exports = {
     UserController,
@@ -50,4 +51,5 @@ module.exports = {
     AeronauticalInfoPageContentController,
     AppealsPageContentController,
     ServicesPageContentController,
+    ServiceRequestController,
 }
