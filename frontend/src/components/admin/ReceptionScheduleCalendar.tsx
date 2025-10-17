@@ -29,6 +29,7 @@ export default function ReceptionScheduleCalendar({ manager }: ReceptionSchedule
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('17:00');
   const [createdSlots, setCreatedSlots] = useState<ScheduleSlot[]>([]);
+  const [slotDuration, setSlotDuration] = useState<number>(10);
 
   const [createSlots] = useCreateSlotsMutation();
   const [deleteSlots] = useDeleteSlotsMutation();
@@ -53,11 +54,11 @@ export default function ReceptionScheduleCalendar({ manager }: ReceptionSchedule
           date: selectedDate,
           startTime,
           endTime,
-          slotDuration: 10 // 10 минут на прием
+          slotDuration: Math.max(5, Math.min(120, slotDuration)) // настраиваемый шаг
         }
       }).unwrap();
 
-      toast.success(`Создано ${result.slots.count} слотов по 10 минут`);
+      toast.success(`Создано ${result.slots.count} слотов по ${Math.max(5, Math.min(120, slotDuration))} минут`);
       setCreatedSlots([]);
       setIsCreateDialogOpen(false);
       refetch();
@@ -91,7 +92,8 @@ export default function ReceptionScheduleCalendar({ manager }: ReceptionSchedule
     
     const current = new Date(start);
     while (current < end) {
-      const slotEnd = new Date(current.getTime() + 10 * 60000); // +10 минут
+      const stepMs = Math.max(5, Math.min(120, slotDuration)) * 60000;
+      const slotEnd = new Date(current.getTime() + stepMs);
       if (slotEnd <= end) {
         slots.push({
           id: `${current.getTime()}`,
@@ -100,7 +102,7 @@ export default function ReceptionScheduleCalendar({ manager }: ReceptionSchedule
           endTime: slotEnd.toTimeString().slice(0, 5)
         });
       }
-      current.setMinutes(current.getMinutes() + 10);
+      current.setMinutes(current.getMinutes() + Math.max(5, Math.min(120, slotDuration)));
     }
 
     return slots;
@@ -179,8 +181,17 @@ export default function ReceptionScheduleCalendar({ manager }: ReceptionSchedule
                 <Plus className="w-4 h-4 mr-2" />
                 Добавить слоты
               </Button>
-              <div className="text-sm text-gray-500">
-                Каждый слот = 10 минут
+              <div className="text-sm text-gray-500 flex items-center gap-2">
+                <Label htmlFor="slotDuration" className="text-[#213659] font-medium">Длительность слота (мин):</Label>
+                <Input
+                  id="slotDuration"
+                  type="number"
+                  min={5}
+                  max={120}
+                  value={slotDuration}
+                  onChange={(e) => setSlotDuration(parseInt(e.target.value) || 10)}
+                  className="w-24 bg-white border-[#B1D1E0] focus:border-[#213659]"
+                />
               </div>
             </div>
 
@@ -252,7 +263,7 @@ export default function ReceptionScheduleCalendar({ manager }: ReceptionSchedule
             <DialogHeader>
               <DialogTitle>Добавить слоты для записи на прием</DialogTitle>
               <DialogDescription>
-                Укажите дату и временной промежуток для создания слотов по 10 минут
+                Укажите дату, временной промежуток и длительность слота
               </DialogDescription>
             </DialogHeader>
             
@@ -298,7 +309,7 @@ export default function ReceptionScheduleCalendar({ manager }: ReceptionSchedule
                   <Label className="text-[#213659] font-medium">Предварительный просмотр:</Label>
                   <div className="mt-2 p-3 bg-gray-50 rounded-lg">
                     <div className="text-sm text-gray-600 mb-2">
-                      Будет создано {previewSlots.length} слотов по 10 минут:
+                      Будет создано {previewSlots.length} слотов по {Math.max(5, Math.min(120, slotDuration))} минут:
                     </div>
                     <div className="grid grid-cols-6 gap-1 text-xs max-h-32 overflow-y-auto">
                       {previewSlots.map((slot) => (

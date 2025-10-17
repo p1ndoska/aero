@@ -20,40 +20,59 @@ class RecurringSchedule {
     }
 
     /**
-     * Находит все даты, соответствующие шаблону (например, каждый второй понедельник)
+     * Находит все даты, соответствующие шаблону (например, каждый второй понедельник или каждый понедельник)
      * @param {number} weekday - День недели (0 = воскресенье, 1 = понедельник, ...)
-     * @param {number} weekNumber - Номер недели в месяце (1 = первая, 2 = вторая, ...)
+     * @param {number|null} weekNumber - Номер недели в месяце (1 = первая, 2 = вторая, ...) или null для еженедельного повторения
      * @param {number} monthsAhead - На сколько месяцев вперед искать
      * @param {Date} startFrom - Начальная дата для поиска (по умолчанию - текущая дата)
+     * @param {boolean} isWeekly - true = каждую неделю, false = конкретная неделя месяца
      * @returns {Date[]} Массив найденных дат
      */
-    static findRecurringDates(weekday, weekNumber, monthsAhead = 3, startFrom = new Date()) {
+    static findRecurringDates(weekday, weekNumber, monthsAhead = 3, startFrom = new Date(), isWeekly = false) {
         const dates = [];
         const currentDate = new Date(startFrom);
         
-        // Начинаем с первого числа текущего месяца
-        currentDate.setDate(1);
-        
-        for (let month = 0; month < monthsAhead; month++) {
-            const targetMonth = new Date(currentDate);
-            targetMonth.setMonth(currentDate.getMonth() + month);
+        if (isWeekly) {
+            // Еженедельное повторение - каждый указанный день недели
+            const endDate = new Date(currentDate);
+            endDate.setMonth(currentDate.getMonth() + monthsAhead);
             
-            // Находим первое число месяца
-            const firstDay = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 1);
+            // Начинаем с ближайшего указанного дня недели
+            const daysUntilWeekday = (weekday - currentDate.getDay() + 7) % 7;
+            const startDate = new Date(currentDate);
+            startDate.setDate(currentDate.getDate() + daysUntilWeekday);
             
-            // Находим первый день нужного дня недели в месяце
-            const firstWeekday = firstDay.getDay();
-            const daysToFirstWeekday = (weekday - firstWeekday + 7) % 7;
-            const firstTargetWeekday = new Date(firstDay);
-            firstTargetWeekday.setDate(firstDay.getDate() + daysToFirstWeekday);
+            // Добавляем все даты с интервалом в неделю
+            const date = new Date(startDate);
+            while (date <= endDate) {
+                dates.push(new Date(date));
+                date.setDate(date.getDate() + 7);
+            }
+        } else {
+            // Повторение по конкретной неделе месяца
+            currentDate.setDate(1);
             
-            // Находим нужную неделю
-            const targetDate = new Date(firstTargetWeekday);
-            targetDate.setDate(firstTargetWeekday.getDate() + (weekNumber - 1) * 7);
-            
-            // Проверяем, что дата все еще в том же месяце
-            if (targetDate.getMonth() === targetMonth.getMonth()) {
-                dates.push(new Date(targetDate));
+            for (let month = 0; month < monthsAhead; month++) {
+                const targetMonth = new Date(currentDate);
+                targetMonth.setMonth(currentDate.getMonth() + month);
+                
+                // Находим первое число месяца
+                const firstDay = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 1);
+                
+                // Находим первый день нужного дня недели в месяце
+                const firstWeekday = firstDay.getDay();
+                const daysToFirstWeekday = (weekday - firstWeekday + 7) % 7;
+                const firstTargetWeekday = new Date(firstDay);
+                firstTargetWeekday.setDate(firstDay.getDate() + daysToFirstWeekday);
+                
+                // Находим нужную неделю
+                const targetDate = new Date(firstTargetWeekday);
+                targetDate.setDate(firstTargetWeekday.getDate() + (weekNumber - 1) * 7);
+                
+                // Проверяем, что дата все еще в том же месяце
+                if (targetDate.getMonth() === targetMonth.getMonth()) {
+                    dates.push(new Date(targetDate));
+                }
             }
         }
         
@@ -103,17 +122,19 @@ class RecurringSchedule {
      * @param {Date} selectedDate - Выбранная дата
      * @param {Object} scheduleData - Данные расписания
      * @param {number} managementId - ID руководителя
+     * @param {boolean} isWeekly - true = каждую неделю, false = конкретная неделя месяца
      * @returns {Object} Шаблон расписания
      */
-    static createTemplateFromDate(selectedDate, scheduleData, managementId) {
+    static createTemplateFromDate(selectedDate, scheduleData, managementId, isWeekly = false) {
         const weekday = selectedDate.getDay();
-        const weekNumber = this.getWeekNumberInMonth(selectedDate);
+        const weekNumber = isWeekly ? null : this.getWeekNumberInMonth(selectedDate);
         
         return {
-            id: `template_${managementId}_${weekday}_${weekNumber}_${Date.now()}`,
+            id: `template_${managementId}_${weekday}_${isWeekly ? 'weekly' : weekNumber}_${Date.now()}`,
             managementId,
             weekday,
             weekNumber,
+            isWeekly,
             startTime: scheduleData.startTime,
             endTime: scheduleData.endTime,
             slotDuration: scheduleData.slotDuration || 10,
@@ -133,7 +154,8 @@ class RecurringSchedule {
             template.weekday, 
             template.weekNumber, 
             template.monthsAhead, 
-            startFrom
+            startFrom,
+            template.isWeekly
         );
         
         const newSlots = this.createSlotsFromTemplate(template, dates);
@@ -159,9 +181,13 @@ class RecurringSchedule {
         const weekNames = ['первую', 'вторую', 'третью', 'четвертую', 'пятую'];
         
         const weekday = weekdays[template.weekday];
-        const weekName = weekNames[template.weekNumber - 1] || `${template.weekNumber}-ю`;
         
-        return `Каждый ${weekName} ${weekday} месяца с ${template.startTime} до ${template.endTime}`;
+        if (template.isWeekly) {
+            return `Каждый ${weekday} с ${template.startTime} до ${template.endTime}`;
+        } else {
+            const weekName = weekNames[template.weekNumber - 1] || `${template.weekNumber}-ю`;
+            return `Каждый ${weekName} ${weekday} месяца с ${template.startTime} до ${template.endTime}`;
+        }
     }
 
     /**
@@ -171,8 +197,12 @@ class RecurringSchedule {
      * @returns {boolean} Соответствует ли дата шаблону
      */
     static isDateMatchingTemplate(date, template) {
-        return date.getDay() === template.weekday && 
-               this.getWeekNumberInMonth(date) === template.weekNumber;
+        if (template.isWeekly) {
+            return date.getDay() === template.weekday;
+        } else {
+            return date.getDay() === template.weekday && 
+                   this.getWeekNumberInMonth(date) === template.weekNumber;
+        }
     }
 }
 

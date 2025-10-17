@@ -161,7 +161,8 @@ model RecurringScheduleTemplate {
   managementId Int      // ID руководителя
   management  Management @relation(fields: [managementId], references: [id], onDelete: Cascade)
   weekday     Int       // День недели (0 = воскресенье, 1 = понедельник, ...)
-  weekNumber  Int       // Номер недели в месяце (1 = первая, 2 = вторая, ...)
+  weekNumber  Int?      // Номер недели в месяце (1 = первая, 2 = вторая, ...) - null для еженедельного повторения
+  isWeekly    Boolean   @default(false) // true = каждую неделю, false = конкретная неделя месяца
   startTime   String    // Время начала (HH:MM)
   endTime     String    // Время окончания (HH:MM)
   slotDuration Int      @default(10) // Длительность слота в минутах
@@ -172,6 +173,7 @@ model RecurringScheduleTemplate {
   
   @@index([managementId])
   @@index([weekday, weekNumber])
+  @@index([isWeekly])
 }
 
 model Vacancy {

@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 async function seedSocialWorkCategories() {
   try {
-    console.log('🌱 Seeding social work categories...');
+    console.log('Seeding social work categories...');
 
     const socialWorkCategories = [
       {
@@ -93,12 +93,12 @@ async function seedSocialWorkCategories() {
         update: categoryData,
         create: categoryData,
       });
-      console.log(`✅ Created/Updated social work category: ${categoryData.name}`);
+      console.log(`Created/Updated social work category: ${categoryData.name}`);
     }
 
-    console.log('🎉 Social work categories seeding completed!');
+    console.log('Social work categories seeding completed!');
   } catch (error) {
-    console.error('❌ Error seeding social work categories:', error);
+    console.error('Error seeding social work categories:', error);
     throw error;
   } finally {
     await prisma.$disconnect();

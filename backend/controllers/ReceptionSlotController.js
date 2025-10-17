@@ -1,5 +1,6 @@
 const prisma = require('../prisma/prisma-client');
 const RecurringSchedule = require('../utils/recurringSchedule');
+const emailService = require('../utils/emailService');
 
 const ReceptionSlotController = {
     // Получить все слоты для руководителя
@@ -94,15 +95,18 @@ const ReceptionSlotController = {
     // Забронировать слот
     bookSlot: async (req, res) => {
         const { slotId } = req.params;
-        const { email, notes } = req.body;
+        const { email, notes, fullName } = req.body;
 
-        if (!email) {
-            return res.status(400).json({ error: 'Email обязателен для записи' });
+        if (!email || !fullName) {
+            return res.status(400).json({ error: 'Email и ФИО обязательны для записи' });
         }
 
         try {
             const slot = await prisma.receptionSlot.findUnique({
-                where: { id: parseInt(slotId) }
+                where: { id: parseInt(slotId) },
+                include: {
+                    management: true
+                }
             });
 
             if (!slot) {
@@ -119,11 +123,55 @@ const ReceptionSlotController = {
                     isBooked: true,
                     bookedBy: email,
                     notes: notes || null
+                },
+                include: {
+                    management: true
                 }
             });
 
+            // Отправка email уведомлений
+            try {
+                const bookingData = {
+                    fullName,
+                    email,
+                    notes
+                };
+
+                const slotData = {
+                    date: slot.date,
+                    startTime: slot.startTime,
+                    endTime: slot.endTime
+                };
+
+                const managerData = {
+                    name: slot.management.name,
+                    position: slot.management.position,
+                    phone: slot.management.phone,
+                    offices: slot.management.offices
+                };
+
+                // Отправка подтверждения пользователю
+                const emailResult = await emailService.sendBookingConfirmation(
+                    bookingData, 
+                    slotData, 
+                    managerData
+                );
+
+                // Отправка уведомления администратору
+                await emailService.sendAdminNotification(
+                    bookingData, 
+                    slotData, 
+                    managerData
+                );
+
+                console.log('Email notifications sent:', emailResult);
+            } catch (emailError) {
+                console.error('Email sending failed:', emailError);
+                // Не прерываем процесс бронирования, если email не отправился
+            }
+
             res.json({
-                message: 'Слот успешно забронирован',
+                message: 'Слот успешно забронирован. Подтверждение отправлено на email.',
                 slot: updatedSlot
             });
         } catch (error) {
@@ -235,7 +283,7 @@ const ReceptionSlotController = {
     // Создать повторяющееся расписание на основе выбранной даты
     createRecurringSchedule: async (req, res) => {
         const { managementId } = req.params;
-        const { selectedDate, startTime, endTime, slotDuration = 10, monthsAhead = 3 } = req.body;
+        const { selectedDate, startTime, endTime, slotDuration = 10, monthsAhead = 3, isWeekly = false } = req.body;
 
         if (!selectedDate || !startTime || !endTime) {
             return res.status(400).json({ error: 'Выбранная дата, время начала и окончания обязательны' });
@@ -250,7 +298,7 @@ const ReceptionSlotController = {
                 endTime,
                 slotDuration,
                 monthsAhead
-            }, parseInt(managementId));
+            }, parseInt(managementId), isWeekly);
 
             // Сохраняем шаблон в базу данных
             const savedTemplate = await prisma.recurringScheduleTemplate.create({
@@ -262,7 +310,8 @@ const ReceptionSlotController = {
                 template.weekday,
                 template.weekNumber,
                 template.monthsAhead,
-                date
+                date,
+                template.isWeekly
             );
 
             // Создаем слоты для всех найденных дат

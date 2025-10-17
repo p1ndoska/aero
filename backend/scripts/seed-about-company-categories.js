@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 async function seedAboutCompanyCategories() {
   try {
-    console.log('🌱 Seeding about company categories...');
+    console.log('Seeding about company categories...');
 
     const aboutCompanyCategories = [
       {
@@ -93,12 +93,12 @@ async function seedAboutCompanyCategories() {
         update: categoryData,
         create: categoryData,
       });
-      console.log(`✅ Created/Updated about company category: ${categoryData.name}`);
+      console.log(`Created/Updated about company category: ${categoryData.name}`);
     }
 
-    console.log('🎉 About company categories seeding completed!');
+    console.log('About company categories seeding completed!');
   } catch (error) {
-    console.error('❌ Error seeding about company categories:', error);
+    console.error('Error seeding about company categories:', error);
     throw error;
   } finally {
     await prisma.$disconnect();

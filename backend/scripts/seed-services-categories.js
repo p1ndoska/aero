@@ -4,13 +4,13 @@ const prisma = new PrismaClient();
 
 async function seedServicesCategories() {
   try {
-    console.log('🌱 Seeding services categories...');
+    console.log('Seeding services categories...');
 
     const services = [
       {
-        name: 'УПРАВЛЕНИЕ ВОЗДУШНЫМ ДВИЖЕНИЕМ',
-        nameEn: 'AIR TRAFFIC CONTROL',
-        nameBe: 'КІРАВАННЕ ПАВЕТРАНЫМ РУХАМ',
+        name: 'Управление воздушным движением',
+        nameEn: 'Air traffic control',
+        nameBe: 'Кіраванне паветраным рухам',
         description: 'Обеспечение безопасного, упорядоченного и быстрого движения воздушных судов',
         descriptionEn: 'Ensuring safe, orderly and expeditious flow of aircraft',
         descriptionBe: 'Забеспячэнне бяспечнага, упарадкаванага і хуткага руху паветраных суднаў',
@@ -19,9 +19,9 @@ async function seedServicesCategories() {
         isActive: true,
       },
       {
-        name: 'МЕТЕОРОЛОГИЧЕСКОЕ ОБЕСПЕЧЕНИЕ',
-        nameEn: 'METEOROLOGICAL SERVICES',
-        nameBe: 'МЕТЭАРАЛАГІЧНАЕ ЗАБЯСПЯЧЭННЕ',
+        name: 'Метеорологическое обеспечение',
+        nameEn: 'Meteorological services',
+        nameBe: 'Метэаралагічнае забеспячэнне',
         description: 'Предоставление метеорологической информации для авиации',
         descriptionEn: 'Providing meteorological information for aviation',
         descriptionBe: 'Прадастаўленне метэаралагічнай інфармацыі для авіяцыі',
@@ -30,9 +30,9 @@ async function seedServicesCategories() {
         isActive: true,
       },
       {
-        name: 'НАВИГАЦИОННОЕ ОБЕСПЕЧЕНИЕ',
-        nameEn: 'NAVIGATION SERVICES',
-        nameBe: 'НАВІГАЦЫЙНАЕ ЗАБЯСПЯЧЭННЕ',
+        name: 'Навигационное обеспечение',
+        nameEn: 'Navigation services',
+        nameBe: 'Навігацыйнае забеспячэнне',
         description: 'Обеспечение навигационными средствами и системами',
         descriptionEn: 'Providing navigation aids and systems',
         descriptionBe: 'Забеспячэнне навігацыйнымі сродкамі і сістэмамі',
@@ -41,9 +41,9 @@ async function seedServicesCategories() {
         isActive: true,
       },
       {
-        name: 'ПОИСКОВО-СПАСАТЕЛЬНОЕ ОБЕСПЕЧЕНИЕ',
-        nameEn: 'SEARCH AND RESCUE SERVICES',
-        nameBe: 'ПОШУКОВА-РАТУННАЕ ЗАБЯСПЯЧЭННЕ',
+        name: 'Поисково-спасательное обеспечение',
+        nameEn: 'Search and rescue services',
+        nameBe: 'Пошукова-ратуннае забеспячэнне',
         description: 'Организация поисковых и спасательных операций',
         descriptionEn: 'Organizing search and rescue operations',
         descriptionBe: 'Арганізацыя пошукавых і ратунковых аперацый',
@@ -52,9 +52,9 @@ async function seedServicesCategories() {
         isActive: true,
       },
       {
-        name: 'АЭРОНАВИГАЦИОННОЕ ПЛАНИРОВАНИЕ',
-        nameEn: 'AIR NAVIGATION PLANNING',
-        nameBe: 'АЭРАНАВІГАЦЫЙНАЕ ПЛАНІРАВАННЕ',
+        name: 'Аэронавигационное планирование',
+        nameEn: 'Air navigation planning',
+        nameBe: 'Аэранавігацыйнае планіраванне',
         description: 'Планирование использования воздушного пространства',
         descriptionEn: 'Planning airspace utilization',
         descriptionBe: 'Планіраванне выкарыстання паветранай прасторы',
@@ -63,9 +63,9 @@ async function seedServicesCategories() {
         isActive: true,
       },
       {
-        name: 'ИНФОРМАЦИОННОЕ ОБЕСПЕЧЕНИЕ',
-        nameEn: 'INFORMATION SERVICES',
-        nameBe: 'ІНФАРМАЦЫЙНАЕ ЗАБЯСПЯЧЭННЕ',
+        name: 'Информационное обеспечение',
+        nameEn: 'Information services',
+        nameBe: 'Інфармацыйнае забеспячэнне',
         description: 'Предоставление аэронавигационной информации',
         descriptionEn: 'Providing aeronautical information',
         descriptionBe: 'Прадастаўленне аэранавігацыйнай інфармацыі',
@@ -74,9 +74,9 @@ async function seedServicesCategories() {
         isActive: true,
       },
       {
-        name: 'ОБУЧЕНИЕ И ПОДГОТОВКА ПЕРСОНАЛА',
-        nameEn: 'TRAINING AND PERSONNEL DEVELOPMENT',
-        nameBe: 'НАВУЧАННЕ І ПАДРЫХТОЎКА ПЕРСАНАЛУ',
+        name: 'Обучение и подготовка персонала',
+        nameEn: 'Training and personnel development',
+        nameBe: 'Навучанне і падрыхтоўка персаналу',
         description: 'Профессиональная подготовка авиационного персонала',
         descriptionEn: 'Professional training of aviation personnel',
         descriptionBe: 'Прафесійная падрыхтоўка авіяцыйнага персаналу',
@@ -85,9 +85,9 @@ async function seedServicesCategories() {
         isActive: true,
       },
       {
-        name: 'ТЕХНИЧЕСКОЕ ОБСЛУЖИВАНИЕ',
-        nameEn: 'TECHNICAL MAINTENANCE',
-        nameBe: 'ТЭХНІЧНАЕ АБСЛУГОЎВАННЕ',
+        name: 'Техническое обслуживание',
+        nameEn: 'Technical maintenance',
+        nameBe: 'Тэхнічнае абслугоўванне',
         description: 'Техническое обслуживание аэронавигационного оборудования',
         descriptionEn: 'Technical maintenance of air navigation equipment',
         descriptionBe: 'Тэхнічнае абслугоўванне аэранавігацыйнага абсталявання',
@@ -103,12 +103,12 @@ async function seedServicesCategories() {
         update: cat,
         create: cat,
       });
-      console.log(`✅ Created/Updated services category: ${cat.name}`);
+      console.log(`Created/Updated services category: ${cat.name}`);
     }
 
-    console.log('🎉 Services categories seeding completed!');
+    console.log('Services categories seeding completed!');
   } catch (e) {
-    console.error('❌ Error seeding services categories:', e);
+    console.error('Error seeding services categories:', e);
     throw e;
   } finally {
     await prisma.$disconnect();

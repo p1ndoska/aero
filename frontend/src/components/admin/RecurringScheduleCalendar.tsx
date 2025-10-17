@@ -28,7 +28,9 @@ export default function RecurringScheduleCalendar({ manager }: RecurringSchedule
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('17:00');
-  const [monthsAhead, setMonthsAhead] = useState(3);
+  const [monthsAhead, setMonthsAhead] = useState(6);
+  const [slotDuration, setSlotDuration] = useState<number>(10);
+  const [isWeekly, setIsWeekly] = useState(false);
 
   const [createRecurringSchedule] = useCreateRecurringScheduleMutation();
   const [deleteTemplate] = useDeleteRecurringTemplateMutation();
@@ -50,8 +52,9 @@ export default function RecurringScheduleCalendar({ manager }: RecurringSchedule
           selectedDate: format(selectedDate, 'yyyy-MM-dd'),
           startTime,
           endTime,
-          slotDuration: 10, // 10 минут на прием
-          monthsAhead
+          slotDuration: Math.max(5, Math.min(120, slotDuration)),
+          monthsAhead,
+          isWeekly
         }
       }).unwrap();
 
@@ -147,7 +150,10 @@ export default function RecurringScheduleCalendar({ manager }: RecurringSchedule
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <div className="font-medium text-gray-900 mb-1">
-                      {getWeekdayName(template.weekday)} ({getWeekNumberName(template.weekNumber)} неделя)
+                      {template.isWeekly 
+                        ? `${getWeekdayName(template.weekday)} (каждую неделю)`
+                        : `${getWeekdayName(template.weekday)} (${getWeekNumberName(template.weekNumber)} неделя)`
+                      }
                     </div>
                     <div className="text-sm text-gray-600">
                       {template.startTime} - {template.endTime} (слоты по {template.slotDuration} мин)
@@ -265,19 +271,65 @@ export default function RecurringScheduleCalendar({ manager }: RecurringSchedule
               </div>
 
               <div>
-                <Label htmlFor="monthsAhead" className="text-[#213659] font-medium">Создать слоты на (месяцев вперед)</Label>
-                <Input
-                  id="monthsAhead"
-                  type="number"
-                  min="1"
-                  max="12"
-                  value={monthsAhead}
-                  onChange={(e) => setMonthsAhead(parseInt(e.target.value) || 3)}
-                  className="bg-white border-[#B1D1E0] focus:border-[#213659]"
-                />
+                <Label className="text-[#213659] font-medium mb-3 block">Тип повторения</Label>
+                <div className="flex gap-4">
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      name="repeatType"
+                      checked={!isWeekly}
+                      onChange={() => setIsWeekly(false)}
+                      className="text-[#213659] focus:ring-[#213659]"
+                    />
+                    <span className="text-sm">Конкретная неделя месяца</span>
+                  </label>
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      name="repeatType"
+                      checked={isWeekly}
+                      onChange={() => setIsWeekly(true)}
+                      className="text-[#213659] focus:ring-[#213659]"
+                    />
+                    <span className="text-sm">Каждую неделю</span>
+                  </label>
+                </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Количество месяцев вперед, для которых создавать слоты
+                  {isWeekly 
+                    ? 'Слоты будут создаваться каждый выбранный день недели' 
+                    : 'Слоты будут создаваться только в конкретную неделю месяца (например, каждый второй понедельник)'
+                  }
                 </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="slotDuration" className="text-[#213659] font-medium">Длительность слота (мин)</Label>
+                  <Input
+                    id="slotDuration"
+                    type="number"
+                    min={5}
+                    max={120}
+                    value={slotDuration}
+                    onChange={(e) => setSlotDuration(parseInt(e.target.value) || 10)}
+                    className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="monthsAhead" className="text-[#213659] font-medium">Создать слоты на (месяцев вперед)</Label>
+                  <Input
+                    id="monthsAhead"
+                    type="number"
+                    min="1"
+                    max="12"
+                    value={monthsAhead}
+                    onChange={(e) => setMonthsAhead(parseInt(e.target.value) || 6)}
+                    className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    По умолчанию генерируется на полгода
+                  </p>
+                </div>
               </div>
 
               {/* Предварительный просмотр */}
@@ -293,12 +345,16 @@ export default function RecurringScheduleCalendar({ manager }: RecurringSchedule
                     </div>
                   )}
                   <div className={`text-sm ${isDateUsedInTemplates(selectedDate) ? 'text-yellow-700' : 'text-green-700'}`}>
-                    <p>Будет создано расписание для каждого <strong>
-                      {getWeekdayName(selectedDate.getDay())} 
-                      ({getWeekNumberName(Math.ceil((selectedDate.getDate() + selectedDate.getDay()) / 7))} неделя)
-                    </strong> месяца</p>
+                    {isWeekly ? (
+                      <p>Будет создано расписание для каждого <strong>{getWeekdayName(selectedDate.getDay())}</strong> недели</p>
+                    ) : (
+                      <p>Будет создано расписание для каждого <strong>
+                        {getWeekdayName(selectedDate.getDay())} 
+                        ({getWeekNumberName(Math.ceil((selectedDate.getDate() + selectedDate.getDay()) / 7))} неделя)
+                      </strong> месяца</p>
+                    )}
                     <p>Время: <strong>{startTime} - {endTime}</strong></p>
-                    <p>Слоты по 10 минут на период: <strong>{monthsAhead} месяцев</strong></p>
+                    <p>Слоты по {Math.max(5, Math.min(120, slotDuration))} минут на период: <strong>{monthsAhead} месяцев</strong></p>
                     {isDateUsedInTemplates(selectedDate) && (
                       <p className="mt-2 text-yellow-800 font-medium">
                         Существующий шаблон для этого дня будет заменен новым

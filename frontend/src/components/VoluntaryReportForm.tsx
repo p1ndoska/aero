@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,6 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Download, Mail, Phone, MapPin } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import ContentConstructor from './admin/ContentConstructor';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { getTranslatedField } from '@/utils/translationHelpers';
+import { getRolePermissions } from '@/utils/roleUtils';
+import { useGetAppealsPageContentByPageTypeQuery, useUpdateAppealsPageContentByPageTypeMutation } from '@/app/services/appealsPageContentApi';
 
 interface FormData {
   fullName: string;
@@ -23,6 +30,29 @@ interface FormData {
 }
 
 const VoluntaryReportForm: React.FC = () => {
+  const { language } = useLanguage();
+  const { isAuthenticated, user } = useSelector((s: any) => s.auth);
+  const roleValue = user?.role;
+  const roleName = (typeof roleValue === 'string' ? roleValue : roleValue?.name) ?? '';
+  const permissions = getRolePermissions(roleName);
+  const canManage = permissions.canManageAirNav || permissions.canManageRoles; // SUPER_ADMIN имеет все права via canManageRoles
+
+  // Контент страницы (заголовок, подзаголовок, конструктор контента)
+  const { data: pageContent, refetch } = useGetAppealsPageContentByPageTypeQuery('voluntary-report');
+  const [updatePageContent, { isLoading: isSaving }] = useUpdateAppealsPageContentByPageTypeMutation();
+
+  const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
+  const [editableTitle, setEditableTitle] = useState('');
+  const [editableSubtitle, setEditableSubtitle] = useState('');
+  const [editableContent, setEditableContent] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (pageContent) {
+      setEditableTitle(getTranslatedField(pageContent, 'title', language) || 'Добровольное сообщение о небезопасном событии');
+      setEditableSubtitle(getTranslatedField(pageContent, 'subtitle', language) || '');
+      setEditableContent(Array.isArray((pageContent as any).content) ? (pageContent as any).content : []);
+    }
+  }, [pageContent, language]);
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
     organization: '',
@@ -94,7 +124,7 @@ const VoluntaryReportForm: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-gray-50 min-h-screen">
+    <div className="max-w-6xl mx-auto p-6 bg-gray-50 min-h-screen">
       <Card className="mb-8">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-[#213659] text-center">
@@ -102,6 +132,18 @@ const VoluntaryReportForm: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {isAuthenticated && canManage && (
+            <div className="flex justify-end mb-4">
+              <Button
+                onClick={() => setIsContentEditorOpen(true)}
+                variant="outline"
+                size="sm"
+                className="ml-4"
+              >
+                Управление контентом
+              </Button>
+            </div>
+          )}
           <div className="text-sm text-gray-700 mb-6 leading-relaxed">
             <p className="mb-4">
               Информация, включаемая в данное сообщение, служит исключительно целям повышения безопасности полетов. 
@@ -117,7 +159,7 @@ const VoluntaryReportForm: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Первая часть формы */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="fullName">Ф.И.О.</Label>
                 <Input
@@ -179,7 +221,7 @@ const VoluntaryReportForm: React.FC = () => {
                   id="eventDescription"
                   value={formData.eventDescription}
                   onChange={(e) => handleInputChange('eventDescription', e.target.value)}
-                  className="mt-1 min-h-[120px]"
+                  className="mt-1 min-h-[150px]"
                   required
                 />
               </div>
@@ -189,7 +231,7 @@ const VoluntaryReportForm: React.FC = () => {
             <div className="border-t pt-6">
               <h3 className="text-lg font-semibold mb-4 text-[#213659]">Дополнительная информация</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
                   <Label htmlFor="compilationDate">Дата составления информации о событии *</Label>
                   <Input
@@ -285,6 +327,63 @@ const VoluntaryReportForm: React.FC = () => {
           </form>
         </CardContent>
       </Card>
+
+      {/* Модалка управления контентом */}
+      <Dialog open={isContentEditorOpen} onOpenChange={setIsContentEditorOpen}>
+        <DialogContent className="sm:max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Управление контентом страницы</DialogTitle>
+            <DialogDescription>
+              Здесь вы можете изменить заголовок, подзаголовок и содержимое страницы.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="title">Заголовок</Label>
+              <Input id="title" value={editableTitle} onChange={(e) => setEditableTitle(e.target.value)} required />
+            </div>
+            <div>
+              <Label htmlFor="subtitle">Подзаголовок</Label>
+              <Input id="subtitle" value={editableSubtitle} onChange={(e) => setEditableSubtitle(e.target.value)} />
+            </div>
+            <div>
+              <Label className="mb-2 inline-block">Содержимое</Label>
+              <ContentConstructor
+                content={editableContent || []}
+                onChange={(updated) => setEditableContent(updated)}
+              />
+            </div>
+
+            <div className="flex justify-end">
+              <Button
+                onClick={async () => {
+                  try {
+                    const body: any = {
+                      pageType: 'voluntary-report',
+                      title: editableTitle,
+                      subtitle: editableSubtitle,
+                      content: editableContent,
+                    };
+                    // @ts-ignore strict unions across apis
+                    const result = await updatePageContent({ pageType: 'voluntary-report', body });
+                    if ('unwrap' in (result as any)) await (result as any).unwrap();
+                    toast.success('Контент успешно обновлен');
+                    setIsContentEditorOpen(false);
+                    refetch();
+                  } catch (e) {
+                    toast.error('Ошибка при сохранении контента');
+                  }
+                }}
+                className="bg-[#213659] hover:bg-[#1a2d4a] text-white"
+                disabled={isSaving}
+              >
+                Сохранить изменения
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Альтернативные способы отправки */}
       <Card className="mt-8">
