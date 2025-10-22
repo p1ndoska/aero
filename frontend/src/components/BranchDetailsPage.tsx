@@ -3,14 +3,73 @@ import { useParams, Link } from 'react-router-dom';
 import { useGetBranchByIdQuery } from '@/app/services/branchApi';
 import { Building2, ArrowLeft, MapPin, Phone, Mail, Image as ImageIcon, X, ChevronLeft, ChevronRight, Navigation } from 'lucide-react';
 import YandexMap from './YandexMap';
+import { BASE_URL } from '@/constants';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getTranslatedField } from '../utils/translationHelpers';
 
 export default function BranchDetailsPage() {
+  const { language } = useLanguage();
   const { id } = useParams();
   const numericId = Number(id);
   const { data, isLoading, error } = useGetBranchByIdQuery(numericId, { skip: isNaN(numericId) });
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Принудительное применение стилей выравнивания и цветов после рендеринга
+  useEffect(() => {
+    const applyStyles = () => {
+      // Применяем стили ко всем элементам с data-align
+      const elements = document.querySelectorAll('[data-align]');
+      elements.forEach((element) => {
+        const align = element.getAttribute('data-align');
+        if (align) {
+          (element as HTMLElement).style.setProperty('text-align', align, 'important');
+        }
+      });
+
+      // Применяем стили ко всем заголовкам и абзацам
+      const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
+      headings.forEach((element) => {
+        const htmlElement = element as HTMLElement;
+        
+        // Принудительно применяем выравнивание
+        if (htmlElement.getAttribute('data-align')) {
+          const align = htmlElement.getAttribute('data-align');
+          htmlElement.style.setProperty('text-align', align!, 'important');
+        }
+        
+        // Принудительно применяем цвет из data-атрибута или inline стиля
+        const colorAttr = htmlElement.getAttribute('data-color');
+        if (colorAttr) {
+          htmlElement.style.setProperty('color', colorAttr, 'important');
+        } else if (htmlElement.style.color && htmlElement.style.color !== 'rgb(0, 0, 0)') {
+          htmlElement.style.setProperty('color', htmlElement.style.color, 'important');
+        }
+      });
+
+      // Дополнительно применяем стили ко всем элементам с force-классами
+      const forceElements = document.querySelectorAll('[class*="force-text-"]');
+      forceElements.forEach((element) => {
+        const htmlElement = element as HTMLElement;
+        const className = htmlElement.className;
+        
+        // Извлекаем выравнивание из класса
+        const alignMatch = className.match(/force-text-(center|left|right|justify)/);
+        if (alignMatch) {
+          htmlElement.style.setProperty('text-align', alignMatch[1], 'important');
+        }
+      });
+    };
+
+    // Применяем стили сразу
+    applyStyles();
+
+    // Применяем стили после каждого обновления
+    const timeoutId = setTimeout(applyStyles, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [data]);
 
   // Функции для прокрутки стрелками в галерее
   const scrollLeft = () => {
@@ -44,9 +103,9 @@ export default function BranchDetailsPage() {
       if (e.key === 'Escape') {
         setSelectedImage(null);
       } else if (e.key === 'ArrowLeft') {
-        navigateImage(-1, (data?.branch?.images || []));
+        navigateImage(-1, (data?.branch?.images || []).map(img => `${BASE_URL}${img.startsWith('/') ? '' : '/'}${img}`));
       } else if (e.key === 'ArrowRight') {
-        navigateImage(1, (data?.branch?.images || []));
+        navigateImage(1, (data?.branch?.images || []).map(img => `${BASE_URL}${img.startsWith('/') ? '' : '/'}${img}`));
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -101,7 +160,7 @@ export default function BranchDetailsPage() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[#213659] mb-2 flex items-center justify-center gap-3">
             <Building2 className="w-8 h-8" />
-            {branch.name}
+            {getTranslatedField(branch, 'name', language)}
           </h1>
         </div>
 
@@ -109,14 +168,20 @@ export default function BranchDetailsPage() {
         {mainImage ? (
           <div className="flex justify-center mb-6">
             <img
-              src={mainImage}
-              alt={branch.name}
+              src={`${BASE_URL}${mainImage.startsWith('/') ? '' : '/'}${mainImage}`}
+              alt={getTranslatedField(branch, 'name', language)}
               className="w-full max-w-2xl h-80 md:h-96 lg:h-[28rem] rounded-xl object-cover object-center border-2 border-[#213659] cursor-pointer hover:opacity-90 transition-opacity"
               onClick={() => {
-                setSelectedImage(mainImage);
+                setSelectedImage(`${BASE_URL}${mainImage.startsWith('/') ? '' : '/'}${mainImage}`);
                 setSelectedImageIndex(0);
               }}
-              onError={(e) => (e.currentTarget.style.display = 'none')}
+              onError={(e) => {
+                console.error('❌ Ошибка загрузки основного изображения филиала:', mainImage);
+                e.currentTarget.style.display = 'none';
+              }}
+              onLoad={() => {
+                console.log('✅ Основное изображение филиала загружено:', mainImage);
+              }}
             />
           </div>
         ) : (
@@ -129,10 +194,10 @@ export default function BranchDetailsPage() {
 
         {/* Контакты */}
         <div className="grid gap-6 md:grid-cols-3 mb-8">
-          {branch.address && (
+          {getTranslatedField(branch, 'address', language) && (
             <div className="flex items-start gap-3">
               <MapPin className="w-5 h-5 text-[#213659] flex-shrink-0 mt-0.5" />
-              <span className="text-gray-700">{branch.address}</span>
+              <span className="text-gray-700">{getTranslatedField(branch, 'address', language)}</span>
             </div>
           )}
           {/* Динамические телефоны */}
@@ -171,26 +236,56 @@ export default function BranchDetailsPage() {
 
         {/* Контент из конструктора */}
         {branch.content && (
-          <div className="mb-8">
+          <div className="mb-8 branch-content-container">
             <h3 className="text-xl font-bold text-[#213659] mb-4">Дополнительная информация</h3>
             <div className="space-y-4">
               {(() => {
                 try {
                   const content = typeof branch.content === 'string' ? JSON.parse(branch.content) : branch.content;
+                  console.log('Branch content:', content);
                   if (Array.isArray(content)) {
                     return content.map((element: any, index: number) => {
                       switch (element.type) {
-                        case 'heading':
-                          const headingLevel = element.props?.level || 2;
-                          const HeadingTag = `h${headingLevel}`;
-                          return createElement(
-                            HeadingTag,
-                            { key: index, className: "text-lg font-bold text-[#213659] mt-6 mb-2" },
-                            element.content
-                          );
+      case 'heading':
+        const headingLevel = element.props?.level || 2;
+        const HeadingTag = `h${headingLevel}`;
+        return createElement(
+          HeadingTag,
+          { 
+            key: index, 
+            className: `text-lg font-bold mt-6 mb-2 force-text-${element.props?.textAlign || 'left'}`,
+            style: { 
+              color: element.props?.color || '#213659',
+              textAlign: element.props?.textAlign || 'left'
+            },
+            'data-align': element.props?.textAlign || 'left',
+            'data-color': element.props?.color || '#213659'
+          },
+          element.content
+        );
                         case 'paragraph':
+                          // Проверяем, не содержит ли параграф HTML с картой
+                          const content = element.content;
+                          if (typeof content === 'string' && (content.includes('<iframe') || content.includes('yandex') || content.includes('map'))) {
+                            console.log('Found HTML content with map:', content);
+                            return (
+                              <div 
+                                key={index} 
+                                className="mb-4"
+                                dangerouslySetInnerHTML={{ __html: content }}
+                              />
+                            );
+                          }
                           return (
-                            <p key={index} className="text-gray-700 leading-relaxed mb-4">
+                            <p 
+                              key={index} 
+                              className={`text-gray-700 leading-relaxed mb-4 force-text-${element.props?.textAlign || 'left'}`}
+                              style={{ 
+                                textIndent: element.props?.textIndent ? '1.5em' : '0',
+                                textAlign: element.props?.textAlign || 'left'
+                              }}
+                              data-align={element.props?.textAlign || 'left'}
+                            >
                               {element.content}
                             </p>
                           );
@@ -210,10 +305,16 @@ export default function BranchDetailsPage() {
                           return (
                             <div key={index} className="flex justify-center mb-4">
                               <img
-                                src={element.props?.src}
+                                src={`${BASE_URL}${element.props?.src?.startsWith('/') ? '' : '/'}${element.props?.src}`}
                                 alt={element.props?.alt || 'Изображение'}
-                                className="max-w-full h-auto rounded-lg border"
-                                onError={(e) => (e.currentTarget.style.display = 'none')}
+                                className="max-w-full h-auto rounded-lg border branch-content-image"
+                                onError={(e) => {
+                                  console.error('❌ Ошибка загрузки изображения в контенте:', element.props?.src);
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                                onLoad={() => {
+                                  console.log('✅ Изображение в контенте загружено:', element.props?.src);
+                                }}
                               />
                             </div>
                           );
@@ -233,17 +334,21 @@ export default function BranchDetailsPage() {
         )}
 
         {/* Карта расположения */}
-        <div className="mt-8 pt-8 border-t border-gray-200">
+        <div className="mt-8 pt-8 border-t border-gray-200 branch-map-container">
           <h3 className="text-xl font-bold text-[#213659] mb-4 flex items-center gap-2">
             <Navigation className="w-5 h-5" />
             Расположение на карте
           </h3>
-          {branch.address ? (
-            <YandexMap 
-              address={branch.address}
-              branchName={branch.name}
-              height="h-96"
-            />
+          {getTranslatedField(branch, 'address', language) ? (
+            <div className="branch-map-container">
+              <YandexMap 
+                key={`map-${branch.id}`}
+                address={getTranslatedField(branch, 'address', language)}
+                branchName={getTranslatedField(branch, 'name', language)}
+                height="h-96"
+                coordinates={branch.coordinates}
+              />
+            </div>
           ) : (
             <div className="bg-gray-100 rounded-lg p-4 h-96 flex items-center justify-center border-2 border-dashed border-gray-300">
               <div className="text-center">
@@ -286,14 +391,20 @@ export default function BranchDetailsPage() {
                   {additionalImages.map((image, index) => (
                     <img
                       key={index}
-                      src={image}
-                      alt={`${branch.name} - фото ${index + 2}`}
+                      src={`${BASE_URL}${image.startsWith('/') ? '' : '/'}${image}`}
+                      alt={`${getTranslatedField(branch, 'name', language)} - фото ${index + 2}`}
                       className="w-64 h-48 object-cover rounded-lg border hover:shadow-md transition-shadow cursor-pointer hover:opacity-90 flex-shrink-0"
                       onClick={() => {
-                        setSelectedImage(image);
+                        setSelectedImage(`${BASE_URL}${image.startsWith('/') ? '' : '/'}${image}`);
                         setSelectedImageIndex(index + 1); // +1 because main image is at index 0
                       }}
-                      onError={(e) => (e.currentTarget.style.display = 'none')}
+                      onError={(e) => {
+                        console.error('❌ Ошибка загрузки дополнительного изображения филиала:', image);
+                        e.currentTarget.style.display = 'none';
+                      }}
+                      onLoad={() => {
+                        console.log('✅ Дополнительное изображение филиала загружено:', image);
+                      }}
                     />
                   ))}
                 </div>
@@ -323,7 +434,7 @@ export default function BranchDetailsPage() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigateImage(-1, allImages);
+                  navigateImage(-1, allImages.map(img => `${BASE_URL}${img.startsWith('/') ? '' : '/'}${img}`));
                 }}
                 className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:bg-gray-100 transition-colors"
               >
@@ -336,7 +447,7 @@ export default function BranchDetailsPage() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigateImage(1, allImages);
+                  navigateImage(1, allImages.map(img => `${BASE_URL}${img.startsWith('/') ? '' : '/'}${img}`));
                 }}
                 className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:bg-gray-100 transition-colors"
               >

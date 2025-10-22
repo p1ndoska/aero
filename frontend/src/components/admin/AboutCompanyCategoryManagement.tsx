@@ -227,7 +227,7 @@ export default function AboutCompanyCategoryManagement() {
       </div>
 
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
           <DialogHeader>
             <DialogTitle>
               {editingCategory ? 'Редактировать подкатегорию' : 'Создать новую подкатегорию'}

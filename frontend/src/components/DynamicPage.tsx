@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import { useGetAppealsPageContentByPageTypeQuery, useUpdateAppealsPageContentByP
 import { useGetServicesPageContentQuery, useUpdateServicesPageContentMutation, useCreateServicesPageContentMutation } from '@/app/services/servicesPageContentApi';
 import SocialWorkPage from './SocialWorkPage';
 import VoluntaryReportForm from './VoluntaryReportForm';
+import ConsumerQuestionnaireForm from './ConsumerQuestionnaireForm';
 import { getRolePermissions } from '@/utils/roleUtils';
 
 interface DynamicPageProps {
@@ -34,6 +35,11 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
   // Для страницы добровольного сообщения используем специальную форму
   if (pageType === 'appeals' && urlPageType === 'voluntary-report') {
     return <VoluntaryReportForm />;
+  }
+  
+  // Для анкеты потребителя аэронавигационных услуг используем специальную форму
+  if (pageType === 'appeals' && (urlPageType === 'consumer-questionnaire' || urlPageType === 'customer-questionnaire')) {
+    return <ConsumerQuestionnaireForm />;
   }
   
   const { language } = useLanguage();
@@ -63,6 +69,61 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
   const [editableTitle, setEditableTitle] = useState('');
   const [editableSubtitle, setEditableSubtitle] = useState('');
   const [editableContent, setEditableContent] = useState<any[]>([]);
+
+  // Принудительное применение стилей выравнивания и цветов после рендеринга
+  useEffect(() => {
+    const applyStyles = () => {
+      // Применяем стили ко всем элементам с data-align
+      const elements = document.querySelectorAll('[data-align]');
+      elements.forEach((element) => {
+        const align = element.getAttribute('data-align');
+        if (align) {
+          (element as HTMLElement).style.setProperty('text-align', align, 'important');
+        }
+      });
+
+      // Применяем стили ко всем заголовкам и абзацам
+      const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
+      headings.forEach((element) => {
+        const htmlElement = element as HTMLElement;
+        
+        // Принудительно применяем выравнивание
+        if (htmlElement.getAttribute('data-align')) {
+          const align = htmlElement.getAttribute('data-align');
+          htmlElement.style.setProperty('text-align', align!, 'important');
+        }
+        
+        // Принудительно применяем цвет из data-атрибута или inline стиля
+        const colorAttr = htmlElement.getAttribute('data-color');
+        if (colorAttr) {
+          htmlElement.style.setProperty('color', colorAttr, 'important');
+        } else if (htmlElement.style.color && htmlElement.style.color !== 'rgb(0, 0, 0)') {
+          htmlElement.style.setProperty('color', htmlElement.style.color, 'important');
+        }
+      });
+
+      // Дополнительно применяем стили ко всем элементам с force-классами
+      const forceElements = document.querySelectorAll('[class*="force-text-"]');
+      forceElements.forEach((element) => {
+        const htmlElement = element as HTMLElement;
+        const className = htmlElement.className;
+        
+        // Извлекаем выравнивание из класса
+        const alignMatch = className.match(/force-text-(center|left|right|justify)/);
+        if (alignMatch) {
+          htmlElement.style.setProperty('text-align', alignMatch[1], 'important');
+        }
+      });
+    };
+
+    // Применяем стили сразу
+    applyStyles();
+
+    // Применяем стили после каждого обновления
+    const timeoutId = setTimeout(applyStyles, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [editableContent]);
 
   // Определяем какой API использовать в зависимости от типа страницы
   let pageContentQuery, updatePageContentMutation, defaultTitle, defaultSubtitle, icon, createPageContentMutation;
@@ -211,8 +272,13 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
         const HeadingComponent = HeadingTag;
         return (
           <HeadingComponent 
-            className="text-2xl font-bold text-gray-900 mb-4 break-words"
-            style={{ color: element.props?.color || '#000000' }}
+            className={`text-2xl font-bold text-gray-900 mb-4 break-words force-text-${element.props?.textAlign || 'left'}`}
+            style={{ 
+              color: element.props?.color || '#000000',
+              textAlign: element.props?.textAlign || 'left'
+            }}
+            data-align={element.props?.textAlign || 'left'}
+            data-color={element.props?.color || '#000000'}
           >
             {element.content}
           </HeadingComponent>
@@ -220,8 +286,12 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
       case 'paragraph':
         return (
           <p 
-            className="text-gray-700 mb-4 leading-relaxed break-words"
-            style={{ textIndent: element.props?.textIndent ? '1.5em' : '0' }}
+            className={`text-gray-700 mb-4 leading-relaxed break-words force-text-${element.props?.textAlign || 'left'}`}
+            style={{ 
+              textIndent: element.props?.textIndent ? '1.5em' : '0',
+              textAlign: element.props?.textAlign || 'left'
+            }}
+            data-align={element.props?.textAlign || 'left'}
           >
             {element.content}
           </p>

@@ -7,6 +7,7 @@ export interface ContentElement {
   props?: {
     level?: number; // Для заголовков (1-6)
     color?: string; // Цвет заголовка
+    textAlign?: 'left' | 'center' | 'right' | 'justify'; // Выравнивание текста
     textIndent?: boolean; // Красная строка для абзаца
     href?: string; // Для ссылок
     target?: string; // Для ссылок

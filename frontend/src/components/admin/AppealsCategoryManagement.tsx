@@ -134,7 +134,7 @@ export default function AppealsCategoryManagement() {
 
        {/* Create */}
        <Dialog open={isCreateOpen} onOpenChange={setCreateOpen}>
-         <DialogContent className="max-w-2xl">
+         <DialogContent className="max-w-2xl bg-white">
            <DialogHeader><DialogTitle>Создать</DialogTitle><DialogDescription>Добавьте новую подкатегорию</DialogDescription></DialogHeader>
            <form onSubmit={(e) => { e.preventDefault(); onCreate(); }}>
              <div className="grid gap-4">
@@ -163,7 +163,7 @@ export default function AppealsCategoryManagement() {
 
        {/* Edit */}
        <Dialog open={isEditOpen} onOpenChange={setEditOpen}>
-         <DialogContent className="max-w-2xl">
+         <DialogContent className="max-w-2xl bg-white">
            <DialogHeader><DialogTitle>Редактировать</DialogTitle><DialogDescription>Измените параметры категории</DialogDescription></DialogHeader>
            <form onSubmit={(e) => { e.preventDefault(); onEdit(); }}>
              <div className="grid gap-4">

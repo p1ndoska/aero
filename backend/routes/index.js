@@ -51,7 +51,7 @@ const upload = multer({
     storage: storage,
     fileFilter: imageFileFilter,
     limits: {
-        fileSize: 5 * 1024 * 1024 // Ограничение размера файла до 5MB
+        fileSize: 20 * 1024 * 1024 // Ограничение размера файла до 20MB
     }
 });
 
@@ -59,7 +59,7 @@ const uploadDocument = multer({
     storage: storage,
     fileFilter: documentFileFilter,
     limits: {
-        fileSize: 10 * 1024 * 1024 // Ограничение размера файла до 10MB для документов
+        fileSize: 20 * 1024 * 1024 // Ограничение размера файла до 20MB для документов
     }
 });
 
@@ -67,32 +67,56 @@ const uploadAnyFile = multer({
     storage: storage,
     fileFilter: anyFileFilter,
     limits: {
-        fileSize: 10 * 1024 * 1024 // Ограничение размера файла до 10MB для любых файлов
+        fileSize: 20 * 1024 * 1024 // Ограничение размера файла до 20MB для любых файлов
     }
 });
 
 // Загрузка изображений
-router.post('/upload', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), upload.single('image'), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ error: 'Файл не был загружен' });
-    }
-    
-    console.log('File uploaded:', req.file);
-    const fileUrl = `/uploads/${req.file.filename}`;
-    console.log('File URL:', fileUrl);
-    res.json({ url: fileUrl });
+router.post('/upload', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), (req, res) => {
+    upload.single('image')(req, res, (err) => {
+        if (err) {
+            console.error('Upload error:', err);
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(413).json({ 
+                    error: 'Файл слишком большой. Максимальный размер: 20MB' 
+                });
+            }
+            return res.status(400).json({ error: 'Ошибка загрузки файла: ' + err.message });
+        }
+        
+        if (!req.file) {
+            return res.status(400).json({ error: 'Файл не был загружен' });
+        }
+        
+        console.log('File uploaded:', req.file);
+        const fileUrl = `/uploads/${req.file.filename}`;
+        console.log('File URL:', fileUrl);
+        res.json({ url: fileUrl });
+    });
 });
 
 // Загрузка любых файлов
-router.post('/upload-file', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), uploadAnyFile.single('file'), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ error: 'Файл не был загружен' });
-    }
-    
-    console.log('Any file uploaded:', req.file);
-    const fileUrl = `/uploads/${req.file.filename}`;
-    console.log('File URL:', fileUrl);
-    res.json({ url: fileUrl });
+router.post('/upload-file', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADMIN']), (req, res) => {
+    uploadAnyFile.single('file')(req, res, (err) => {
+        if (err) {
+            console.error('File upload error:', err);
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(413).json({ 
+                    error: 'Файл слишком большой. Максимальный размер: 20MB' 
+                });
+            }
+            return res.status(400).json({ error: 'Ошибка загрузки файла: ' + err.message });
+        }
+        
+        if (!req.file) {
+            return res.status(400).json({ error: 'Файл не был загружен' });
+        }
+        
+        console.log('Any file uploaded:', req.file);
+        const fileUrl = `/uploads/${req.file.filename}`;
+        console.log('File URL:', fileUrl);
+        res.json({ url: fileUrl });
+    });
 });
 
 //admin
@@ -286,5 +310,8 @@ router.get('/service-requests/:id', authenticationToken, checkRole(['SUPER_ADMIN
 router.put('/service-requests/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServiceRequestController.updateServiceRequest);
 router.delete('/service-requests/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServiceRequestController.deleteServiceRequest);
 router.get('/service-requests-stats', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServiceRequestController.getServiceRequestStats);
+
+//questionnaire routes
+router.use('/questionnaire', require('./questionnaire'));
 
 module.exports = router;

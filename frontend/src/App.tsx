@@ -5,18 +5,23 @@ import { useLanguage } from './contexts/LanguageContext';
 import { useGetAllOrganizationLogosQuery } from './app/services/organizationLogoApi';
 import { getTranslatedField } from './utils/translationHelpers';
 import { Link } from 'react-router-dom';
+import { useForceStyles } from './hooks/useForceStyles';
+import BranchesCarousel from './components/BranchesCarousel';
 
 const App = () => {
     const { news, loading, error } = useNews();
     const { t, language } = useLanguage();
     const { data: organizationLogos, isLoading: logosLoading } = useGetAllOrganizationLogosQuery();
+    
+    // Глобальное применение стилей на всех страницах
+    useForceStyles();
 
     return (
         <div
             className="App min-h-screen flex flex-col md:flex-row bg-cover bg-center p-4 gap-4"
             style={{ backgroundImage: "url('/bg-sky.jpg')" }}
         >
-            {/* Левый блок (2/3) поделен на 3 части */}
+            {/* Левый блок (2/4) поделен на 3 части */}
             <div className="md:w-2/3 w-full flex flex-col gap-4 md:pr-4">
                 {/* Верхний блок (2/4) */}
                 <motion.div
@@ -37,14 +42,13 @@ const App = () => {
                     </div>
                 </motion.div>
 
-                {/* Средний блок (1/4) */}
+                {/* Средний блок (1/4) - Карусель филиалов */}
                 <motion.div
                     initial={{ x: -100, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
-                    className="flex-1 bg-gray-200 rounded-2xl shadow-md flex items-center justify-center min-h-[100px]"
                 >
-                    <p className="text-gray-700 text-center">{t('left_middle_block')} (1/4)</p>
+                    <BranchesCarousel />
                 </motion.div>
 
                 {/* Нижний блок (1/4) - Логотипы организаций */}

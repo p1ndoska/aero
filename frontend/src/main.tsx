@@ -5,7 +5,7 @@ import { Provider } from "react-redux";
 import { store } from "./store";
 import "./index.css";
 import App from "./App.tsx";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import { Layout } from "@/components/Layout.tsx";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { Toaster } from "@/components/ui/sonner";
@@ -52,6 +52,7 @@ const router = createBrowserRouter([
             { path: "/news/emergency", element: <NewsCategoryPage title="МЧС информирует" categoryName="МЧС информирует" /> },
             { path: "/news/police", element: <NewsCategoryPage title="МВД информирует" categoryName="МВД информирует" /> },
             { path: "/news/energy-saving", element: <NewsCategoryPage title="Энергосбережение" categoryName="Энергосбережение" /> },
+            { path: "/about", element: <Navigate to="/about/company" replace /> },
             { path: "/about/management", element: <ManagementPage /> },
             { path: "/about/branches", element: <BranchesPage /> },
             { path: "/about/branches/:id", element: <BranchDetailsPage /> },

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { History, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGetHistoryPageContentQuery, useUpdateHistoryPageContentMutation } from '@/app/services/historyPageContentApi';
 import ContentConstructor from './admin/ContentConstructor';
+import { useForceStyles } from '../hooks/useForceStyles';
 
 export default function HistoryPage() {
   const { data: pageContent, refetch: refetchPageContent } = useGetHistoryPageContentQuery();
@@ -23,6 +24,9 @@ export default function HistoryPage() {
   const [editableTitle, setEditableTitle] = useState('');
   const [editableSubtitle, setEditableSubtitle] = useState('');
   const [editableContent, setEditableContent] = useState<any[]>([]);
+
+  // Принудительное применение стилей
+  useForceStyles([pageContent]);
 
   const handleOpenContentEditor = () => {
     if (pageContent) {
@@ -59,8 +63,13 @@ export default function HistoryPage() {
         const HeadingComponent = HeadingTag;
         return (
           <HeadingComponent 
-            className="text-2xl font-bold text-gray-900 mb-4 break-words"
-            style={{ color: element.props?.color || '#000000' }}
+            className={`text-2xl font-bold text-gray-900 mb-4 break-words force-text-${element.props?.textAlign || 'left'}`}
+            style={{ 
+              color: element.props?.color || '#000000',
+              textAlign: element.props?.textAlign || 'left'
+            }}
+            data-align={element.props?.textAlign || 'left'}
+            data-color={element.props?.color || '#000000'}
           >
             {element.content}
           </HeadingComponent>
@@ -68,8 +77,12 @@ export default function HistoryPage() {
       case 'paragraph':
         return (
           <p 
-            className="text-gray-700 mb-4 leading-relaxed break-words"
-            style={{ textIndent: element.props?.textIndent ? '1.5em' : '0' }}
+            className={`text-gray-700 mb-4 leading-relaxed break-words force-text-${element.props?.textAlign || 'left'}`}
+            style={{ 
+              textIndent: element.props?.textIndent ? '1.5em' : '0',
+              textAlign: element.props?.textAlign || 'left'
+            }}
+            data-align={element.props?.textAlign || 'left'}
           >
             {element.content}
           </p>

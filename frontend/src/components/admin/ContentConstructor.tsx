@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -20,31 +20,93 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploadImage, { isLoading: isUploading }] = useUploadImageMutation();
-  const [uploadFile, { isLoading: isUploadingFile }] = useUploadFileMutation();
+  const [uploadImage] = useUploadImageMutation();
+  const [uploadFile] = useUploadFileMutation();
+
+  // Принудительное применение стилей выравнивания и цветов после рендеринга
+  useEffect(() => {
+    const applyStyles = () => {
+      // Применяем стили ко всем элементам с data-align
+      const elements = document.querySelectorAll('[data-align]');
+      elements.forEach((element) => {
+        const align = element.getAttribute('data-align');
+        if (align) {
+          (element as HTMLElement).style.setProperty('text-align', align, 'important');
+        }
+      });
+
+      // Применяем стили ко всем заголовкам и абзацам в контейнере
+      const container = document.querySelector('.content-constructor-container');
+      if (container) {
+        const headings = container.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
+        headings.forEach((element) => {
+          const htmlElement = element as HTMLElement;
+          
+          // Принудительно применяем выравнивание
+          if (htmlElement.getAttribute('data-align')) {
+            const align = htmlElement.getAttribute('data-align');
+            htmlElement.style.setProperty('text-align', align!, 'important');
+          }
+          
+          // Принудительно применяем цвет из data-атрибута или inline стиля
+          const colorAttr = htmlElement.getAttribute('data-color');
+          if (colorAttr) {
+            htmlElement.style.setProperty('color', colorAttr, 'important');
+          } else if (htmlElement.style.color && htmlElement.style.color !== 'rgb(0, 0, 0)') {
+            htmlElement.style.setProperty('color', htmlElement.style.color, 'important');
+          }
+        });
+      }
+
+      // Дополнительно применяем стили ко всем элементам с force-классами
+      const forceElements = document.querySelectorAll('[class*="force-text-"]');
+      forceElements.forEach((element) => {
+        const htmlElement = element as HTMLElement;
+        const className = htmlElement.className;
+        
+        // Извлекаем выравнивание из класса
+        const alignMatch = className.match(/force-text-(center|left|right|justify)/);
+        if (alignMatch) {
+          htmlElement.style.setProperty('text-align', alignMatch[1], 'important');
+        }
+      });
+    };
+
+    // Применяем стили сразу
+    applyStyles();
+
+    // Применяем стили после каждого обновления
+    const timeoutId = setTimeout(applyStyles, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [content]);
+
 
   const addElement = (type: ContentElement['type']) => {
     const newElement: ContentElement = {
       id: Date.now().toString(),
       type,
       content: '',
-      props: type === 'heading' ? { level: 2, color: '#000000' } : 
+      props: type === 'heading' ? { level: 2, color: '#000000', textAlign: 'left' } : 
              type === 'link' ? { href: '', target: '_blank' } : 
              type === 'image' ? { alt: '', src: '' } : 
              type === 'list' ? { items: [] } :
              type === 'table' ? { headers: [], rows: [] } :
              type === 'file' ? { fileName: '', fileUrl: '', fileType: '', fileSize: 0 } :
-             type === 'paragraph' ? { textIndent: false } : {}
+             type === 'paragraph' ? { textIndent: false, textAlign: 'left' } : {}
     };
+    
     onChange([...content, newElement]);
     setEditingId(newElement.id);
   };
 
   const updateElement = (id: string, updates: Partial<ContentElement>) => {
-    console.log('Updating element:', id, updates);
-    const updatedContent = content.map(el => 
-      el.id === id ? { ...el, ...updates } : el
-    );
+    const updatedContent = content.map(el => {
+      if (el.id === id) {
+        return { ...el, ...updates };
+      }
+      return el;
+    });
     onChange(updatedContent);
   };
 
@@ -91,7 +153,6 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
         formData.append('image', file);
 
         const result = await uploadImage(formData).unwrap();
-        console.log('Upload result:', result);
         
         updateElement(elementId, {
           props: {
@@ -126,7 +187,6 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
         formData.append('file', file);
 
         const result = await uploadFile(formData).unwrap();
-        console.log('File upload result:', result);
         
         updateElement(elementId, {
           props: {
@@ -172,20 +232,34 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
     const renderPreview = () => {
       switch (element.type) {
         case 'heading':
-          const HeadingTag = `h${element.props?.level || 2}` as keyof JSX.IntrinsicElements;
-          return (
-            <HeadingTag 
-              className="text-lg font-bold break-words min-w-0 force-break"
-              style={{ color: element.props?.color || '#000000' }}
-            >
-              {element.content}
-            </HeadingTag>
+          const headingLevel = element.props?.level || 2;
+          const headingColor = element.props?.color || '#000000';
+          const headingAlign = element.props?.textAlign || 'left';
+          return React.createElement(
+            `h${headingLevel}`,
+            {
+              className: `text-lg font-bold break-words min-w-0 force-break force-text-${headingAlign}`,
+              style: { 
+                color: headingColor,
+                textAlign: headingAlign as any,
+                '--text-align': headingAlign
+              } as any,
+              'data-align': headingAlign,
+              'data-color': headingColor
+            },
+            element.content
           );
         case 'paragraph':
+          const paragraphAlign = element.props?.textAlign || 'left';
           return (
             <p 
-              className="text-sm break-words min-w-0 force-break"
-              style={{ textIndent: element.props?.textIndent ? '1.5em' : '0' }}
+              className={`text-sm break-words min-w-0 force-break force-text-${paragraphAlign}`}
+              style={{ 
+                textIndent: element.props?.textIndent ? '1.5em' : '0',
+                textAlign: paragraphAlign as any,
+                '--text-align': paragraphAlign
+              } as any}
+              data-align={paragraphAlign}
             >
               {element.content}
             </p>
@@ -201,7 +275,6 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
             </a>
           );
         case 'image':
-          console.log('Rendering image:', element.props?.src);
           if (!element.props?.src) {
             return (
               <div className="flex flex-col gap-2 items-center p-4 border-2 border-dashed border-gray-300 rounded">
@@ -221,7 +294,6 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                   e.currentTarget.style.display = 'none';
                 }}
                 onLoad={() => {
-                  console.log('Image loaded successfully:', element.props?.src);
                 }}
               />
               {element.props?.alt && <p className="text-xs text-gray-500 text-center">{element.props.alt}</p>}
@@ -229,7 +301,6 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
           );
         case 'list':
           const items = element.props?.items || [];
-          console.log('Rendering list:', element, items);
           if (!Array.isArray(items) || items.length === 0) {
             return (
               <div className="p-4 border-2 border-dashed border-gray-300 rounded">
@@ -356,6 +427,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
             </CardTitle>
             <div className="flex gap-1">
               <Button
+                type="button"
                 variant="ghost"
                 size="sm"
                 onClick={() => moveElement(element.id, 'up')}
@@ -364,6 +436,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                 <MoveUp className="w-4 h-4" />
               </Button>
               <Button
+                type="button"
                 variant="ghost"
                 size="sm"
                 onClick={() => moveElement(element.id, 'down')}
@@ -372,6 +445,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                 <MoveDown className="w-4 h-4" />
               </Button>
               <Button
+                type="button"
                 variant="ghost"
                 size="sm"
                 onClick={() => setEditingId(isEditing ? null : element.id)}
@@ -379,6 +453,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                 {isEditing ? 'Сохранить' : 'Редактировать'}
               </Button>
               <Button
+                type="button"
                 variant="ghost"
                 size="sm"
                 onClick={() => deleteElement(element.id)}
@@ -457,11 +532,32 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                       className="w-20 h-10"
                     />
                   </div>
+                  <div>
+                    <Label htmlFor={`align-${element.id}`}>Выравнивание</Label>
+                    <Select
+                      value={element.props?.textAlign || 'left'}
+                      onValueChange={(value) => {
+                        updateElement(element.id, { 
+                          props: { ...element.props, textAlign: value as 'left' | 'center' | 'right' | 'justify' }
+                        });
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="left">По левому краю</SelectItem>
+                        <SelectItem value="center">По центру</SelectItem>
+                        <SelectItem value="right">По правому краю</SelectItem>
+                        <SelectItem value="justify">По ширине</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               )}
 
               {element.type === 'paragraph' && (
-                <div>
+                <div className="space-y-3">
                   <div className="flex items-center space-x-2">
                     <input
                       type="checkbox"
@@ -473,6 +569,27 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                       className="rounded"
                     />
                     <Label htmlFor={`textIndent-${element.id}`}>Красная строка</Label>
+                  </div>
+                  <div>
+                    <Label htmlFor={`paragraph-align-${element.id}`}>Выравнивание</Label>
+                    <Select
+                      value={element.props?.textAlign || 'left'}
+                      onValueChange={(value) => {
+                        updateElement(element.id, { 
+                          props: { ...element.props, textAlign: value as 'left' | 'center' | 'right' | 'justify' }
+                        });
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="left">По левому краю</SelectItem>
+                        <SelectItem value="center">По центру</SelectItem>
+                        <SelectItem value="right">По правому краю</SelectItem>
+                        <SelectItem value="justify">По ширине</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               )}
@@ -609,7 +726,6 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                       size="sm"
                       onClick={() => {
                         const newItems = [...(element.props?.items || []), ''];
-                        console.log('Adding list item:', newItems);
                         updateElement(element.id, {
                           props: { ...element.props, items: newItems }
                         });
@@ -874,7 +990,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 content-constructor-container">
       {/* Скрытый input для загрузки файлов */}
       <input
         ref={fileInputRef}
@@ -894,6 +1010,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
 
       <div className="flex gap-2 flex-wrap">
         <Button
+          type="button"
           variant="outline"
           size="sm"
           onClick={() => addElement('heading')}
@@ -903,6 +1020,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
           Заголовок
         </Button>
         <Button
+          type="button"
           variant="outline"
           size="sm"
           onClick={() => addElement('paragraph')}
@@ -912,6 +1030,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
           Абзац
         </Button>
         <Button
+          type="button"
           variant="outline"
           size="sm"
           onClick={() => addElement('link')}
@@ -921,6 +1040,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
           Ссылка
         </Button>
         <Button
+          type="button"
           variant="outline"
           size="sm"
           onClick={() => addElement('image')}
@@ -930,6 +1050,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
           Изображение
         </Button>
         <Button
+          type="button"
           variant="outline"
           size="sm"
           onClick={() => addElement('list')}
@@ -939,6 +1060,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
           Список
         </Button>
         <Button
+          type="button"
           variant="outline"
           size="sm"
           onClick={() => addElement('table')}
@@ -948,6 +1070,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
           Таблица
         </Button>
         <Button
+          type="button"
           variant="outline"
           size="sm"
           onClick={() => addElement('file')}

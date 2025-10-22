@@ -434,7 +434,7 @@ export default function OrganizationLogoManagement() {
                 <SelectTrigger>
                   <SelectValue placeholder="Выберите страницу сайта" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-gray-200 shadow-lg">
                   <SelectItem value="none">Без ссылки</SelectItem>
                   {Object.entries(getPagesByCategory()).map(([category, pages]) => (
                     <div key={category}>
@@ -534,7 +534,7 @@ export default function OrganizationLogoManagement() {
                 <SelectTrigger>
                   <SelectValue placeholder="Выберите страницу сайта" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-gray-200 shadow-lg">
                   <SelectItem value="none">Без ссылки</SelectItem>
                   {Object.entries(getPagesByCategory()).map(([category, pages]) => (
                     <div key={category}>

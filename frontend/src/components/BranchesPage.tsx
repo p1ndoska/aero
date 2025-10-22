@@ -3,8 +3,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { useGetAllBranchesQuery } from '@/app/services/branchApi';
 import { MapPin, Phone, Mail, Building2, Image as ImageIcon } from 'lucide-react';
+import { BASE_URL } from '@/constants';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getTranslatedField } from '../utils/translationHelpers';
 
 export default function BranchesPage() {
+  const { language } = useLanguage();
   const { data: branchesResponse, isLoading, error } = useGetAllBranchesQuery();
 
   if (isLoading) {
@@ -57,13 +61,18 @@ export default function BranchesPage() {
                   {/* Фото филиала */}
                   {mainImage ? (
                     <img
-                      src={mainImage}
+                      src={`${BASE_URL}${mainImage.startsWith('/') ? '' : '/'}${mainImage}`}
                       alt={branch.name}
                       className="w-full h-48 md:h-56 rounded-xl object-cover object-center mb-4 border-2 border-[#213659]"
                       onError={(e) => {
+                        console.error('❌ Ошибка загрузки изображения филиала:', mainImage);
+                        console.error('❌ Полный URL:', `${BASE_URL}${mainImage.startsWith('/') ? '' : '/'}${mainImage}`);
                         e.currentTarget.style.display = 'none';
                         const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
                         if (placeholder) placeholder.style.display = 'flex';
+                      }}
+                      onLoad={() => {
+                        console.log('✅ Изображение филиала загружено:', mainImage);
                       }}
                     />
                   ) : null}
@@ -73,8 +82,46 @@ export default function BranchesPage() {
                     </div>
                   )}
                   <Link to={`/about/branches/${branch.id}`} className="block">
-                    <h3 className="text-xl font-bold text-[#213659] hover:underline">{branch.name}</h3>
+                    <h3 className="text-xl font-bold text-[#213659] hover:underline mb-3">
+                      {getTranslatedField(branch, 'name', language)}
+                    </h3>
                   </Link>
+                  
+                  {/* Местоположение */}
+                  {getTranslatedField(branch, 'address', language) && (
+                    <div className="flex items-start gap-2 mb-3">
+                      <MapPin className="w-4 h-4 text-[#213659] mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        {getTranslatedField(branch, 'address', language)}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Контактная информация */}
+                  <div className="space-y-2">
+                    {branch.phone && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-[#213659] flex-shrink-0" />
+                        <a 
+                          href={`tel:${branch.phone}`}
+                          className="text-sm text-gray-600 hover:text-[#213659] hover:underline"
+                        >
+                          {branch.phone}
+                        </a>
+                      </div>
+                    )}
+                    {branch.email && (
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-4 h-4 text-[#213659] flex-shrink-0" />
+                        <a 
+                          href={`mailto:${branch.email}`}
+                          className="text-sm text-gray-600 hover:text-[#213659] hover:underline"
+                        >
+                          {branch.email}
+                        </a>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             );

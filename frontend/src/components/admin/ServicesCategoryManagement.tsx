@@ -224,7 +224,7 @@ const ServicesCategoryManagement = () => {
               Добавить подкатегорию
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl bg-white">
             <DialogHeader>
               <DialogTitle>Создать подкатегорию услуг</DialogTitle>
             </DialogHeader>
@@ -377,7 +377,7 @@ const ServicesCategoryManagement = () => {
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl bg-white">
           <DialogHeader>
             <DialogTitle>Редактировать подкатегорию услуг</DialogTitle>
           </DialogHeader>

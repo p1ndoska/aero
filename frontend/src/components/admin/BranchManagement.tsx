@@ -1,14 +1,13 @@
 import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2, Save, X, Building2, Upload, FolderOpen, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import { Plus, Edit, Trash2, X, Building2, Upload, FolderOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGetAllBranchesQuery, useCreateBranchMutation, useUpdateBranchMutation, useDeleteBranchMutation } from '@/app/services/branchApi';
 import ContentConstructor from './ContentConstructor';
-import type { Branch, CreateBranchRequest, UpdateBranchRequest, ContentElement } from '@/types/branch';
+import type { Branch, CreateBranchRequest } from '@/types/branch';
 import { useSelector } from 'react-redux';
 
 type PhoneItem = { label: string; number: string };
@@ -46,7 +45,7 @@ export default function BranchManagement() {
     descriptionBe: '',
     workHours: null,
     services: null,
-    coordinates: null,
+    coordinates: { latitude: '', longitude: '' },
     images: [],
     content: [],
     contentEn: [],
@@ -68,7 +67,7 @@ export default function BranchManagement() {
       descriptionBe: '',
       workHours: null,
       services: null,
-      coordinates: null,
+      coordinates: { latitude: '', longitude: '' },
       images: [],
       content: [],
       contentEn: [],
@@ -106,11 +105,13 @@ export default function BranchManagement() {
       // Преобразуем content в JSON строку для отправки
       const dataToSend = {
         ...formData,
-        content: formData.content ? JSON.stringify(formData.content) : null,
+        content: formData.content && formData.content.length > 0 ? JSON.stringify(formData.content) : null,
+        contentEn: formData.contentEn && formData.contentEn.length > 0 ? JSON.stringify(formData.contentEn) : null,
+        contentBe: formData.contentBe && formData.contentBe.length > 0 ? JSON.stringify(formData.contentBe) : null,
         images: uploadedImages,
         // Сохраняем телефоны в JSON поле services, чтобы не менять backend-схему
         services: { phones: normalizedPhones }
-      };
+      } as any;
       
       await createBranch(dataToSend).unwrap();
       toast.success('Филиал успешно создан');
@@ -155,9 +156,9 @@ export default function BranchManagement() {
       descriptionBe: branch.descriptionBe || '',
       workHours: branch.workHours,
       services: branch.services,
-      coordinates: branch.coordinates,
+      coordinates: branch.coordinates || { latitude: '', longitude: '' },
       images: branch.images,
-      content: parsedContent,
+      content: parsedContent || [],
       contentEn: branch.contentEn || [],
       contentBe: branch.contentBe || []
     });
@@ -206,10 +207,12 @@ export default function BranchManagement() {
       // Преобразуем content в JSON строку для отправки
       const dataToSend = {
         ...formData,
-        content: formData.content ? JSON.stringify(formData.content) : null,
+        content: formData.content && formData.content.length > 0 ? JSON.stringify(formData.content) : null,
+        contentEn: formData.contentEn && formData.contentEn.length > 0 ? JSON.stringify(formData.contentEn) : null,
+        contentBe: formData.contentBe && formData.contentBe.length > 0 ? JSON.stringify(formData.contentBe) : null,
         services: { phones: normalizedPhones },
         images: [...(formData.images || []), ...uploadedImages]
-      };
+      } as any;
       
       await updateBranch({ id: editingBranch.id, branchData: dataToSend }).unwrap();
       toast.success('Филиал успешно обновлен');
@@ -275,9 +278,8 @@ export default function BranchManagement() {
     );
   };
 
-  const renderForm = (isEdit: boolean = false) => (
-    <form onSubmit={(e) => { e.preventDefault(); isEdit ? handleUpdate() : handleCreate(); }}>
-      <div className="space-y-4">
+  const renderFormContent = (isEdit: boolean = false) => (
+    <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="name">Название филиала (RU) *</Label>
@@ -364,6 +366,53 @@ export default function BranchManagement() {
           </div>
         </div>
 
+        {/* Координаты */}
+        <div className="space-y-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-blue-800 mb-2">📍 Координаты филиала</h4>
+            <p className="text-xs text-blue-600 mb-3">
+              Укажите точные координаты для отображения на карте. 
+              Координаты можно найти в Google Maps или Яндекс.Картах.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="latitude">Широта (Latitude)</Label>
+                <Input
+                  id="latitude"
+                  type="number"
+                  step="any"
+                  value={formData.coordinates?.latitude || ''}
+                  onChange={(e) => setFormData({ 
+                    ...formData, 
+                    coordinates: { 
+                      ...formData.coordinates, 
+                      latitude: e.target.value 
+                    } 
+                  })}
+                  placeholder="Например: 53.9045"
+                />
+              </div>
+              <div>
+                <Label htmlFor="longitude">Долгота (Longitude)</Label>
+                <Input
+                  id="longitude"
+                  type="number"
+                  step="any"
+                  value={formData.coordinates?.longitude || ''}
+                  onChange={(e) => setFormData({ 
+                    ...formData, 
+                    coordinates: { 
+                      ...formData.coordinates, 
+                      longitude: e.target.value 
+                    } 
+                  })}
+                  placeholder="Например: 27.5615"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="description">Описание (RU)</Label>
@@ -399,7 +448,7 @@ export default function BranchManagement() {
         <Label className="mb-2 block">Контактные телефоны</Label>
         <div className="space-y-3">
           {phones.map((phoneItem, index) => (
-            <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-2 items-center">
+            <div key={index} className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end">
               <Input
                 placeholder="Подпись (например, Начальник филиала)"
                 value={phoneItem.label}
@@ -420,22 +469,28 @@ export default function BranchManagement() {
                 }}
                 className="md:col-span-2"
               />
-              <div className="flex gap-2 justify-end">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setPhones((prev) => {
-                    const arr = [...prev];
-                    arr.splice(index + 1, 0, { label: '', number: '' });
-                    return arr;
-                  })}
-                >
-                  Добавить
-                </Button>
+              <div className="flex gap-2 justify-end md:col-span-2">
+                {index === phones.length - 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-10"
+                    onClick={() => setPhones((prev) => {
+                      const arr = [...prev];
+                      arr.push({ label: '', number: '' });
+                      return arr;
+                    })}
+                  >
+                    Добавить
+                  </Button>
+                )}
                 {phones.length > 1 && (
                   <Button
                     type="button"
                     variant="destructive"
+                    size="sm"
+                    className="h-10"
                     onClick={() => setPhones((prev) => prev.filter((_, i) => i !== index))}
                   >
                     Удалить
@@ -551,7 +606,6 @@ export default function BranchManagement() {
         />
       </div>
       </div>
-    </form>
   );
 
   function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -580,7 +634,15 @@ export default function BranchManagement() {
 
   async function uploadImages(files: File[]): Promise<string[]> {
     const urls: string[] = [];
+    const maxSize = 20 * 1024 * 1024; // 20MB
+    
     for (const file of files) {
+      // Проверяем размер файла на фронтенде
+      if (file.size > maxSize) {
+        toast.error(`Файл "${file.name}" слишком большой. Максимальный размер: 20MB`);
+        continue;
+      }
+      
       const fd = new FormData();
       fd.append('image', file);
       try {
@@ -593,9 +655,23 @@ export default function BranchManagement() {
           const json = await resp.json();
           urls.push(json.url);
         } else {
-          const t = await resp.text().catch(() => '');
-          console.error('Ошибка загрузки изображения:', file.name, t);
-          toast.error('Не удалось загрузить изображение');
+          let errorMessage = 'Не удалось загрузить изображение';
+          try {
+            const errorData = await resp.json();
+            if (errorData.error) {
+              errorMessage = errorData.error;
+            }
+          } catch {
+            // Если не удалось распарсить JSON, используем текст ответа
+            const text = await resp.text().catch(() => '');
+            if (text.includes('File too large')) {
+              errorMessage = 'Файл слишком большой. Максимальный размер: 20MB';
+            } else if (text.includes('MulterError')) {
+              errorMessage = 'Ошибка загрузки файла';
+            }
+          }
+          console.error('Ошибка загрузки изображения:', file.name, errorMessage);
+          toast.error(errorMessage);
         }
       } catch (err) {
         console.error('Ошибка загрузки изображения:', err);
@@ -665,20 +741,25 @@ export default function BranchManagement() {
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
             <DialogHeader>
               <DialogTitle>Создать новый филиал</DialogTitle>
+              <DialogDescription>
+                Заполните информацию о новом филиале и используйте конструктор контента для добавления дополнительной информации.
+              </DialogDescription>
             </DialogHeader>
-            {renderForm()}
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                Отмена
-              </Button>
-              <Button 
-                type="submit"
-                disabled={isCreating}
-                className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
-              >
-                {isCreating ? 'Создание...' : 'Создать'}
-              </Button>
-            </div>
+            <form onSubmit={(e) => { e.preventDefault(); handleCreate(); }}>
+              {renderFormContent()}
+              <div className="flex justify-end gap-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                  Отмена
+                </Button>
+                <Button 
+                  type="submit"
+                  disabled={isCreating}
+                  className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                >
+                  {isCreating ? 'Создание...' : 'Создать'}
+                </Button>
+              </div>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
@@ -711,6 +792,15 @@ export default function BranchManagement() {
                         <span className="font-medium">Email:</span>
                         {branch.email}
                       </p>
+                      {branch.coordinates && (branch.coordinates.latitude || branch.coordinates.longitude) && (
+                        <p className="text-gray-600 flex items-center gap-2">
+                          <span className="font-medium">Координаты:</span>
+                          {branch.coordinates.latitude && branch.coordinates.longitude 
+                            ? `${branch.coordinates.latitude}, ${branch.coordinates.longitude}`
+                            : 'Не указаны'
+                          }
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -781,20 +871,25 @@ export default function BranchManagement() {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
           <DialogHeader>
             <DialogTitle>Редактировать филиал</DialogTitle>
+            <DialogDescription>
+              Измените информацию о филиале и используйте конструктор контента для редактирования дополнительной информации.
+            </DialogDescription>
           </DialogHeader>
-          {renderForm(true)}
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Отмена
-            </Button>
-            <Button 
-              type="submit"
-              disabled={isUpdating}
-              className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
-            >
-              {isUpdating ? 'Сохранение...' : 'Сохранить'}
-            </Button>
-          </div>
+          <form onSubmit={(e) => { e.preventDefault(); handleUpdate(); }}>
+            {renderFormContent(true)}
+            <div className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                Отмена
+              </Button>
+              <Button 
+                type="submit"
+                disabled={isUpdating}
+                className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+              >
+                {isUpdating ? 'Сохранение...' : 'Сохранить'}
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

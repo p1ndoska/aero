@@ -32,3 +32,331 @@ p, h1, h2, h3, h4, h5, h6, span, div, a, button, input, textarea, label {
   word-break: break-word;
   overflow-wrap: break-word;
 }
+
+/* Классы для выравнивания текста в конструкторе контента */
+.content-text-left {
+  text-align: left !important;
+}
+
+.content-text-center {
+  text-align: center !important;
+}
+
+.content-text-right {
+  text-align: right !important;
+}
+
+.content-text-justify {
+  text-align: justify !important;
+}
+
+/* Дополнительные специфичные правила для заголовков и абзацев */
+h1.content-text-center,
+h2.content-text-center,
+h3.content-text-center,
+h4.content-text-center,
+h5.content-text-center,
+h6.content-text-center,
+p.content-text-center {
+  text-align: center !important;
+}
+
+h1.content-text-left,
+h2.content-text-left,
+h3.content-text-left,
+h4.content-text-left,
+h5.content-text-left,
+h6.content-text-left,
+p.content-text-left {
+  text-align: left !important;
+}
+
+h1.content-text-right,
+h2.content-text-right,
+h3.content-text-right,
+h4.content-text-right,
+h5.content-text-right,
+h6.content-text-right,
+p.content-text-right {
+  text-align: right !important;
+}
+
+h1.content-text-justify,
+h2.content-text-justify,
+h3.content-text-justify,
+h4.content-text-justify,
+h5.content-text-justify,
+h6.content-text-justify,
+p.content-text-justify {
+  text-align: justify !important;
+}
+
+/* Принудительное выравнивание для всех элементов с inline стилями */
+[style*="text-align: center"] {
+  text-align: center !important;
+}
+
+[style*="text-align: left"] {
+  text-align: left !important;
+}
+
+[style*="text-align: right"] {
+  text-align: right !important;
+}
+
+[style*="text-align: justify"] {
+  text-align: justify !important;
+}
+
+/* Максимальный приоритет для всех заголовков и абзацев */
+h1, h2, h3, h4, h5, h6, p {
+  text-align: inherit !important;
+}
+
+/* Принудительное выравнивание через data-атрибуты */
+[data-align="center"] {
+  text-align: center !important;
+}
+
+[data-align="left"] {
+  text-align: left !important;
+}
+
+[data-align="right"] {
+  text-align: right !important;
+}
+
+[data-align="justify"] {
+  text-align: justify !important;
+}
+
+/* Максимально специфичные селекторы для переопределения Tailwind */
+div[data-align="center"] h1,
+div[data-align="center"] h2,
+div[data-align="center"] h3,
+div[data-align="center"] h4,
+div[data-align="center"] h5,
+div[data-align="center"] h6,
+div[data-align="center"] p {
+  text-align: center !important;
+}
+
+div[data-align="left"] h1,
+div[data-align="left"] h2,
+div[data-align="left"] h3,
+div[data-align="left"] h4,
+div[data-align="left"] h5,
+div[data-align="left"] h6,
+div[data-align="left"] p {
+  text-align: left !important;
+}
+
+div[data-align="right"] h1,
+div[data-align="right"] h2,
+div[data-align="right"] h3,
+div[data-align="right"] h4,
+div[data-align="right"] h5,
+div[data-align="right"] h6,
+div[data-align="right"] p {
+  text-align: right !important;
+}
+
+div[data-align="justify"] h1,
+div[data-align="justify"] h2,
+div[data-align="justify"] h3,
+div[data-align="justify"] h4,
+div[data-align="justify"] h5,
+div[data-align="justify"] h6,
+div[data-align="justify"] p {
+  text-align: justify !important;
+}
+
+/* Переопределение всех возможных Tailwind классов */
+.text-left[data-align="center"],
+.text-center[data-align="center"],
+.text-right[data-align="center"],
+.text-justify[data-align="center"] {
+  text-align: center !important;
+}
+
+.text-left[data-align="left"],
+.text-center[data-align="left"],
+.text-right[data-align="left"],
+.text-justify[data-align="left"] {
+  text-align: left !important;
+}
+
+.text-left[data-align="right"],
+.text-center[data-align="right"],
+.text-right[data-align="right"],
+.text-justify[data-align="right"] {
+  text-align: right !important;
+}
+
+.text-left[data-align="justify"],
+.text-center[data-align="justify"],
+.text-right[data-align="justify"],
+.text-justify[data-align="justify"] {
+  text-align: justify !important;
+}
+
+/* Использование CSS переменных для принудительного выравнивания */
+[style*="--text-align: center"] {
+  text-align: center !important;
+}
+
+[style*="--text-align: left"] {
+  text-align: left !important;
+}
+
+[style*="--text-align: right"] {
+  text-align: right !important;
+}
+
+[style*="--text-align: justify"] {
+  text-align: justify !important;
+}
+
+/* Максимально специфичные селекторы с CSS переменными */
+h1[style*="--text-align: center"],
+h2[style*="--text-align: center"],
+h3[style*="--text-align: center"],
+h4[style*="--text-align: center"],
+h5[style*="--text-align: center"],
+h6[style*="--text-align: center"],
+p[style*="--text-align: center"] {
+  text-align: center !important;
+}
+
+h1[style*="--text-align: left"],
+h2[style*="--text-align: left"],
+h3[style*="--text-align: left"],
+h4[style*="--text-align: left"],
+h5[style*="--text-align: left"],
+h6[style*="--text-align: left"],
+p[style*="--text-align: left"] {
+  text-align: left !important;
+}
+
+h1[style*="--text-align: right"],
+h2[style*="--text-align: right"],
+h3[style*="--text-align: right"],
+h4[style*="--text-align: right"],
+h5[style*="--text-align: right"],
+h6[style*="--text-align: right"],
+p[style*="--text-align: right"] {
+  text-align: right !important;
+}
+
+h1[style*="--text-align: justify"],
+h2[style*="--text-align: justify"],
+h3[style*="--text-align: justify"],
+h4[style*="--text-align: justify"],
+h5[style*="--text-align: justify"],
+h6[style*="--text-align: justify"],
+p[style*="--text-align: justify"] {
+  text-align: justify !important;
+}
+
+/* Уникальные CSS классы с максимальным приоритетом */
+.force-text-center {
+  text-align: center !important;
+}
+
+.force-text-left {
+  text-align: left !important;
+}
+
+.force-text-right {
+  text-align: right !important;
+}
+
+.force-text-justify {
+  text-align: justify !important;
+}
+
+/* Переопределение всех возможных Tailwind классов */
+.text-left.force-text-center,
+.text-center.force-text-center,
+.text-right.force-text-center,
+.text-justify.force-text-center {
+  text-align: center !important;
+}
+
+.text-left.force-text-left,
+.text-center.force-text-left,
+.text-right.force-text-left,
+.text-justify.force-text-left {
+  text-align: left !important;
+}
+
+.text-left.force-text-right,
+.text-center.force-text-right,
+.text-right.force-text-right,
+.text-justify.force-text-right {
+  text-align: right !important;
+}
+
+.text-left.force-text-justify,
+.text-center.force-text-justify,
+.text-right.force-text-justify,
+.text-justify.force-text-justify {
+  text-align: justify !important;
+}
+
+/* Предотвращение наложения элементов на карту */
+.branch-content-container {
+  position: relative;
+  z-index: 1;
+}
+
+.branch-map-container {
+  position: relative;
+  z-index: 0;
+}
+
+.branch-content-image {
+  position: relative;
+  z-index: 10;
+  display: block;
+}
+
+/* Скрытие скроллбара для карусели филиалов */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}
+
+/* Ограничение количества строк текста */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Стили для выпадающих списков - делаем их непрозрачными */
+[data-radix-select-content] {
+  background-color: white !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  opacity: 1 !important;
+}
+
+[data-radix-select-content] * {
+  background-color: transparent !important;
+}
+
+/* Стили для модальных окон - делаем их непрозрачными */
+[data-radix-dialog-content] {
+  background-color: white !important;
+  opacity: 1 !important;
+}
+
+[data-radix-dialog-content] * {
+  background-color: transparent !important;
+}

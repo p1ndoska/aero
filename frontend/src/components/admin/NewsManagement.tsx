@@ -235,7 +235,7 @@ export default function NewsManagement() {
             <SelectTrigger className="h-12 text-base">
               <SelectValue placeholder="Выберите категорию" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white border border-gray-200 shadow-lg">
               {categories && categories.length > 0 ? (
                 categories.map((category) => (
                   <SelectItem key={category.id} value={category.id.toString()}>

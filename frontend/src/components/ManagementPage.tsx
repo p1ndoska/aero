@@ -338,9 +338,9 @@ function ManagerBookingSection({
           <p className="text-sm text-gray-600">Загрузка расписания...</p>
         </div>
       ) : freeSlots.length > 0 ? (
-        <div className="space-y-2 max-h-48 overflow-y-auto">
-          {freeSlots.slice(0, 8).map((slot) => (
-            <div key={slot.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200 hover:bg-green-100 transition-colors">
+        <div className="space-y-2 max-h-96 overflow-y-auto">
+          {freeSlots.map((slot) => (
+            <div key={slot.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors">
               <div className="text-sm">
                 <span className="font-medium text-gray-900">{formatDate(slot.date)}</span>
                 <span className="text-gray-600 ml-2">{formatTime(slot.startTime)}</span>
@@ -348,18 +348,13 @@ function ManagerBookingSection({
               <Button
                 size="sm"
                 onClick={() => onBookAppointment(slot, manager)}
-                className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1"
+                className="bg-[#1e3a8a] hover:bg-[#1e40af] text-white text-xs px-3 py-1"
               >
                 <UserPlus className="w-3 h-3 mr-1" />
                 Записаться
               </Button>
             </div>
           ))}
-          {freeSlots.length > 8 && (
-            <p className="text-xs text-gray-500 text-center py-2">
-              И еще {freeSlots.length - 8} доступных слотов
-            </p>
-          )}
         </div>
       ) : (
         <div className="text-center py-6 text-gray-500">

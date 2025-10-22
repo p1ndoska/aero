@@ -11,6 +11,7 @@ import { useGetSecurityPolicyPageContentQuery, useUpdateSecurityPolicyPageConten
 import ContentConstructor from './admin/ContentConstructor';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getTranslatedField } from '../utils/translationHelpers';
+import { useForceStyles } from '../hooks/useForceStyles';
 
 export default function SecurityPolicyPage() {
   const { language } = useLanguage();
@@ -26,6 +27,9 @@ export default function SecurityPolicyPage() {
   const [editableTitle, setEditableTitle] = useState('');
   const [editableSubtitle, setEditableSubtitle] = useState('');
   const [editableContent, setEditableContent] = useState([]);
+
+  // Принудительное применение стилей
+  useForceStyles([pageContent]);
 
   const handleOpenContentEditor = () => {
     if (pageContent) {
@@ -76,9 +80,32 @@ export default function SecurityPolicyPage() {
     switch (element.type) {
       case 'heading':
         const HeadingTag = `h${element.props?.level || 2}` as keyof JSX.IntrinsicElements;
-        return <HeadingTag className="text-2xl font-bold text-gray-900 mb-4 break-words">{element.content}</HeadingTag>;
+        return (
+          <HeadingTag 
+            className={`text-2xl font-bold text-gray-900 mb-4 break-words force-text-${element.props?.textAlign || 'left'}`}
+            style={{ 
+              color: element.props?.color || '#000000',
+              textAlign: element.props?.textAlign || 'left'
+            }}
+            data-align={element.props?.textAlign || 'left'}
+            data-color={element.props?.color || '#000000'}
+          >
+            {element.content}
+          </HeadingTag>
+        );
       case 'paragraph':
-        return <p className="text-gray-700 mb-4 leading-relaxed break-words">{element.content}</p>;
+        return (
+          <p 
+            className={`text-gray-700 mb-4 leading-relaxed break-words force-text-${element.props?.textAlign || 'left'}`}
+            style={{ 
+              textIndent: element.props?.textIndent ? '1.5em' : '0',
+              textAlign: element.props?.textAlign || 'left'
+            }}
+            data-align={element.props?.textAlign || 'left'}
+          >
+            {element.content}
+          </p>
+        );
       case 'list':
         const items = element.props?.items || [];
         return (
