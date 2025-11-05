@@ -134,25 +134,27 @@ const ConsumerQuestionnaireForm: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-[#213659] mb-4">
-          Анкета потребителя аэронавигационных услуг Республики Беларусь
-        </h1>
-        <div className="text-[#213659] font-medium mb-4">
-          Уважаемые Коллеги!
-        </div>
-        <div className="text-gray-700 space-y-3 max-w-4xl mx-auto">
-          <p>
-            Благодарим Вас за сотрудничество с Государственным предприятием БЕЛАЭРОНАВИГАЦИЯ. 
-            Ваше мнение о качестве предоставляемых аэронавигационных услуг имеет для нас большое значение 
-            и поможет нам улучшить качество обслуживания.
-          </p>
-          <p>
-            Просим Вас ответить на вопросы, представленные ниже.
-          </p>
-        </div>
-      </div>
+    <div className="max-w-4xl mx-auto p-6">
+      <Card className="bg-white rounded-lg shadow-lg">
+        <CardContent className="p-8">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-[#213659] mb-4">
+              Анкета потребителя аэронавигационных услуг Республики Беларусь
+            </h1>
+            <div className="text-[#213659] font-medium mb-4">
+              Уважаемые Коллеги!
+            </div>
+            <div className="text-gray-700 space-y-3 max-w-4xl mx-auto">
+              <p>
+                Благодарим Вас за сотрудничество с Государственным предприятием БЕЛАЭРОНАВИГАЦИЯ. 
+                Ваше мнение о качестве предоставляемых аэронавигационных услуг имеет для нас большое значение 
+                и поможет нам улучшить качество обслуживания.
+              </p>
+              <p>
+                Просим Вас ответить на вопросы, представленные ниже.
+              </p>
+            </div>
+          </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Информация о пользователе */}
@@ -412,6 +414,8 @@ const ConsumerQuestionnaireForm: React.FC = () => {
           * - поля, обязательные для заполнения
         </div>
       </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };

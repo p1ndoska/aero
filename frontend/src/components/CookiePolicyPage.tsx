@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Cookie, Shield, Info, Settings, Calendar } from 'lucide-react';
+import AnalyticsDemo from './AnalyticsDemo';
 
 export default function CookiePolicyPage() {
   const [cookieConsent, setCookieConsent] = useState(null);
@@ -286,6 +287,16 @@ export default function CookiePolicyPage() {
         </div>
 
         {/* Кнопка возврата */}
+        {/* Демонстрация работы с куки */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Демонстрация работы настроек куки</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AnalyticsDemo />
+          </CardContent>
+        </Card>
+
         <div className="mt-8 text-center">
           <Button
             onClick={() => window.history.back()}

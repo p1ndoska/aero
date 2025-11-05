@@ -3,11 +3,11 @@ const nodemailer = require('nodemailer');
 const router = express.Router();
 
 // Настройка nodemailer
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER || 'clvx.fisy.ptue.acon@gmail.com',
-    pass: process.env.EMAIL_PASS || 'kovaleva7854@gmail.com'
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
@@ -40,6 +40,8 @@ router.post('/send-questionnaire', async (req, res) => {
       });
     }
 
+    // Валидация антиспам кода выполняется в frontend
+
     // Формирование HTML письма
     const htmlContent = `
       <h2>Анкета потребителя аэронавигационных услуг</h2>
@@ -67,8 +69,8 @@ router.post('/send-questionnaire', async (req, res) => {
 
     // Настройка письма
     const mailOptions = {
-      from: process.env.EMAIL_USER || 'clvx.fisy.ptue.acon@gmail.com',
-      to: process.env.EMAIL_TO || 'kovaleva7855@gmail.com',
+      from: process.env.EMAIL_USER || 'kovaleva7855@gmail.com',
+      to: 'kovaleva7855@gmail.com',
       subject: 'Анкета потребителя аэронавигационных услуг',
       html: htmlContent,
       replyTo: email // для ответа на email пользователя

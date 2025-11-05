@@ -169,8 +169,10 @@ router.delete('/management/:id', authenticationToken, checkRole(['SUPER_ADMIN','
 router.get('/reception-slots/:managementId', ReceptionSlotController.getSlotsByManager);
 router.post('/reception-slots/:managementId', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ReceptionSlotController.createSlots);
 router.post('/reception-slots/:slotId/book', ReceptionSlotController.bookSlot);
-router.post('/reception-slots/:slotId/cancel', ReceptionSlotController.cancelBooking);
+router.post('/reception-slots/:slotId/cancel', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ReceptionSlotController.cancelBooking);
 router.delete('/reception-slots/:managementId', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ReceptionSlotController.deleteSlots);
+// Важно: более специфичный маршрут должен быть ПЕРЕД параметризованным
+router.get('/reception-slots/all/booked', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ReceptionSlotController.getAllBookedSlots);
 router.get('/reception-slots/:managementId/booked', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ReceptionSlotController.getBookedSlots);
 
 //recurring schedules
@@ -313,5 +315,8 @@ router.get('/service-requests-stats', authenticationToken, checkRole(['SUPER_ADM
 
 //questionnaire routes
 router.use('/questionnaire', require('./questionnaire'));
+
+//voluntary report routes
+router.use('/voluntary-report', require('./voluntaryReport'));
 
 module.exports = router;

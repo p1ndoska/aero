@@ -37,22 +37,9 @@ export const NewsList = ({ newsItems, itemsPerPage = 3 }: NewsListProps) => {
     };
 
     return (
-        <div className="relative space-y-6">
-            {/* Информация о количестве */}
-            <p className="text-sm text-center text-[#6A81A9]">
-                {t('showing')}{" "}
-                <span className="font-semibold text-[#213659]">
-          {Math.min(startIndex + itemsPerPage, newsItems.length)}
-        </span>{" "}
-                {t('of')}{" "}
-                <span className="font-semibold text-[#213659]">
-          {newsItems.length}
-        </span>{" "}
-                {t('news')}
-            </p>
-
+        <div className="relative space-y-2 flex-1 flex flex-col">
             {/* Новости */}
-            <div className="relative overflow-hidden min-h-[500px] pt-10 pb-10 space-y-6">
+            <div className="relative overflow-hidden flex-1 pt-2 pb-10 space-y-6">
                 {visibleItems.map((item, idx) => {
                     const isFirst = idx === 0;
                     const isLast = idx === visibleItems.length - 1;
@@ -88,7 +75,7 @@ export const NewsList = ({ newsItems, itemsPerPage = 3 }: NewsListProps) => {
             {canScrollUp && (
                 <button
                     onClick={scrollUp}
-                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-white shadow-md border rounded-full p-2 hover:bg-gray-100 transition"
+                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-white shadow-md  rounded-full p-2 hover:bg-gray-100 transition"
                 >
                     <ChevronUp className="h-6 w-6 text-[#213659]" />
                 </button>
@@ -96,7 +83,7 @@ export const NewsList = ({ newsItems, itemsPerPage = 3 }: NewsListProps) => {
             {canScrollDown && (
                 <button
                     onClick={scrollDown}
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white shadow-md border rounded-full p-2 hover:bg-gray-100 transition"
+                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white shadow-md  rounded-full p-2 hover:bg-gray-100 transition"
                 >
                     <ChevronDown className="h-6 w-6 text-[#213659]" />
                 </button>

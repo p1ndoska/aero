@@ -28,10 +28,14 @@ export default function ManagementPage() {
 
   const [bookSlot] = useBookSlotMutation();
 
-  const handleBookAppointment = (slot: any, manager: Management) => {
+  const handleBookAppointment = (slot: any, manager: Management, refetchFn?: () => void) => {
     setSelectedSlot(slot);
     setSelectedManagerForBooking(manager.id);
     setIsBookingDialogOpen(true);
+    // Сохраняем функцию refetch для обновления списка после бронирования
+    if (refetchFn) {
+      (window as any).__refetchSlots = refetchFn;
+    }
   };
 
   const handleBookingSubmit = async () => {
@@ -54,8 +58,39 @@ export default function ManagementPage() {
       setIsBookingDialogOpen(false);
       setBookingForm({ fullName: '', email: '', notes: '' });
       setSelectedSlot(null);
+      
+      // Обновляем список слотов после успешного бронирования
+      const refetchFn = (window as any).__refetchSlots;
+      if (refetchFn && typeof refetchFn === 'function') {
+        refetchFn();
+        delete (window as any).__refetchSlots;
+      }
     } catch (error: any) {
-      toast.error(error.data?.error || 'Ошибка при записи на прием');
+      // Обрабатываем разные типы ошибок
+      console.error('Booking error:', error);
+      console.error('Error data:', error?.data);
+      const errorMessage = error?.data?.error || error?.message || 'Ошибка при записи на прием';
+      const errorDetails = error?.data?.details || '';
+      const received = error?.data?.received;
+      
+      // Обновляем список слотов после ошибки, чтобы увидеть актуальное состояние
+      const refetchFn = (window as any).__refetchSlots;
+      if (refetchFn && typeof refetchFn === 'function') {
+        refetchFn();
+        delete (window as any).__refetchSlots;
+      }
+      
+      if (errorMessage.includes('уже занят') || errorMessage.includes('недоступен')) {
+        toast.error('Этот слот уже занят. Пожалуйста, выберите другое время.');
+      } else if (errorMessage.includes('обязательны') || errorMessage.includes('пустыми')) {
+        const missingFields = errorDetails || 'некоторые поля';
+        toast.error(`Ошибка: ${errorMessage}. ${errorDetails ? `Детали: ${errorDetails}` : ''}`);
+        if (received) {
+          console.error('Received fields:', received);
+        }
+      } else {
+        toast.error(`${errorMessage}${errorDetails ? `. ${errorDetails}` : ''}`);
+      }
     }
   };
 
@@ -281,7 +316,7 @@ export default function ManagementPage() {
             <Button 
               onClick={handleBookingSubmit}
               disabled={!bookingForm.fullName || !bookingForm.email}
-              className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+              className="bg-[#213659] hover:bg-[#213659] text-white"
             >
               <Check className="w-4 h-4 mr-2" />
               Записаться
@@ -296,17 +331,22 @@ export default function ManagementPage() {
 // Компонент секции записи на прием для руководителя
 function ManagerBookingSection({ 
   manager, 
-  onBookAppointment 
+  onBookAppointment,
+  refetchSlots
 }: { 
   manager: Management; 
-  onBookAppointment: (slot: any, manager: Management) => void;
+  onBookAppointment: (slot: any, manager: Management, refetchFn?: () => void) => void;
+  refetchSlots?: () => void;
 }) {
   // Получаем доступные слоты для этого руководителя
-  const { data: availableSlots, isLoading: slotsLoading } = useGetSlotsByManagerQuery({
+  const { data: availableSlots, isLoading: slotsLoading, refetch: refetchSlotsQuery } = useGetSlotsByManagerQuery({
     managementId: manager.id,
     startDate: new Date().toISOString().split('T')[0],
     endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   });
+  
+  // Используем переданную функцию refetch или локальную
+  const refetchFn = refetchSlots || refetchSlotsQuery;
 
   const formatTime = (timeString: string) => {
     return new Date(timeString).toLocaleTimeString('ru-RU', {
@@ -322,14 +362,14 @@ function ManagerBookingSection({
     });
   };
 
-  // Фильтруем только доступные слоты
-  const freeSlots = availableSlots?.filter(slot => slot.isAvailable && !slot.isBooked) || [];
+  // Показываем все слоты (включая занятые), чтобы пользователь видел полную картину
+  const allSlots = availableSlots || [];
 
   return (
     <div className="mt-4 pt-4 border-t border-gray-200">
       <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
         <Calendar className="w-4 h-4" />
-        Доступные слоты для записи
+        Слоты для записи
       </h4>
       
       {slotsLoading ? (
@@ -337,24 +377,52 @@ function ManagerBookingSection({
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#213659] mx-auto mb-2"></div>
           <p className="text-sm text-gray-600">Загрузка расписания...</p>
         </div>
-      ) : freeSlots.length > 0 ? (
+      ) : allSlots.length > 0 ? (
         <div className="space-y-2 max-h-96 overflow-y-auto">
-          {freeSlots.map((slot) => (
-            <div key={slot.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors">
-              <div className="text-sm">
-                <span className="font-medium text-gray-900">{formatDate(slot.date)}</span>
-                <span className="text-gray-600 ml-2">{formatTime(slot.startTime)}</span>
-              </div>
-              <Button
-                size="sm"
-                onClick={() => onBookAppointment(slot, manager)}
-                className="bg-[#1e3a8a] hover:bg-[#1e40af] text-white text-xs px-3 py-1"
+          {allSlots.map((slot) => {
+            const isBooked = slot.isBooked || false;
+            const isAvailable = slot.isAvailable !== false; // По умолчанию true, если не указано
+            const canBook = isAvailable && !isBooked;
+            
+            return (
+              <div 
+                key={slot.id} 
+                className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                  !canBook
+                    ? 'bg-gray-100 border-gray-300 opacity-60 cursor-not-allowed' 
+                    : 'bg-blue-50 border-blue-200 hover:bg-blue-100'
+                }`}
               >
-                <UserPlus className="w-3 h-3 mr-1" />
-                Записаться
-              </Button>
-            </div>
-          ))}
+                <div className="text-sm flex items-center gap-2">
+                  <span className="font-medium text-gray-900">{formatDate(slot.date)}</span>
+                  <span className="text-gray-600">{formatTime(slot.startTime)}</span>
+                  {isBooked && (
+                    <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
+                      Занято
+                    </span>
+                  )}
+                  {!isAvailable && !isBooked && (
+                    <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">
+                      Недоступен
+                    </span>
+                  )}
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => canBook && onBookAppointment(slot, manager, refetchFn)}
+                  disabled={!canBook}
+                  className={`text-xs px-3 py-1 ${
+                    !canBook
+                      ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
+                      : 'bg-[#213659] hover:bg-[#1a2a4a] text-white'
+                  }`}
+                >
+                  <UserPlus className="w-3 h-3 mr-1" />
+                  {isBooked ? 'Занято' : !isAvailable ? 'Недоступен' : 'Записаться'}
+                </Button>
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-6 text-gray-500">

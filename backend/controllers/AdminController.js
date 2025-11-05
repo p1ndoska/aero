@@ -57,8 +57,8 @@ const AdminController = {
             console.log("Создан пользователь:", user);
             res.status(200).json({ message: "Пользователь успешно добавлен", user });
         } catch (err) {
-            console.error(err);
-            return res.status(500).json({ error: "Internal server error" });
+            console.error("Error creating user:", err);
+            return res.status(500).json({ error: "Internal server error", details: err.message });
         }
     },
 };

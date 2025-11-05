@@ -143,25 +143,37 @@ export default function ReceptionBooking({ manager, onBookAppointment }: Recepti
                     {formatDate(slots[0].startTime)}
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                    {slots.map((slot) => (
-                      <Button
-                        key={slot.id}
-                        variant={selectedSlot?.id === slot.id ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handleSlotSelect(slot)}
-                        className="text-xs"
-                        disabled={!slot.isAvailable}
-                      >
-                        <Clock className="w-3 h-3 mr-1" />
-                        {formatTime(slot.startTime)}
-                      </Button>
-                    ))}
+                    {slots.map((slot) => {
+                      const isBooked = (slot as any).isBooked || false;
+                      const isAvailable = slot.isAvailable && !isBooked;
+                      return (
+                        <Button
+                          key={slot.id}
+                          variant={selectedSlot?.id === slot.id ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => isAvailable && handleSlotSelect(slot)}
+                          disabled={!isAvailable}
+                          className={`text-xs ${
+                            isBooked 
+                              ? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed opacity-60' 
+                              : ''
+                          }`}
+                          title={isBooked ? 'Слот занят' : !slot.isAvailable ? 'Слот недоступен' : 'Нажмите для записи'}
+                        >
+                          <Clock className="w-3 h-3 mr-1" />
+                          {formatTime(slot.startTime)}
+                          {isBooked && (
+                            <span className="ml-1 text-[8px] text-red-600">ЗАНЯТО</span>
+                          )}
+                        </Button>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
             </div>
             
-            {selectedSlot && (
+            {selectedSlot && !(selectedSlot as any).isBooked && (
               <div className="border-t pt-4">
                 <div className="bg-blue-50 p-3 rounded-lg mb-3">
                   <div className="flex items-center gap-2 text-blue-800 font-medium mb-1">
@@ -174,6 +186,7 @@ export default function ReceptionBooking({ manager, onBookAppointment }: Recepti
                 </div>
                 <Button 
                   onClick={handleBookAppointment}
+                  disabled={(selectedSlot as any).isBooked || !selectedSlot.isAvailable}
                   className="w-full bg-[#213659] hover:bg-[#1a2a4a] text-white"
                 >
                   Записаться на прием

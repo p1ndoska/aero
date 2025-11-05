@@ -37,15 +37,9 @@ export const NewsCard = ({news}:{news:NewsItem})=>{
                     <h3 className='text-lg font-semibold text-[#213659] mt-2 mb-2 line-clamp-2 hover:text-[#1a2a4a] transition-colors duration-300'>
                         {translatedName}
                     </h3>
-                    <p className='text-[#213659] text-sm mb-3 line-clamp-3'>
+                    <p className='text-[#213659] text-sm mb-3 line-clamp-2'>
                         {translatedContent || t('no_data')}
                     </p>
-
-                    <div className='text-xs text-[#213659]'>
-                        {news.createdAt ? new Date(news.createdAt).toLocaleDateString(
-                            language === 'ru' ? 'ru-RU' : language === 'en' ? 'en-US' : 'be-BY'
-                        ) : t('no_data')}
-                    </div>
                 </div>
             </div>
         </Link>

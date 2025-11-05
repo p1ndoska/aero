@@ -9,9 +9,9 @@ const ReceptionSlotController = {
         const { startDate, endDate } = req.query;
         
         try {
+            // Возвращаем ВСЕ слоты (и доступные, и занятые), чтобы фронтенд мог их отобразить
             const whereClause = {
-                managementId: parseInt(managementId),
-                isAvailable: true
+                managementId: parseInt(managementId)
             };
 
             if (startDate && endDate) {
@@ -97,8 +97,39 @@ const ReceptionSlotController = {
         const { slotId } = req.params;
         const { email, notes, fullName } = req.body;
 
+        console.log('=== Book Slot Request ===');
+        console.log('Slot ID:', slotId);
+        console.log('Request body:', JSON.stringify(req.body, null, 2));
+        console.log('Email:', email, 'Type:', typeof email);
+        console.log('FullName:', fullName, 'Type:', typeof fullName);
+        console.log('Notes:', notes, 'Type:', typeof notes);
+        console.log('Email exists:', !!email);
+        console.log('FullName exists:', !!fullName);
+        console.log('Email trimmed:', email ? email.trim() : 'null');
+        console.log('FullName trimmed:', fullName ? fullName.trim() : 'null');
+
         if (!email || !fullName) {
-            return res.status(400).json({ error: 'Email и ФИО обязательны для записи' });
+            const missingFields = [];
+            if (!email) missingFields.push('email');
+            if (!fullName) missingFields.push('fullName');
+            console.error('Missing required fields:', missingFields);
+            return res.status(400).json({ 
+                error: 'Email и ФИО обязательны для записи',
+                details: `Отсутствуют поля: ${missingFields.join(', ')}`,
+                received: { email: !!email, fullName: !!fullName }
+            });
+        }
+
+        // Проверяем, что поля не пустые после trim
+        if (!email.trim() || !fullName.trim()) {
+            console.error('Empty fields after trim:', { 
+                email: email.trim(), 
+                fullName: fullName.trim() 
+            });
+            return res.status(400).json({ 
+                error: 'Email и ФИО не могут быть пустыми',
+                details: 'Поля должны содержать непустые значения'
+            });
         }
 
         try {
@@ -113,17 +144,48 @@ const ReceptionSlotController = {
                 return res.status(404).json({ error: 'Слот не найден' });
             }
 
+            // Проверяем доступность слота атомарно в одном запросе
+            console.log('Slot status:', { 
+                id: slot.id, 
+                isAvailable: slot.isAvailable, 
+                isBooked: slot.isBooked,
+                bookedBy: slot.bookedBy 
+            });
+            
             if (!slot.isAvailable || slot.isBooked) {
-                return res.status(400).json({ error: 'Слот недоступен для записи' });
+                console.error('Slot is not available:', {
+                    isAvailable: slot.isAvailable,
+                    isBooked: slot.isBooked,
+                    reason: !slot.isAvailable ? 'isAvailable is false' : 'isBooked is true'
+                });
+                return res.status(400).json({ 
+                    error: 'Слот недоступен для записи',
+                    details: slot.isBooked ? 'Слот уже забронирован' : 'Слот недоступен'
+                });
             }
 
-            const updatedSlot = await prisma.receptionSlot.update({
-                where: { id: parseInt(slotId) },
+            // Используем updateMany с условием для предотвращения race condition
+            const updateResult = await prisma.receptionSlot.updateMany({
+                where: { 
+                    id: parseInt(slotId),
+                    isBooked: false,
+                    isAvailable: true
+                },
                 data: {
                     isBooked: true,
-                    bookedBy: email,
-                    notes: notes || null
-                },
+                    bookedBy: email.trim(),
+                    notes: notes ? notes.trim() : null
+                }
+            });
+
+            // Если ни одна запись не была обновлена, значит слот уже забронирован
+            if (updateResult.count === 0) {
+                return res.status(400).json({ error: 'Слот уже занят' });
+            }
+
+            // Получаем обновленный слот
+            const updatedSlot = await prisma.receptionSlot.findUnique({
+                where: { id: parseInt(slotId) },
                 include: {
                     management: true
                 }
@@ -132,9 +194,9 @@ const ReceptionSlotController = {
             // Отправка email уведомлений
             try {
                 const bookingData = {
-                    fullName,
-                    email,
-                    notes
+                    fullName: fullName.trim(),
+                    email: email.trim(),
+                    notes: notes ? notes.trim() : undefined
                 };
 
                 const slotData = {
@@ -150,6 +212,11 @@ const ReceptionSlotController = {
                     offices: slot.management.offices
                 };
 
+                console.log('=== Attempting to send booking confirmation email ===');
+                console.log('To:', email);
+                console.log('FullName:', fullName);
+                console.log('Manager:', managerData.name);
+
                 // Отправка подтверждения пользователю
                 const emailResult = await emailService.sendBookingConfirmation(
                     bookingData, 
@@ -157,17 +224,33 @@ const ReceptionSlotController = {
                     managerData
                 );
 
+                if (emailResult.success) {
+                    console.log('✅ Booking confirmation email sent successfully!');
+                    console.log('Message ID:', emailResult.messageId);
+                } else {
+                    console.error('❌ Failed to send booking confirmation email');
+                    console.error('Error:', emailResult.error);
+                    if (emailResult.details) {
+                        console.error('Details:', emailResult.details);
+                    }
+                }
+
                 // Отправка уведомления администратору
-                await emailService.sendAdminNotification(
+                const adminNotificationResult = await emailService.sendAdminNotification(
                     bookingData, 
                     slotData, 
                     managerData
                 );
 
-                console.log('Email notifications sent:', emailResult);
+                if (adminNotificationResult.success) {
+                    console.log('✅ Admin notification email sent successfully:', adminNotificationResult.messageId);
+                } else {
+                    console.error('❌ Failed to send admin notification email:', adminNotificationResult.error);
+                }
             } catch (emailError) {
-                console.error('Email sending failed:', emailError);
+                console.error('❌ Email sending failed:', emailError);
                 // Не прерываем процесс бронирования, если email не отправился
+                // Пользователь все равно получит успешный ответ о бронировании
             }
 
             res.json({
@@ -277,6 +360,76 @@ const ReceptionSlotController = {
         } catch (error) {
             console.error('getBookedSlots error', error);
             res.status(500).json({ error: 'Internal server error' });
+        }
+    },
+
+    // Получить все забронированные слоты для админ панели
+    getAllBookedSlots: async (req, res) => {
+        const { startDate, endDate } = req.query;
+
+        try {
+            // Получаем ВСЕ забронированные слоты БЕЗ фильтрации по дате в where clause
+            // Это обходит проблему Prisma с требованием managementId при использовании индекса
+            let bookedSlots = await prisma.receptionSlot.findMany({
+                where: {
+                    isBooked: true
+                },
+                orderBy: [
+                    { date: 'asc' },
+                    { startTime: 'asc' }
+                ]
+            });
+
+            // Фильтруем по датам в JavaScript, если они указаны
+            if (startDate && endDate) {
+                try {
+                    const start = new Date(startDate);
+                    const end = new Date(endDate);
+                    end.setHours(23, 59, 59, 999);
+                    
+                    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                        return res.status(400).json({ error: 'Invalid date format' });
+                    }
+                    
+                    bookedSlots = bookedSlots.filter(slot => {
+                        const slotDate = new Date(slot.date);
+                        return slotDate >= start && slotDate <= end;
+                    });
+                } catch (e) {
+                    console.error('Error parsing dates:', e);
+                    return res.status(400).json({ error: 'Invalid date format', details: e.message });
+                }
+            }
+
+            // Получаем уникальные managementId
+            const managementIds = [...new Set(bookedSlots.map(slot => slot.managementId))];
+
+            // Получаем данные management одним запросом
+            const managementData = await prisma.management.findMany({
+                where: {
+                    id: { in: managementIds }
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    position: true,
+                    phone: true
+                }
+            });
+
+            // Создаем мапу для быстрого поиска
+            const managementMap = new Map(managementData.map(m => [m.id, m]));
+
+            // Объединяем данные
+            const formattedSlots = bookedSlots.map(slot => ({
+                ...slot,
+                management: managementMap.get(slot.managementId) || null
+            }));
+
+            res.json(formattedSlots);
+        } catch (error) {
+            console.error('getAllBookedSlots error', error);
+            res.status(500).json({ error: 'Internal server error', details: error.message });
         }
     },
 

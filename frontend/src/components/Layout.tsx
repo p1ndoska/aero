@@ -4,7 +4,7 @@ import { Sidebar } from "./Sidebar";
 import { motion } from "framer-motion";
 import { ToastContainer } from "react-toastify";
 import CookieConsent from "./CookieConsent";
-import Footer from "./ui/Footer";
+import Footer from "./Footer";
 
 
 export const Layout = () => {
@@ -22,16 +22,18 @@ export const Layout = () => {
                     <Sidebar />
                 </div>
 
-                {/* Основной контент */}
-                <div className="flex-1 overflow-x-hidden">
-                    <div className="w-full px-4 sm:px-6 lg:px-8">
+                {/* Основной контент и футер */}
+                <div className="flex-1 flex flex-col overflow-x-hidden">
+                    <div className="w-full px-4 sm:px-6 lg:px-8 flex-1">
                         <Outlet />
+                    </div>
+                    
+                    {/* Футер на ширине контентного блока */}
+                    <div className="min-[951px]:ml-0">
+                        <Footer />
                     </div>
                 </div>
             </div>
-            
-            {/* Футер */}
-            <Footer />
 
             {/* Мобильный сайдбар (появляется при ширине <951px) */}
             <motion.div

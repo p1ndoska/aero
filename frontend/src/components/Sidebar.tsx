@@ -1,6 +1,6 @@
 //@ts-nocheck
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import {
@@ -15,6 +15,7 @@ import {
 } from "react-icons/fa";
 
 import {LoginForm} from "@/components/LoginForm.tsx";
+import AccessibilitySettings from "@/components/AccessibilitySettings";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../features/user/userSlice";
 import { useGetCategoriesQuery } from "@/app/services/categoryApi";
@@ -33,13 +34,24 @@ export const Sidebar = () => {
     const [showSocialMedia, setShowSocialMedia] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const { isAuthenticated, user } = useSelector((state: any) => state.auth);
     const { t, language } = useLanguage();
 
     const handleLogout = () => {
         dispatch(logout());
+    };
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchQuery.trim().length >= 2) {
+            navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+            setSearchQuery('');
+            setIsMobileOpen(false);
+        }
     };
 
     const roleValue = user?.role;
@@ -225,18 +237,18 @@ export const Sidebar = () => {
             </div>
 
             {/* Левое меню (desktop - 769px и больше) */}
-            <aside className="hidden min-[951px]:block w-[260px] h-full border bg-[#eff6ff] group">
+            <aside className="hidden min-[951px]:block w-[260px] h-screen border bg-[#eff6ff] group fixed left-0 top-0 z-30">
                 <div className="flex h-full flex-col">
                     <div className="p-4 flex items-center justify-center w-full">
                         <Link to="/" className="flex flex-col items-center text-center">
-                            <img src="/logo.png" className="h-20 w-auto max-w-xs object-contain" alt="Логотип Белаэронавигация" />
-                            <p className="text-sm md:text-base lg:text-lg font-light leading-relaxed max-w-xs mx-auto whitespace-pre-line text-[#213659] break-words">
+                            <img src="/logo.png" className="h-24 w-auto max-w-xs object-contain" alt="Логотип Белаэронавигация" />
+                            <p className="text-sm font-light leading-relaxed max-w-xs mx-auto whitespace-pre-line text-[#213659] break-words">
                                 {t('company_full_name')}
                             </p>
                         </Link>
                     </div>
 
-                    <nav className="flex-1 px-4 py-6 relative capitalize">
+                    <nav className="flex-1 px-3 py-3 relative capitalize">
                         <ul className="space-y-2">
                             {menuItems.map((item) => (
                                 <li
@@ -283,23 +295,27 @@ export const Sidebar = () => {
                         </ul>
                     </nav>
 
-                    <div className="px-4 py-3 border-b">
-                        <div className="flex items-center mb-2">
+                    <div className="px-3 py-2 border-b">
+                        <form onSubmit={handleSearch} className="flex items-center mb-2">
                             <div className="relative flex-1">
                                 <input
                                     type="text"
                                     placeholder={t('search')}
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
                                     className="w-full pl-8 pr-3 py-1 text-sm bg-transparent border-b border-[#213659] focus:outline-none focus:border-b-2 focus:border-[#213659]"
                                 />
-                                <FaSearch className="absolute left-0 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+                                <button 
+                                    type="submit"
+                                    className="absolute left-0 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#213659] transition-colors"
+                                >
+                                    <FaSearch size={14} />
+                                </button>
                             </div>
-                        </div>
+                        </form>
                         
-                        <div className="flex flex-col gap-2 mt-2">
-                            <Button variant="ghost" size="sm" className="text-xs flex items-center gap-1 text-[#213659]">
-                                <FaLowVision size={14} />
-                                {t('version_visually_impaired')}
-                            </Button>
+                        <div className="flex flex-col gap-1 mt-2">
+                            <AccessibilitySettings />
                             {!isAuthenticated ? (
                                 <Button
                                     variant="ghost"
@@ -342,25 +358,25 @@ export const Sidebar = () => {
                     </div>
 
                     {/* Контакты */}
-                    <div className="border-t p-4 text-sm text-[#6A81A9]">
-                        <h3 className="font-semibold mb-2 text-[#213659]">{t('contacts')}</h3>
-                        <div className="space-y-1">
+                    <div className="border-t p-3 text-xs text-[#6A81A9]">
+                        <h3 className="font-semibold mb-1 text-[#213659]">{t('contacts')}</h3>
+                        <div className="space-y-0.5">
                             <div className="flex items-center">
-                                <FaPhone className="mr-2" size={12} />
+                                <FaPhone className="mr-1" size={10} />
                                 <span>+375 (17) 123-45-67</span>
                             </div>
                             <div className="flex items-center">
-                                <FaPhone className="mr-2" size={12} />
+                                <FaPhone className="mr-1" size={10} />
                                 <span>+375 (17) 987-65-43</span>
                             </div>
                             <div className="flex items-center">
-                                <FaEnvelope className="mr-2" size={12} />
+                                <FaEnvelope className="mr-1" size={10} />
                                 <span>info@belaeronavigation.by</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="border-t p-4 text-sm text-[#6A81A9]">
+                    <div className="border-t p-3 text-xs text-[#6A81A9] flex-1">
                         <p>{t('address')}: {t('minsk_address')}</p>
                         <p>{t('working_hours')}: {t('working_time')}</p>
                     </div>
@@ -419,6 +435,24 @@ export const Sidebar = () => {
                     </nav>
 
                     <div className="border-t pt-4 mt-4 space-y-2">
+                        <form onSubmit={handleSearch} className="mb-3">
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder={t('search')}
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full pl-8 pr-3 py-1 text-sm bg-white border border-[#213659] rounded focus:outline-none focus:border-[#213659] focus:ring-1 focus:ring-[#213659]"
+                                />
+                                <button 
+                                    type="submit"
+                                    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#213659] transition-colors"
+                                >
+                                    <FaSearch size={14} />
+                                </button>
+                            </div>
+                        </form>
+                        
                         <button className="flex items-center gap-2 text-[#213659] text-sm">
                             <FaLowVision size={14} />
                             {t('version_visually_impaired')}

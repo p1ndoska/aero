@@ -335,6 +335,7 @@ p[style*="--text-align: justify"] {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -345,18 +346,389 @@ p[style*="--text-align: justify"] {
   border: 1px solid #e5e7eb !important;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
   opacity: 1 !important;
+  z-index: 50 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 [data-radix-select-content] * {
-  background-color: transparent !important;
+  background-color: white !important;
+  opacity: 1 !important;
+}
+
+[data-radix-select-content] [data-radix-select-item] {
+  background-color: white !important;
+  opacity: 1 !important;
+}
+
+[data-radix-select-content] [data-radix-select-item]:hover {
+  background-color: #f3f4f6 !important;
+  opacity: 1 !important;
+}
+
+[data-radix-select-content] [data-radix-select-item][data-highlighted] {
+  background-color: #e5e7eb !important;
+  opacity: 1 !important;
 }
 
 /* Стили для модальных окон - делаем их непрозрачными */
 [data-radix-dialog-content] {
   background-color: white !important;
   opacity: 1 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 [data-radix-dialog-content] * {
+  background-color: white !important;
+  opacity: 1 !important;
+}
+
+[data-radix-dialog-content] [data-radix-dialog-title],
+[data-radix-dialog-content] [data-radix-dialog-description] {
   background-color: transparent !important;
+  opacity: 1 !important;
+}
+
+/* Стили для других выпадающих элементов - делаем их непрозрачными */
+[data-radix-popover-content],
+[data-radix-dropdown-content],
+[data-radix-menu-content] {
+  background-color: white !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  opacity: 1 !important;
+  z-index: 50 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+[data-radix-popover-content] *,
+[data-radix-dropdown-content] *,
+[data-radix-menu-content] * {
+  background-color: white !important;
+  opacity: 1 !important;
+}
+
+[data-radix-popover-content] [data-radix-menu-item],
+[data-radix-dropdown-content] [data-radix-menu-item],
+[data-radix-menu-content] [data-radix-menu-item] {
+  background-color: white !important;
+  opacity: 1 !important;
+}
+
+[data-radix-popover-content] [data-radix-menu-item]:hover,
+[data-radix-dropdown-content] [data-radix-menu-item]:hover,
+[data-radix-menu-content] [data-radix-menu-item]:hover {
+  background-color: #f3f4f6 !important;
+  opacity: 1 !important;
+}
+
+/* ===== СТИЛИ ДОСТУПНОСТИ ===== */
+
+/* Базовые переменные для доступности */
+:root {
+  --accessibility-font-size: 1rem;
+  --accessibility-line-height: 1.5;
+  --accessibility-letter-spacing: 0px;
+  --accessibility-font-family: inherit;
+}
+
+/* Режим доступности */
+body.accessibility-mode {
+  line-height: var(--accessibility-line-height) !important;
+  letter-spacing: var(--accessibility-letter-spacing) !important;
+  font-family: var(--accessibility-font-family) !important;
+}
+
+body.accessibility-mode * {
+  font-size: calc(1rem * var(--accessibility-font-size)) !important;
+  line-height: var(--accessibility-line-height) !important;
+  letter-spacing: var(--accessibility-letter-spacing) !important;
+  font-family: var(--accessibility-font-family) !important;
+}
+
+/* Исключения для элементов, которые не должны масштабироваться */
+body.accessibility-mode img,
+body.accessibility-mode svg,
+body.accessibility-mode canvas,
+body.accessibility-mode video,
+body.accessibility-mode iframe {
+  font-size: initial !important;
+}
+
+/* Улучшенное масштабирование для текстовых элементов */
+body.accessibility-mode p,
+body.accessibility-mode span,
+body.accessibility-mode div,
+body.accessibility-mode h1,
+body.accessibility-mode h2,
+body.accessibility-mode h3,
+body.accessibility-mode h4,
+body.accessibility-mode h5,
+body.accessibility-mode h6,
+body.accessibility-mode a,
+body.accessibility-mode button,
+body.accessibility-mode input,
+body.accessibility-mode textarea,
+body.accessibility-mode select,
+body.accessibility-mode label {
+  font-size: calc(1rem * var(--accessibility-font-size)) !important;
+  line-height: var(--accessibility-line-height) !important;
+  letter-spacing: var(--accessibility-letter-spacing) !important;
+}
+
+/* Высокая контрастность */
+body.high-contrast {
+  --foreground: #000000 !important;
+  --background: #ffffff !important;
+  --primary: #000000 !important;
+  --secondary: #ffffff !important;
+  --muted: #f5f5f5 !important;
+  --border: #000000 !important;
+}
+
+body.high-contrast * {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+}
+
+body.high-contrast .bg-primary,
+body.high-contrast button,
+body.high-contrast .btn {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+}
+
+body.high-contrast .text-primary,
+body.high-contrast h1,
+body.high-contrast h2,
+body.high-contrast h3,
+body.high-contrast h4,
+body.high-contrast h5,
+body.high-contrast h6 {
+  color: #000000 !important;
+}
+
+body.high-contrast .border,
+body.high-contrast input,
+body.high-contrast textarea,
+body.high-contrast select {
+  border-color: #000000 !important;
+  border-width: 2px !important;
+}
+
+body.high-contrast a {
+  color: #0000ff !important;
+  text-decoration: underline !important;
+}
+
+body.high-contrast a:hover {
+  color: #000080 !important;
+}
+
+/* Цветовые схемы */
+body.color-scheme-dark * {
+  color: #ffffff !important;
+  background-color: #000000 !important;
+}
+
+body.color-scheme-dark .bg-primary,
+body.color-scheme-dark button,
+body.color-scheme-dark .btn {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #ffffff !important;
+}
+
+body.color-scheme-dark .text-primary,
+body.color-scheme-dark h1,
+body.color-scheme-dark h2,
+body.color-scheme-dark h3,
+body.color-scheme-dark h4,
+body.color-scheme-dark h5,
+body.color-scheme-dark h6 {
+  color: #ffffff !important;
+}
+
+body.color-scheme-dark .border,
+body.color-scheme-dark input,
+body.color-scheme-dark textarea,
+body.color-scheme-dark select {
+  border-color: #ffffff !important;
+  border-width: 2px !important;
+}
+
+body.color-scheme-dark a {
+  color: #87ceeb !important;
+  text-decoration: underline !important;
+}
+
+body.color-scheme-dark a:hover {
+  color: #add8e6 !important;
+}
+
+body.color-scheme-inverted * {
+  color: #ffff00 !important;
+  background-color: #000080 !important;
+}
+
+body.color-scheme-inverted .bg-primary,
+body.color-scheme-inverted button,
+body.color-scheme-inverted .btn {
+  background-color: #ffff00 !important;
+  color: #000080 !important;
+  border-color: #ffff00 !important;
+}
+
+body.color-scheme-inverted .text-primary,
+body.color-scheme-inverted h1,
+body.color-scheme-inverted h2,
+body.color-scheme-inverted h3,
+body.color-scheme-inverted h4,
+body.color-scheme-inverted h5,
+body.color-scheme-inverted h6 {
+  color: #ffff00 !important;
+}
+
+body.color-scheme-inverted .border,
+body.color-scheme-inverted input,
+body.color-scheme-inverted textarea,
+body.color-scheme-inverted select {
+  border-color: #ffff00 !important;
+  border-width: 2px !important;
+}
+
+body.color-scheme-inverted a {
+  color: #ffff00 !important;
+  text-decoration: underline !important;
+}
+
+body.color-scheme-inverted a:hover {
+  color: #ffffff !important;
+}
+
+/* Уменьшение анимаций */
+body.reduce-motion *,
+body.reduce-motion *::before,
+body.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  transition-delay: 0ms !important;
+  scroll-behavior: auto !important;
+}
+
+body.reduce-motion [data-framer-motion] {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Подсветка фокуса */
+body.show-focus *:focus {
+  outline: 3px solid #0066cc !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.3) !important;
+  border-radius: 2px !important;
+}
+
+body.show-focus button:focus,
+body.show-focus input:focus,
+body.show-focus textarea:focus,
+body.show-focus select:focus,
+body.show-focus a:focus,
+body.show-focus [tabindex]:focus {
+  outline: 3px solid #0066cc !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.3) !important;
+  border-radius: 2px !important;
+}
+
+body.show-focus button:focus-visible,
+body.show-focus input:focus-visible,
+body.show-focus textarea:focus-visible,
+body.show-focus select:focus-visible,
+body.show-focus a:focus-visible {
+  outline: 3px solid #0066cc !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.3) !important;
+}
+
+/* Улучшенная читаемость для режима доступности */
+body.accessibility-mode p,
+body.accessibility-mode span,
+body.accessibility-mode div,
+body.accessibility-mode h1,
+body.accessibility-mode h2,
+body.accessibility-mode h3,
+body.accessibility-mode h4,
+body.accessibility-mode h5,
+body.accessibility-mode h6 {
+  margin-bottom: calc(var(--accessibility-line-height) * 0.5em) !important;
+}
+
+body.accessibility-mode h1,
+body.accessibility-mode h2,
+body.accessibility-mode h3,
+body.accessibility-mode h4,
+body.accessibility-mode h5,
+body.accessibility-mode h6 {
+  font-weight: bold !important;
+  margin-top: calc(var(--accessibility-line-height) * 1em) !important;
+}
+
+/* Улучшенные кнопки для доступности */
+body.accessibility-mode button {
+  min-height: 44px !important;
+  min-width: 44px !important;
+  padding: 12px 16px !important;
+}
+
+/* Улучшенные поля ввода */
+body.accessibility-mode input,
+body.accessibility-mode textarea,
+body.accessibility-mode select {
+  min-height: 44px !important;
+  padding: 12px !important;
+  border-width: 2px !important;
+}
+
+/* Улучшенные ссылки */
+body.accessibility-mode a {
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+}
+
+body.accessibility-mode a:hover {
+  text-decoration-thickness: 3px !important;
+}
+
+/* Скрытие декоративных элементов в режиме доступности */
+body.accessibility-mode .decoration-only {
+  display: none !important;
+}
+
+/* Улучшенная навигация */
+body.accessibility-mode nav a {
+  display: block !important;
+  padding: 8px 12px !important;
+  margin: 2px 0 !important;
+}
+
+/* Улучшенные таблицы */
+body.accessibility-mode table {
+  border-collapse: collapse !important;
+  border: 2px solid var(--border) !important;
+}
+
+body.accessibility-mode th,
+body.accessibility-mode td {
+  border: 1px solid var(--border) !important;
+  padding: 12px !important;
+}
+
+body.accessibility-mode th {
+  background-color: var(--muted) !important;
+  font-weight: bold !important;
 }

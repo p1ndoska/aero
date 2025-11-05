@@ -5,7 +5,22 @@ const AboutCompanyPageContentController = {
         try {
             const content = await prisma.aboutCompanyPageContent.findFirst();
             if (!content) {
-                return res.status(404).json({ error: 'About company page content not found' });
+                // Возвращаем пустой объект с дефолтными значениями вместо 404
+                return res.json({
+                    id: null,
+                    pageType: 'default',
+                    title: 'О предприятии',
+                    titleEn: 'About the Company',
+                    titleBe: 'Пра прадпрыемстве',
+                    subtitle: '',
+                    subtitleEn: '',
+                    subtitleBe: '',
+                    content: [],
+                    contentEn: [],
+                    contentBe: [],
+                    createdAt: null,
+                    updatedAt: null
+                });
             }
             res.json(content);
         } catch (error) {

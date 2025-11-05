@@ -5,6 +5,8 @@ import { uploadApi } from "../app/services/uploadApi";
 import { aeronauticalInfoCategoryApi } from "../app/services/aeronauticalInfoCategoryApi";
 import { appealsCategoryApi } from "../app/services/appealsCategoryApi";
 import { servicesCategoryApi } from "../app/services/servicesCategoryApi";
+import { heroImageApi } from "../app/services/heroImageApi";
+import { searchApi } from "../app/services/searchApi";
 import auth from "../features/user/userSlice";
 
 export const store = configureStore({
@@ -15,6 +17,8 @@ export const store = configureStore({
     [aeronauticalInfoCategoryApi.reducerPath]: aeronauticalInfoCategoryApi.reducer,
     [appealsCategoryApi.reducerPath]: appealsCategoryApi.reducer,
     [servicesCategoryApi.reducerPath]: servicesCategoryApi.reducer,
+    [heroImageApi.reducerPath]: heroImageApi.reducer,
+    [searchApi.reducerPath]: searchApi.reducer,
     auth,
   },
   middleware: (getDefaultMiddleware) =>
@@ -24,7 +28,9 @@ export const store = configureStore({
       uploadApi.middleware,
       aeronauticalInfoCategoryApi.middleware,
       appealsCategoryApi.middleware,
-      servicesCategoryApi.middleware
+      servicesCategoryApi.middleware,
+      heroImageApi.middleware,
+      searchApi.middleware
     ),
 });
 

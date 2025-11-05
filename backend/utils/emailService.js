@@ -9,22 +9,40 @@ class EmailService {
 
     initializeTransporter() {
         // Настройка SMTP транспорта
+        // Поддерживаем как EMAIL_USER/EMAIL_PASS, так и SMTP_USER/SMTP_PASS для обратной совместимости
+        const emailUser = process.env.EMAIL_USER || process.env.SMTP_USER || 'your-email@gmail.com';
+        const emailPass = process.env.EMAIL_PASS || process.env.SMTP_PASS || 'your-app-password';
+        
+        console.log('=== Email Service Configuration ===');
+        console.log('EMAIL_USER:', emailUser ? `${emailUser.substring(0, 3)}***` : 'NOT SET');
+        console.log('EMAIL_PASS:', emailPass ? '***SET***' : 'NOT SET');
+        console.log('Service: Gmail (auto-configured)');
+        
+        if (emailUser === 'your-email@gmail.com' || emailPass === 'your-app-password') {
+            console.warn('⚠️ WARNING: Email credentials are using default values!');
+            console.warn('⚠️ Please set EMAIL_USER and EMAIL_PASS in your .env file');
+        }
+        
+        // Используем service: 'gmail' как в voluntaryReport.js, чтобы автоматически настроить правильные параметры
         this.transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: process.env.SMTP_PORT || 587,
-            secure: false, // true для 465, false для других портов
+            service: 'gmail',
             auth: {
-                user: process.env.SMTP_USER || 'your-email@gmail.com',
-                pass: process.env.SMTP_PASS || 'your-app-password'
+                user: emailUser,
+                pass: emailPass
             }
         });
 
         // Проверка подключения
         this.transporter.verify((error, success) => {
             if (error) {
-                console.log('❌ Email service error:', error);
+                console.error('❌ Email service connection error:', error.message);
+                console.error('❌ Error code:', error.code);
+                console.error('❌ Error command:', error.command);
+                if (error.response) {
+                    console.error('❌ SMTP response:', error.response);
+                }
             } else {
-                console.log('✅ Email service ready');
+                console.log('✅ Email service ready and verified');
             }
         });
     }
@@ -47,9 +65,21 @@ class EmailService {
      */
     async sendBookingConfirmation(bookingData, slotData, managerData) {
         try {
+            // Проверяем, что transporter инициализирован
+            if (!this.transporter) {
+                console.error('❌ Email transporter is not initialized!');
+                return { success: false, error: 'Email transporter is not initialized' };
+            }
+
             const { fullName, email, notes } = bookingData;
             const { date, startTime, endTime } = slotData;
             const { name, position, phone, offices } = managerData;
+
+            // Проверяем обязательные данные
+            if (!email || !fullName) {
+                console.error('❌ Missing required data for email:', { email: !!email, fullName: !!fullName });
+                return { success: false, error: 'Missing required data: email and fullName are required' };
+            }
 
             // Форматирование даты и времени
             const appointmentDate = new Date(date).toLocaleDateString('ru-RU', {
@@ -150,6 +180,14 @@ class EmailService {
                             <p>Если у вас возникли вопросы или необходимо перенести встречу, пожалуйста, свяжитесь с нами заранее.</p>
                         </div>
                         
+                        <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+                            <h4 style="margin-top: 0; color: #856404;">Отмена записи:</h4>
+                            <p style="margin-bottom: 0; color: #856404;">
+                                <strong>Если вам необходимо отменить запись, пожалуйста, свяжитесь с нами по телефону:</strong><br>
+                                <span style="font-size: 18px; font-weight: bold; color: #213659;">+375 29 888-88-88</span>
+                            </p>
+                        </div>
+                        
                         <p>Пожалуйста, приходите вовремя. При возникновении непредвиденных обстоятельств, просим заранее уведомить об отмене или переносе встречи.</p>
                     </div>
                     
@@ -182,6 +220,9 @@ ${notes ? `- Цель визита: ${notes}` : ''}
 Контактная информация:
 Если у вас возникли вопросы или необходимо перенести встречу, пожалуйста, свяжитесь с нами заранее.
 
+ОТМЕНА ЗАПИСИ:
+Если вам необходимо отменить запись, пожалуйста, свяжитесь с нами по телефону: +375 29 888-88-88
+
 Пожалуйста, приходите вовремя. При возникновении непредвиденных обстоятельств, просим заранее уведомить об отмене или переносе встречи.
 
 С уважением,
@@ -190,21 +231,39 @@ ${notes ? `- Цель визита: ${notes}` : ''}
 Это письмо отправлено автоматически, пожалуйста, не отвечайте на него.
             `;
 
+            // Используем EMAIL_USER с fallback на SMTP_USER
+            const fromEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@belaeronavigatsia.by';
+            
             const mailOptions = {
-                from: `"ГП «Белаэронавигация»" <${process.env.SMTP_USER || 'noreply@belaeronavigatsia.by'}>`,
+                from: `"ГП «Белаэронавигация»" <${fromEmail}>`,
                 to: email,
                 subject: 'Подтверждение записи на прием - ГП «Белаэронавигация»',
                 text: textContent,
                 html: htmlContent
             };
 
+            console.log('=== Sending Booking Confirmation Email ===');
+            console.log('To:', email);
+            console.log('From:', fromEmail);
+            console.log('Subject:', mailOptions.subject);
+            
             const result = await this.transporter.sendMail(mailOptions);
-            console.log('✅ Email sent successfully:', result.messageId);
+            console.log('✅ Email sent successfully!');
+            console.log('Message ID:', result.messageId);
+            console.log('Response:', result.response);
             return { success: true, messageId: result.messageId };
 
         } catch (error) {
             console.error('❌ Email sending error:', error);
-            return { success: false, error: error.message };
+            console.error('Error message:', error.message);
+            console.error('Error code:', error.code);
+            if (error.response) {
+                console.error('SMTP response:', error.response);
+            }
+            if (error.responseCode) {
+                console.error('Response code:', error.responseCode);
+            }
+            return { success: false, error: error.message, details: error.response || error.code };
         }
     }
 
@@ -262,20 +321,40 @@ ${notes ? `- Цель визита: ${notes}` : ''}
                 </html>
             `;
 
+            // Используем EMAIL_USER для адреса администратора, чтобы избежать ошибок с несуществующими доменами
+            const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER || process.env.SMTP_USER;
+            const fromEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@belaeronavigatsia.by';
+            
+            if (!adminEmail) {
+                console.warn('⚠️ ADMIN_EMAIL not set, skipping admin notification');
+                return { success: false, error: 'Admin email not configured' };
+            }
+            
+            console.log('=== Sending Admin Notification ===');
+            console.log('To:', adminEmail);
+            console.log('From:', fromEmail);
+            
             const mailOptions = {
-                from: `"ГП «Белаэронавигация»" <${process.env.SMTP_USER || 'noreply@belaeronavigatsia.by'}>`,
-                to: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
+                from: `"ГП «Белаэронавигация»" <${fromEmail}>`,
+                to: adminEmail,
                 subject: `Новая запись на прием - ${fullName}`,
                 html: htmlContent
             };
 
             const result = await this.transporter.sendMail(mailOptions);
-            console.log('✅ Admin notification sent:', result.messageId);
+            console.log('✅ Admin notification sent successfully!');
+            console.log('Message ID:', result.messageId);
+            console.log('Response:', result.response);
             return { success: true, messageId: result.messageId };
 
         } catch (error) {
             console.error('❌ Admin notification error:', error);
-            return { success: false, error: error.message };
+            console.error('Error message:', error.message);
+            console.error('Error code:', error.code);
+            if (error.response) {
+                console.error('SMTP response:', error.response);
+            }
+            return { success: false, error: error.message, details: error.response || error.code };
         }
     }
 

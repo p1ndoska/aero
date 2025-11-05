@@ -9,6 +9,7 @@ import { useGetAllBranchesQuery, useCreateBranchMutation, useUpdateBranchMutatio
 import ContentConstructor from './ContentConstructor';
 import type { Branch, CreateBranchRequest } from '@/types/branch';
 import { useSelector } from 'react-redux';
+import { BASE_URL } from '@/constants';
 
 type PhoneItem = { label: string; number: string };
 
@@ -553,7 +554,15 @@ export default function BranchManagement() {
                 {/* Существующие изображения */}
                 {isEdit && (formData.images || []).map((url, i) => (
                   <div key={`exist-${i}`} className="relative flex-shrink-0">
-                    <img src={url} alt={`img-${i}`} className="w-24 h-24 object-cover rounded border cursor-pointer" />
+                    <img 
+                      src={`${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`} 
+                      alt={`img-${i}`} 
+                      className="w-24 h-24 object-cover rounded border cursor-pointer"
+                      onError={(e) => {
+                        console.error('❌ Ошибка загрузки изображения:', url);
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
                     <Button type="button" variant="destructive" size="sm" className="absolute -top-2 -right-2 w-6 h-6 p-0"
                       onClick={() => setFormData({ ...formData, images: (formData.images || []).filter((_, idx) => idx !== i) })}>
                       <X className="w-3 h-3" />
@@ -847,9 +856,16 @@ export default function BranchManagement() {
                       {branch.images.slice(0, 3).map((image, index) => (
                         <img
                           key={index}
-                          src={image}
+                          src={`${BASE_URL}${image.startsWith('/') ? '' : '/'}${image}`}
                           alt={`Изображение ${index + 1}`}
                           className="w-16 h-16 object-cover rounded border"
+                          onError={(e) => {
+                            console.error('❌ Ошибка загрузки изображения филиала:', image);
+                            e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect width="64" height="64" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-size="10"%3EОшибка%3C/text%3E%3C/svg%3E';
+                          }}
+                          onLoad={() => {
+                            console.log('✅ Изображение филиала загружено:', image);
+                          }}
                         />
                       ))}
                       {branch.images.length > 3 && (

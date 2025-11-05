@@ -59,8 +59,8 @@ const ServiceRequestManagement: React.FC = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [filters, setFilters] = useState({
     search: '',
-    status: '',
-    serviceType: ''
+    status: 'all',
+    serviceType: 'all'
   });
   const [pagination, setPagination] = useState({
     page: 1,
@@ -124,8 +124,8 @@ const ServiceRequestManagement: React.FC = () => {
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
         ...(filters.search && { search: filters.search }),
-        ...(filters.status && { status: filters.status }),
-        ...(filters.serviceType && { serviceType: filters.serviceType })
+        ...(filters.status && filters.status !== 'all' && { status: filters.status }),
+        ...(filters.serviceType && filters.serviceType !== 'all' && { serviceType: filters.serviceType })
       });
 
       const response = await fetch(`http://localhost:8000/api/service-requests?${queryParams}`, {
@@ -314,7 +314,7 @@ const ServiceRequestManagement: React.FC = () => {
                   <SelectValue placeholder="Все статусы" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все статусы</SelectItem>
+                  <SelectItem value="all">Все статусы</SelectItem>
                   <SelectItem value="pending">Ожидает</SelectItem>
                   <SelectItem value="in_progress">В работе</SelectItem>
                   <SelectItem value="completed">Завершена</SelectItem>
@@ -329,7 +329,7 @@ const ServiceRequestManagement: React.FC = () => {
                   <SelectValue placeholder="Все типы" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все типы</SelectItem>
+                  <SelectItem value="all">Все типы</SelectItem>
                   {stats?.byServiceType.map((type) => (
                     <SelectItem key={type.serviceType} value={type.serviceType}>
                       {type.serviceType} ({type.count})

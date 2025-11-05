@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Edit, Trash2, Plus, Save, FolderOpen, Users, Building2, Newspaper, UserCheck, Briefcase, Building, Heart, Info, Plane, Mail, Settings } from "lucide-react";
+import { Edit, Trash2, Plus, Save, FolderOpen, Users, Building2, Newspaper, UserCheck, Briefcase, Building, Heart, Info, Plane, Mail, Settings, Image as ImageIcon, Calendar } from "lucide-react";
 import { getRolePermissions } from "@/utils/roleUtils";
 import { useGetRolesQuery, useCreateRoleMutation, useUpdateRoleMutation, useDeleteRoleMutation } from "@/app/services/roleApi";
 import { useGetAllUsersQuery, useUpdateUserMutation, useDeleteUserMutation, useRegisterMutation } from "@/app/services/userApi";
@@ -23,6 +23,8 @@ import AeronauticalInfoCategoryManagement from "./AeronauticalInfoCategoryManage
 import AppealsCategoryManagement from "./AppealsCategoryManagement";
 import ServicesCategoryManagement from "./ServicesCategoryManagement";
 import ServiceRequestManagement from "./ServiceRequestManagement";
+import HeroImageManagement from "./HeroImageManagement";
+import ReceptionBookingsCalendar from "./ReceptionBookingsCalendar";
 
 // lightweight hooks wrapper, since userApi doesn't export getAllUsers and updateUser hooks in current file
 // We'll implement a tiny adapter in /components/admin/hooks/useUsersApi.ts
@@ -56,7 +58,7 @@ export default function SuperAdminDashboard() {
         return 'roles';
     };
 
-    const [activeTab, setActiveTab] = useState<'roles' | 'users' | 'categories' | 'branches' | 'news' | 'management' | 'vacancies' | 'logos' | 'social-categories' | 'about-company-categories' | 'aeronautical-info-categories' | 'appeals-categories' | 'services-categories' | 'service-requests'>(getFirstAvailableTab());
+    const [activeTab, setActiveTab] = useState<'roles' | 'users' | 'categories' | 'branches' | 'news' | 'management' | 'vacancies' | 'logos' | 'social-categories' | 'about-company-categories' | 'aeronautical-info-categories' | 'appeals-categories' | 'services-categories' | 'service-requests' | 'hero-image' | 'reception-bookings'>(getFirstAvailableTab());
 
     // Принудительное обновление данных при переключении на вкладку логотипов
     useEffect(() => {
@@ -232,6 +234,25 @@ export default function SuperAdminDashboard() {
                        </div>
                        )}
 
+                       {/* Управление изображением верхнего блока - SUPER_ADMIN */}
+                       {permissions.canManageRoles && (
+                       <div
+                           className={`bg-white rounded-xl p-6 cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl border-2 ${
+                               activeTab === 'hero-image'
+                                       ? 'border-[#2A52BE] bg-[#E8F0FF]'
+                                   : 'border-gray-200 hover:border-[#2A52BE]'
+                           }`}
+                           onClick={() => setActiveTab('hero-image')}
+                       >
+                           <div className="text-center">
+                                   <ImageIcon className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
+                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   Изображение верхнего блока
+                               </h3>
+                           </div>
+                       </div>
+                       )}
+
                        {/* Категории соц. работы - SOCIAL_ADMIN и SUPER_ADMIN */}
                        {permissions.canManageSocial && (
                        <div
@@ -345,6 +366,25 @@ export default function SuperAdminDashboard() {
                                </div>
                            </div>
                        )}
+
+                       {/* Записи на приемы - MEDIA_ADMIN и SUPER_ADMIN */}
+                       {(permissions.canManageManagement || permissions.canManageRoles) && (
+                           <div
+                               className={`bg-white rounded-xl p-6 cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl border-2 ${
+                                   activeTab === 'reception-bookings'
+                                       ? 'border-[#2A52BE] bg-[#E8F0FF]'
+                                       : 'border-gray-200 hover:border-[#2A52BE]'
+                               }`}
+                               onClick={() => setActiveTab('reception-bookings')}
+                           >
+                               <div className="text-center">
+                                   <Calendar className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
+                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                       Записи на приемы
+                                   </h3>
+                               </div>
+                           </div>
+                       )}
                    </div>
 
             {/* Контент вкладок */}
@@ -363,6 +403,8 @@ export default function SuperAdminDashboard() {
                 {activeTab === 'appeals-categories' && permissions.canManageAppeals && <AppealsCategoryManagement />}
                 {activeTab === 'services-categories' && permissions.canManageServices && <ServicesCategoryManagement />}
                 {activeTab === 'service-requests' && permissions.canManageServices && <ServiceRequestManagement />}
+                {activeTab === 'hero-image' && permissions.canManageRoles && <HeroImageManagement />}
+                {(activeTab === 'reception-bookings' && (permissions.canManageManagement || permissions.canManageRoles)) && <ReceptionBookingsCalendar />}
             </div>
         </div>
     );
@@ -587,7 +629,7 @@ function UsersPanel() {
                     </Select>
                     <Button 
                         type="submit" 
-                        className="bg-[#2A52BE] hover:bg-[#1e3a8a]"
+                        className="bg-[#213659] hover:bg-[#213659] text-white"
                         disabled={!newUser.firstName?.trim() || !newUser.lastName?.trim() || !newUser.email?.trim() || !newUser.password?.trim() || !newUser.role?.trim()}
                     >
                         Создать пользователя

@@ -1,6 +1,7 @@
 //@ts-nocheck
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { Language } from '../types/language';
+import { canUseFunctional } from '../utils/cookieConsent';
 
 interface LanguageContextType {
   language: Language;
@@ -26,6 +27,10 @@ const translations = {
     'login': 'Войти',
     'logout': 'Выйти',
     'admin_panel': 'Панель администратора',
+    'useful_links': 'Полезные ссылки',
+    'cookie_policy': 'Политика использования cookie',
+    'company_name_short': 'РУП «Белаэронавигация»',
+    'all_rights_reserved': 'Все права защищены',
     
     // О предприятии
     'about_company': 'О предприятии',
@@ -193,6 +198,18 @@ const translations = {
     'other': 'Другой',
     'choose_gender': 'Выберите пол',
     'about_me': 'О себе',
+    
+    // Поиск
+    'search_results': 'Результаты поиска',
+    'search_query': 'По запросу',
+    'search_found': 'найдено',
+    'search_results_count': 'результатов',
+    'search_no_results': 'Ничего не найдено',
+    'search_no_results_desc': 'По вашему запросу ничего не найдено. Попробуйте изменить поисковый запрос.',
+    'search_min_chars': 'Введите поисковый запрос (минимум 2 символа)',
+    'search_loading': 'Поиск...',
+    'search_error': 'Ошибка поиска',
+    'search_error_desc': 'Произошла ошибка при выполнении поиска. Попробуйте позже.',
   },
   
   en: {
@@ -209,6 +226,10 @@ const translations = {
     'login': 'Login',
     'logout': 'Logout',
     'admin_panel': 'Admin Panel',
+    'useful_links': 'Useful Links',
+    'cookie_policy': 'Cookie Policy',
+    'company_name_short': 'RUE "Belaeronavigatsia"',
+    'all_rights_reserved': 'All rights reserved',
     
     // About
     'about_company': 'About Company',
@@ -376,6 +397,18 @@ const translations = {
     'other': 'Other',
     'choose_gender': 'Choose Gender',
     'about_me': 'About Me',
+    
+    // Search
+    'search_results': 'Search Results',
+    'search_query': 'For query',
+    'search_found': 'found',
+    'search_results_count': 'results',
+    'search_no_results': 'No Results Found',
+    'search_no_results_desc': 'No results found for your query. Try modifying your search.',
+    'search_min_chars': 'Enter search query (minimum 2 characters)',
+    'search_loading': 'Searching...',
+    'search_error': 'Search Error',
+    'search_error_desc': 'An error occurred while searching. Please try again later.',
   },
   
   be: {
@@ -392,6 +425,10 @@ const translations = {
     'login': 'Увайсці',
     'logout': 'Выйсці',
     'admin_panel': 'Панэль адміністратара',
+    'useful_links': 'Карысныя спасылкі',
+    'cookie_policy': 'Палітыка выкарыстання cookie',
+    'company_name_short': 'РУП «Белаэранавігацыя»',
+    'all_rights_reserved': 'Усе правы абаронены',
     
     // Пра прадпрыемства
     'about_company': 'Пра прадпрыемства',
@@ -559,19 +596,39 @@ const translations = {
     'other': 'Іншы',
     'choose_gender': 'Выберыце пол',
     'about_me': 'Пра сябе',
+    
+    // Пошук
+    'search_results': 'Вынікі пошуку',
+    'search_query': 'Па запыце',
+    'search_found': 'знойдзена',
+    'search_results_count': 'вынікаў',
+    'search_no_results': 'Нічога не знойдзена',
+    'search_no_results_desc': 'Па вашым запыце нічога не знойдзена. Паспрабуйце змяніць пошукавы запыт.',
+    'search_min_chars': 'Увядзіце пошукавы запыт (мінімум 2 сімвалы)',
+    'search_loading': 'Пошук...',
+    'search_error': 'Памылка пошуку',
+    'search_error_desc': 'Адбылася памылка пры выкананні пошуку. Паспрабуйце пазней.',
   }
 };
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>(() => {
-    // Получаем язык из localStorage или используем русский по умолчанию
-    const savedLanguage = localStorage.getItem('language') as Language;
-    return savedLanguage && ['ru', 'en', 'be'].includes(savedLanguage) ? savedLanguage : 'ru';
+    // Получаем язык из localStorage только если разрешены функциональные куки
+    if (canUseFunctional()) {
+      const savedLanguage = localStorage.getItem('language') as Language;
+      return savedLanguage && ['ru', 'en', 'be'].includes(savedLanguage) ? savedLanguage : 'ru';
+    }
+    return 'ru';
   });
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem('language', lang);
+    
+    // Сохраняем в localStorage только если разрешены функциональные куки
+    if (canUseFunctional()) {
+      localStorage.setItem('language', lang);
+    }
+    
     // Обновляем HTML lang атрибут и отключаем авто-перевод
     document.documentElement.lang = lang;
     document.documentElement.setAttribute('translate', 'no');

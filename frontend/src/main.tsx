@@ -8,6 +8,7 @@ import App from "./App.tsx";
 import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import { Layout } from "@/components/Layout.tsx";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { AccessibilityProvider } from "./contexts/AccessibilityContext";
 import { Toaster } from "@/components/ui/sonner";
 import {NewsCompany} from "@/components/NewsCompany.tsx";
 import NewsCategoryPage from "@/components/news/NewsCategoryPage";
@@ -35,6 +36,8 @@ import ImprovementYearPage from "@/components/social/ImprovementYearPage";
 import MemoryPage from "@/components/social/MemoryPage";
 import DynamicPage from "@/components/DynamicPage";
 import ServicesPage from "@/components/ServicesPage";
+import VoluntaryReportForm from "@/components/VoluntaryReportForm";
+import SearchResults from "@/pages/SearchResults";
 
 const router = createBrowserRouter([
     {
@@ -71,7 +74,9 @@ const router = createBrowserRouter([
             { path: "/social/:pageType", element: <DynamicPage pageType="social" /> },
             { path: "/air-navigation/:pageType", element: <DynamicPage pageType="aeronautical" /> },
             { path: "/appeals/:pageType", element: <DynamicPage pageType="appeals" /> },
+            { path: "/appeals/voluntary-report", element: <VoluntaryReportForm /> },
             { path: "/services/:pageType", element: <DynamicPage pageType="services" /> },
+            { path: "/search", element: <SearchResults /> },
             { path: "/cookie-policy", element: <CookiePolicyPage /> },
             { path: "/profile", element: <UserProfile /> },
             { path: "/admin/news/categories", element: <CategoriesAdminPage /> },
@@ -87,8 +92,10 @@ createRoot(root).render(
     <StrictMode>
         <Provider store={store}>
             <LanguageProvider>
-                <RouterProvider router={router} />
-                <Toaster />
+                <AccessibilityProvider>
+                    <RouterProvider router={router} />
+                    <Toaster />
+                </AccessibilityProvider>
             </LanguageProvider>
         </Provider>
     </StrictMode>

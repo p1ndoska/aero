@@ -20,6 +20,7 @@ export default function ReceptionBookingCalendar({ manager }: ReceptionBookingCa
   const { language } = useLanguage();
   const [selectedSlot, setSelectedSlot] = useState<ReceptionSlot | null>(null);
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [notes, setNotes] = useState('');
   
@@ -33,13 +34,18 @@ export default function ReceptionBookingCalendar({ manager }: ReceptionBookingCa
   });
 
   const handleSlotSelect = (slot: ReceptionSlot) => {
+    // Не позволяем выбирать занятые слоты
+    if (slot.isBooked) {
+      toast.error('Этот слот уже занят');
+      return;
+    }
     setSelectedSlot(slot);
     setIsBookingDialogOpen(true);
   };
 
   const handleBookSlot = async () => {
-    if (!selectedSlot || !email.trim()) {
-      toast.error('Заполните email');
+    if (!selectedSlot || !fullName.trim() || !email.trim()) {
+      toast.error('Заполните ФИО и email');
       return;
     }
 
@@ -53,11 +59,16 @@ export default function ReceptionBookingCalendar({ manager }: ReceptionBookingCa
     try {
       await bookSlot({
         slotId: selectedSlot.id,
-        data: { email, notes: notes.trim() || undefined }
+        data: { 
+          fullName: fullName.trim(),
+          email: email.trim(),
+          notes: notes.trim() || undefined 
+        }
       }).unwrap();
 
       toast.success('Запись на прием успешно оформлена!');
       setIsBookingDialogOpen(false);
+      setFullName('');
       setEmail('');
       setNotes('');
       setSelectedSlot(null);
@@ -89,14 +100,14 @@ export default function ReceptionBookingCalendar({ manager }: ReceptionBookingCa
     });
   };
 
-  // Фильтруем только доступные слоты
-  const freeSlots = availableSlots?.filter(slot => 
-    slot.isAvailable && !slot.isBooked && 
+  // Показываем все доступные слоты (включая занятые для видимости)
+  const allSlots = availableSlots?.filter(slot => 
+    slot.isAvailable && 
     new Date(slot.startTime) > new Date()
   ) || [];
 
   // Группируем слоты по датам
-  const slotsByDate = freeSlots.reduce((acc, slot) => {
+  const slotsByDate = allSlots.reduce((acc, slot) => {
     const date = slot.date.split('T')[0];
     if (!acc[date]) {
       acc[date] = [];
@@ -157,7 +168,7 @@ export default function ReceptionBookingCalendar({ manager }: ReceptionBookingCa
         </div>
       </CardHeader>
       <CardContent>
-        {freeSlots.length > 0 ? (
+        {allSlots.length > 0 ? (
           <div className="space-y-4">
             <div className="grid gap-3">
               {Object.entries(slotsByDate).map(([date, slots]) => (
@@ -166,22 +177,32 @@ export default function ReceptionBookingCalendar({ manager }: ReceptionBookingCa
                     {formatFullDate(slots[0].date)}
                   </div>
                   <div className="grid grid-cols-6 gap-1.5">
-                    {slots.map((slot) => (
-                      <Button
-                        key={slot.id}
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleSlotSelect(slot)}
-                        className={`text-xs h-14 flex flex-col items-center justify-center gap-1 p-2 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
-                          selectedSlot?.id === slot.id 
-                            ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700 shadow-lg' 
-                            : 'hover:bg-blue-50 hover:border-blue-300 bg-white border-gray-200 shadow-sm hover:shadow-md'
-                        }`}
-                      >
-                        <Clock className="w-3 h-3" />
-                        <span className="text-xs font-semibold leading-tight">{formatTime(slot.startTime)}</span>
-                      </Button>
-                    ))}
+                    {slots.map((slot) => {
+                      const isBooked = slot.isBooked || false;
+                      return (
+                        <Button
+                          key={slot.id}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => !isBooked && handleSlotSelect(slot)}
+                          disabled={isBooked}
+                          className={`text-xs h-14 flex flex-col items-center justify-center gap-1 p-2 rounded-lg border-2 transition-all duration-200 ${
+                            isBooked
+                              ? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed opacity-60'
+                              : selectedSlot?.id === slot.id 
+                                ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700 shadow-lg hover:scale-105' 
+                                : 'hover:bg-blue-50 hover:border-blue-300 bg-white border-gray-200 shadow-sm hover:shadow-md hover:scale-105'
+                          }`}
+                          title={isBooked ? 'Слот занят' : 'Нажмите для записи'}
+                        >
+                          <Clock className="w-3 h-3" />
+                          <span className="text-xs font-semibold leading-tight">{formatTime(slot.startTime)}</span>
+                          {isBooked && (
+                            <span className="text-[8px] text-red-600 font-bold">ЗАНЯТО</span>
+                          )}
+                        </Button>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
@@ -239,6 +260,18 @@ export default function ReceptionBookingCalendar({ manager }: ReceptionBookingCa
                 </div>
 
                 <div>
+                  <Label htmlFor="fullName" className="text-gray-700 font-medium">ФИО *</Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Иванов Иван Иванович"
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
                   <Label htmlFor="email" className="text-gray-700 font-medium">Email *</Label>
                   <Input
                     id="email"
@@ -273,7 +306,7 @@ export default function ReceptionBookingCalendar({ manager }: ReceptionBookingCa
               </Button>
               <Button 
                 onClick={handleBookSlot}
-                disabled={!email.trim()}
+                disabled={!fullName.trim() || !email.trim()}
                 className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
               >
                 <Check className="w-4 h-4 mr-2" />

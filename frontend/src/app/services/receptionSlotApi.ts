@@ -46,10 +46,19 @@ export const receptionSlotApi = api.injectEndpoints({
         method: 'POST',
         body: data,
       }),
-      invalidatesTags: (result, error, { slotId }) => [
-        { type: 'ReceptionSlot', id: slotId },
-        { type: 'ReceptionSlot', id: 'LIST' }
-      ],
+      invalidatesTags: (result, error, { slotId }) => {
+        // Инвалидируем только при успешном бронировании, чтобы избежать лишних refetch
+        if (!error && result && result.slot) {
+          const managementId = result.slot.managementId;
+          return [
+            { type: 'ReceptionSlot', id: slotId },
+            { type: 'ReceptionSlot', id: managementId }, // Инвалидируем кеш для конкретного руководителя
+            { type: 'ReceptionSlot', id: 'LIST' },
+            { type: 'ReceptionSlot', id: 'ALL_BOOKED' }
+          ];
+        }
+        return [];
+      },
     }),
 
     // Отменить бронирование
@@ -60,7 +69,8 @@ export const receptionSlotApi = api.injectEndpoints({
       }),
       invalidatesTags: (result, error, slotId) => [
         { type: 'ReceptionSlot', id: slotId },
-        { type: 'ReceptionSlot', id: 'LIST' }
+        { type: 'ReceptionSlot', id: 'LIST' },
+        { type: 'ReceptionSlot', id: 'ALL_BOOKED' }
       ],
     }),
 
@@ -114,6 +124,18 @@ export const receptionSlotApi = api.injectEndpoints({
       ],
     }),
 
+    // Получить все забронированные слоты (для админ панели)
+    getAllBookedSlots: builder.query<ReceptionSlot[], { startDate?: string; endDate?: string }>({
+      query: ({ startDate, endDate }) => {
+        const params = new URLSearchParams();
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        const queryString = params.toString();
+        return `/reception-slots/all/booked${queryString ? `?${queryString}` : ''}`;
+      },
+      providesTags: [{ type: 'ReceptionSlot', id: 'ALL_BOOKED' }],
+    }),
+
     // Удалить шаблон повторяющегося расписания
     deleteRecurringTemplate: builder.mutation<{ message: string }, string>({
       query: (templateId) => ({
@@ -152,4 +174,5 @@ export const {
   useGetRecurringTemplatesQuery,
   useDeleteRecurringTemplateMutation,
   useUpdateRecurringTemplateMutation,
+  useGetAllBookedSlotsQuery,
 } = receptionSlotApi;

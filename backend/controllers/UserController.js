@@ -99,7 +99,7 @@ const UserController = {
 
     updateUser: async(req, res)=>{
         const { id } = req.params;
-        const { firstName,lastName, email, password, phone, roleId, avatar} = req.body;
+        const { firstName,lastName, email, password, phone, roleId, role, avatar} = req.body;
         const userId = parseInt(req.params.id);
 
         if(isNaN(userId)) {
@@ -136,6 +136,21 @@ const UserController = {
                     return res.status(400).json({ error: "Email уже используется" });
                 }
             }
+            // Определяем новое значение roleId: либо напрямую из roleId, либо по имени роли из поля role
+            let newRoleId = undefined;
+            if (roleId) {
+                const parsed = parseInt(roleId);
+                if (!isNaN(parsed)) {
+                    newRoleId = parsed;
+                }
+            } else if (role && typeof role === 'string') {
+                const existingRole = await prisma.role.findUnique({ where: { name: role } });
+                if (!existingRole) {
+                    return res.status(400).json({ error: 'Указанная роль не существует' });
+                }
+                newRoleId = existingRole.id;
+            }
+
             const user = await prisma.user.update({
                 where: {id: userId},
                 data: {
@@ -143,9 +158,10 @@ const UserController = {
                     lastName: lastName||undefined,
                     email: email||undefined,
                     phone: phone||undefined,
-                    roleId: roleId ? parseInt(roleId) : undefined,
+                    roleId: newRoleId !== undefined ? newRoleId : undefined,
                     avatar: filePath? '/filePath': undefined,
-                }
+                },
+                include: { role: true }
             })
 
             return res.status(200).json({user:user});
@@ -188,7 +204,9 @@ const UserController = {
     },
     getAllUsers: async(req, res) => {
         try {
-            const users = await prisma.user.findMany();
+            const users = await prisma.user.findMany({
+                include: { role: true }
+            });
             return res.status(200).json({users});
         }catch(error){
             console.error('get All Users error', error);

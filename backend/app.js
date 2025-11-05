@@ -9,7 +9,6 @@ const cors = require('cors');
 const { initializeDatabase } = require('./scripts/initialize-db');
 
 const app = express();
-require('dotenv').config();
 
 // CORS middleware
 app.use(cors({
@@ -39,6 +38,7 @@ initializeDatabase().catch(error => {
 });
 
 app.use('/api', require('./routes'));
+app.use('/api/hero-image', require('./routes/heroImage'));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
