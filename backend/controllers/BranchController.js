@@ -5,6 +5,29 @@ const BranchController = {
     getAllBranches: async (req, res) => {
         try {
             const branches = await prisma.branch.findMany({
+                select: {
+                    id: true,
+                    name: true,
+                    nameEn: true,
+                    nameBe: true,
+                    address: true,
+                    addressEn: true,
+                    addressBe: true,
+                    phone: true,
+                    email: true,
+                    description: true,
+                    descriptionEn: true,
+                    descriptionBe: true,
+                    workHours: true,
+                    services: true,
+                    coordinates: true,
+                    images: true,
+                    content: true,
+                    contentEn: true,
+                    contentBe: true,
+                    createdAt: true,
+                    updatedAt: true
+                },
                 orderBy: {
                     createdAt: 'desc'
                 }
@@ -27,7 +50,30 @@ const BranchController = {
 
         try {
             const branch = await prisma.branch.findUnique({
-                where: { id: branchId }
+                where: { id: branchId },
+                select: {
+                    id: true,
+                    name: true,
+                    nameEn: true,
+                    nameBe: true,
+                    address: true,
+                    addressEn: true,
+                    addressBe: true,
+                    phone: true,
+                    email: true,
+                    description: true,
+                    descriptionEn: true,
+                    descriptionBe: true,
+                    workHours: true,
+                    services: true,
+                    coordinates: true,
+                    images: true,
+                    content: true,
+                    contentEn: true,
+                    contentBe: true,
+                    createdAt: true,
+                    updatedAt: true
+                }
             });
 
             if (!branch) {

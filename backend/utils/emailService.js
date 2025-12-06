@@ -361,10 +361,21 @@ ${notes ? `- Цель визита: ${notes}` : ''}
     // Уведомление о новой заявке на услугу (администратору)
     async sendServiceRequestNotification(serviceRequest) {
         try {
-            const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
+            // Используем EMAIL_USER для адреса администратора, чтобы избежать ошибок с несуществующими доменами
+            const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER || process.env.SMTP_USER;
+            const fromEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@belaeronavigatsia.by';
+            
+            if (!adminEmail) {
+                console.warn('⚠️ ADMIN_EMAIL not set, skipping admin notification');
+                return { success: false, error: 'Admin email not configured' };
+            }
+            
+            console.log('=== Sending Service Request Admin Notification ===');
+            console.log('To:', adminEmail);
+            console.log('From:', fromEmail);
             
             const mailOptions = {
-                from: `"ГП «Белаэронавигация»" <${process.env.SMTP_USER || 'noreply@belaeronavigatsia.by'}>`,
+                from: `"ГП «Белаэронавигация»" <${fromEmail}>`,
                 to: adminEmail,
                 subject: `Новая заявка на услугу #${serviceRequest.id}`,
                 html: `
@@ -421,20 +432,50 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             };
             
             const result = await this.transporter.sendMail(mailOptions);
-            console.log('✅ Service request notification sent:', result.messageId);
+            console.log('✅ Service request notification sent successfully!');
+            console.log('Message ID:', result.messageId);
+            console.log('Response:', result.response);
             return { success: true, messageId: result.messageId };
             
         } catch (error) {
             console.error('❌ Service request notification error:', error);
-            return { success: false, error: error.message };
+            console.error('Error message:', error.message);
+            console.error('Error code:', error.code);
+            if (error.response) {
+                console.error('SMTP response:', error.response);
+            }
+            return { success: false, error: error.message, details: error.response || error.code };
         }
     }
 
     // Подтверждение заявки заявителю
     async sendServiceRequestConfirmation(serviceRequest) {
         try {
+            // Проверяем, что transporter инициализирован
+            if (!this.transporter) {
+                console.error('❌ Email transporter is not initialized!');
+                return { success: false, error: 'Email transporter is not initialized' };
+            }
+
+            // Проверяем обязательные данные
+            if (!serviceRequest.email || !serviceRequest.fullName) {
+                console.error('❌ Missing required data for email:', { 
+                    email: !!serviceRequest.email, 
+                    fullName: !!serviceRequest.fullName 
+                });
+                return { success: false, error: 'Missing required data: email and fullName are required' };
+            }
+
+            // Используем EMAIL_USER с fallback на SMTP_USER
+            const fromEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@belaeronavigatsia.by';
+            
+            console.log('=== Sending Service Request Confirmation Email ===');
+            console.log('To:', serviceRequest.email);
+            console.log('From:', fromEmail);
+            console.log('Subject: Подтверждение заявки #' + serviceRequest.id);
+            
             const mailOptions = {
-                from: `"ГП «Белаэронавигация»" <${process.env.SMTP_USER || 'noreply@belaeronavigatsia.by'}>`,
+                from: `"ГП «Белаэронавигация»" <${fromEmail}>`,
                 to: serviceRequest.email,
                 subject: `Подтверждение заявки #${serviceRequest.id}`,
                 html: `
@@ -484,12 +525,496 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             };
             
             const result = await this.transporter.sendMail(mailOptions);
-            console.log('✅ Service request confirmation sent:', result.messageId);
+            console.log('✅ Service request confirmation sent successfully!');
+            console.log('Message ID:', result.messageId);
+            console.log('Response:', result.response);
             return { success: true, messageId: result.messageId };
             
         } catch (error) {
             console.error('❌ Service request confirmation error:', error);
-            return { success: false, error: error.message };
+            console.error('Error message:', error.message);
+            console.error('Error code:', error.code);
+            if (error.response) {
+                console.error('SMTP response:', error.response);
+            }
+            if (error.responseCode) {
+                console.error('Response code:', error.responseCode);
+            }
+            return { success: false, error: error.message, details: error.response || error.code };
+        }
+    }
+
+    /**
+     * Отправка заявления о регистрации ELT с вложением Excel файла
+     * @param {Object} formData - Данные формы
+     * @param {string} filePath - Путь к Excel файлу
+     * @param {string} fileName - Имя файла
+     */
+    async sendELTRegistrationEmail(formData, filePath, fileName) {
+        try {
+            // Проверяем, что transporter инициализирован
+            if (!this.transporter) {
+                console.error('❌ Email transporter is not initialized!');
+                return { success: false, error: 'Email transporter is not initialized' };
+            }
+
+            const fs = require('fs');
+            const path = require('path');
+
+            // Используем EMAIL_USER для адреса получателя
+            const recipientEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER || process.env.SMTP_USER;
+            const fromEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@belaeronavigatsia.by';
+            
+            if (!recipientEmail) {
+                console.warn('⚠️ ADMIN_EMAIL not set, using EMAIL_USER');
+                return { success: false, error: 'Admin email not configured' };
+            }
+
+            // Читаем файл
+            const fileContent = fs.readFileSync(filePath);
+
+            const htmlContent = `
+                <!DOCTYPE html>
+                <html lang="ru">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Заявление о регистрации ELT</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333;
+                            max-width: 600px;
+                            margin: 0 auto;
+                            padding: 20px;
+                        }
+                        .header {
+                            background-color: #213659;
+                            color: white;
+                            padding: 20px;
+                            text-align: center;
+                            border-radius: 8px 8px 0 0;
+                        }
+                        .content {
+                            background-color: #f9f9f9;
+                            padding: 30px;
+                            border-radius: 0 0 8px 8px;
+                        }
+                        .section {
+                            background-color: white;
+                            padding: 15px;
+                            border-radius: 8px;
+                            margin: 15px 0;
+                            border-left: 4px solid #213659;
+                        }
+                        .section-title {
+                            font-weight: bold;
+                            color: #213659;
+                            margin-bottom: 10px;
+                        }
+                        .info-row {
+                            margin: 8px 0;
+                        }
+                        .info-label {
+                            font-weight: bold;
+                            display: inline-block;
+                            min-width: 200px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>Заявление о регистрации ELT</h1>
+                        <p>Государственное предприятие «Белаэронавигация»</p>
+                    </div>
+                    
+                    <div class="content">
+                        <p>Поступило новое заявление о регистрации ELT.</p>
+                        
+                        <div class="section">
+                            <div class="section-title">ОСНОВАНИЕ ДЛЯ РЕГИСТРАЦИИ ELT</div>
+                            <div class="info-row">
+                                <span class="info-label">Тип:</span>
+                                <span>${formData.registrationType === 'registration' ? 'регистрация ELT' : 'перерегистрация ELT'}</span>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">ИНФОРМАЦИЯ ПО ELT</div>
+                            <div class="info-row">
+                                <span class="info-label">15-значный код:</span>
+                                <span>${formData.eltCode.join('')}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Модель:</span>
+                                <span>${formData.eltModel}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Заводской номер:</span>
+                                <span>${formData.eltSerialNumber}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Изготовитель:</span>
+                                <span>${formData.eltManufacturer}</span>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">ИНФОРМАЦИЯ О ВОЗДУШНОМ СУДНЕ</div>
+                            <div class="info-row">
+                                <span class="info-label">Тип:</span>
+                                <span>${formData.aircraftType}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Модель:</span>
+                                <span>${formData.aircraftModel}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Регистрационный знак:</span>
+                                <span>${formData.aircraftRegistration}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Максимальное число людей на борту:</span>
+                                <span>${formData.maxPeopleOnBoard}</span>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">ИНФОРМАЦИЯ ОБ ЭКСПЛУАТАНТЕ</div>
+                            <div class="info-row">
+                                <span class="info-label">Эксплуатант:</span>
+                                <span>${formData.operator}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Почтовый адрес:</span>
+                                <span>${formData.operatorAddress.filter(addr => addr).join(', ')}</span>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">РЕКВИЗИТЫ ДЛЯ ВЫСТАВЛЕНИЯ СЧЁТА</div>
+                            <div class="info-row">
+                                <span class="info-label">Полное название:</span>
+                                <span>${formData.billingFullName}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Сокращенное название:</span>
+                                <span>${formData.billingShortName}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Юридический адрес:</span>
+                                <span>${formData.billingLegalAddress}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Почтовый адрес:</span>
+                                <span>${formData.billingMailingAddress}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">УНП:</span>
+                                <span>${formData.billingUNP}</span>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="info-row">
+                                <span class="info-label">Дата:</span>
+                                <span>${formData.date}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Подпись:</span>
+                                <span>${formData.signature}</span>
+                            </div>
+                        </div>
+
+                        <p style="margin-top: 20px; padding: 15px; background-color: #e8f4fd; border-radius: 5px;">
+                            <strong>Примечание:</strong> Подробная информация содержится в прикрепленном Excel файле.
+                        </p>
+                    </div>
+                    
+                    <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 0.8em; color: #666; margin-top: 20px;">
+                        <p>Это автоматическое сообщение от системы управления заявлениями.</p>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            console.log('=== Sending ELT Registration Email ===');
+            console.log('To:', recipientEmail);
+            console.log('From:', fromEmail);
+            console.log('Subject: Заявление о регистрации ELT');
+            console.log('Attachment:', fileName);
+
+            const mailOptions = {
+                from: `"ГП «Белаэронавигация»" <${fromEmail}>`,
+                to: recipientEmail,
+                subject: 'Заявление о регистрации ELT',
+                html: htmlContent,
+                attachments: [
+                    {
+                        filename: fileName,
+                        content: fileContent
+                    }
+                ]
+            };
+
+            const result = await this.transporter.sendMail(mailOptions);
+            console.log('✅ ELT registration email sent successfully!');
+            console.log('Message ID:', result.messageId);
+            console.log('Response:', result.response);
+            return { success: true, messageId: result.messageId };
+
+        } catch (error) {
+            console.error('❌ ELT registration email error:', error);
+            console.error('Error message:', error.message);
+            console.error('Error code:', error.code);
+            if (error.response) {
+                console.error('SMTP response:', error.response);
+            }
+            return { success: false, error: error.message, details: error.response || error.code };
+        }
+    }
+
+    /**
+     * Отправка заявления о снятии с регистрации ELT с вложением Excel файла
+     * @param {Object} formData - Данные формы
+     * @param {string} filePath - Путь к Excel файлу
+     * @param {string} fileName - Имя файла
+     */
+    async sendELTDeregistrationEmail(formData, filePath, fileName) {
+        try {
+            // Проверяем, что transporter инициализирован
+            if (!this.transporter) {
+                console.error('❌ Email transporter is not initialized!');
+                return { success: false, error: 'Email transporter is not initialized' };
+            }
+
+            const fs = require('fs');
+            const path = require('path');
+
+            // Используем EMAIL_USER для адреса получателя
+            const recipientEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER || process.env.SMTP_USER;
+            const fromEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@belaeronavigatsia.by';
+            
+            if (!recipientEmail) {
+                console.warn('⚠️ ADMIN_EMAIL not set, using EMAIL_USER');
+                return { success: false, error: 'Admin email not configured' };
+            }
+
+            // Читаем файл
+            const fileContent = fs.readFileSync(filePath);
+
+            const htmlContent = `
+                <!DOCTYPE html>
+                <html lang="ru">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Заявление о снятии с регистрации ELT</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333;
+                            max-width: 600px;
+                            margin: 0 auto;
+                            padding: 20px;
+                        }
+                        .header {
+                            background-color: #213659;
+                            color: white;
+                            padding: 20px;
+                            text-align: center;
+                            border-radius: 8px 8px 0 0;
+                        }
+                        .content {
+                            background-color: #f9f9f9;
+                            padding: 30px;
+                            border-radius: 0 0 8px 8px;
+                        }
+                        .section {
+                            background-color: white;
+                            padding: 15px;
+                            border-radius: 8px;
+                            margin: 15px 0;
+                            border-left: 4px solid #213659;
+                        }
+                        .section-title {
+                            font-weight: bold;
+                            color: #213659;
+                            margin-bottom: 10px;
+                        }
+                        .info-row {
+                            margin: 8px 0;
+                        }
+                        .info-label {
+                            font-weight: bold;
+                            display: inline-block;
+                            min-width: 200px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>Заявление о снятии с регистрации ELT</h1>
+                        <p>Государственное предприятие «Белаэронавигация»</p>
+                    </div>
+                    
+                    <div class="content">
+                        <p>Поступило новое заявление о снятии с регистрации ELT.</p>
+                        
+                        <div class="section">
+                            <div class="section-title">ИНФОРМАЦИЯ ПО ELT</div>
+                            <div class="info-row">
+                                <span class="info-label">15-значный код:</span>
+                                <span>${formData.eltCode.join('')}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Модель:</span>
+                                <span>${formData.eltModel}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Заводской номер:</span>
+                                <span>${formData.eltSerialNumber}</span>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">ИНФОРМАЦИЯ О ВОЗДУШНОМ СУДНЕ</div>
+                            <div class="info-row">
+                                <span class="info-label">Тип:</span>
+                                <span>${formData.aircraftType}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Модель:</span>
+                                <span>${formData.aircraftModel}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Регистрационный знак:</span>
+                                <span>${formData.aircraftRegistration}</span>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">ИНФОРМАЦИЯ ОБ ЭКСПЛУАТАНТЕ</div>
+                            <div class="info-row">
+                                <span class="info-label">Эксплуатант:</span>
+                                <span>${formData.operator}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Почтовый адрес:</span>
+                                <span>${formData.operatorAddress}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Рабочий телефон:</span>
+                                <span>${formData.operatorWorkPhone}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Мобильный телефон:</span>
+                                <span>${formData.operatorMobilePhone}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">E-mail:</span>
+                                <span>${formData.operatorEmail}</span>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">ДАННЫЕ ОТВЕТСТВЕННОГО ЗА СНЯТИЕ С РЕГИСТРАЦИИ</div>
+                            <div class="info-row">
+                                <span class="info-label">Ответственное лицо:</span>
+                                <span>${formData.responsiblePerson}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Телефон:</span>
+                                <span>${formData.responsiblePhone}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">E-mail:</span>
+                                <span>${formData.responsibleEmail}</span>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">РЕКВИЗИТЫ ДЛЯ ВЫСТАВЛЕНИЯ СЧЁТА</div>
+                            <div class="info-row">
+                                <span class="info-label">Полное название:</span>
+                                <span>${formData.billingFullName}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Сокращенное название:</span>
+                                <span>${formData.billingShortName}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Юридический адрес:</span>
+                                <span>${formData.billingLegalAddress}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Почтовый адрес:</span>
+                                <span>${formData.billingMailingAddress}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">УНП:</span>
+                                <span>${formData.billingUNP}</span>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="info-row">
+                                <span class="info-label">Дата:</span>
+                                <span>${formData.date}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Подпись:</span>
+                                <span>${formData.signature}</span>
+                            </div>
+                        </div>
+
+                        <p style="margin-top: 20px; padding: 15px; background-color: #e8f4fd; border-radius: 5px;">
+                            <strong>Примечание:</strong> Подробная информация содержится в прикрепленном Excel файле.
+                        </p>
+                    </div>
+                    
+                    <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 0.8em; color: #666; margin-top: 20px;">
+                        <p>Это автоматическое сообщение от системы управления заявлениями.</p>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            console.log('=== Sending ELT Deregistration Email ===');
+            console.log('To:', recipientEmail);
+            console.log('From:', fromEmail);
+            console.log('Subject: Заявление о снятии с регистрации ELT');
+            console.log('Attachment:', fileName);
+
+            const mailOptions = {
+                from: `"ГП «Белаэронавигация»" <${fromEmail}>`,
+                to: recipientEmail,
+                subject: 'Заявление о снятии с регистрации ELT',
+                html: htmlContent,
+                attachments: [
+                    {
+                        filename: fileName,
+                        content: fileContent
+                    }
+                ]
+            };
+
+            const result = await this.transporter.sendMail(mailOptions);
+            console.log('✅ ELT deregistration email sent successfully!');
+            console.log('Message ID:', result.messageId);
+            console.log('Response:', result.response);
+            return { success: true, messageId: result.messageId };
+
+        } catch (error) {
+            console.error('❌ ELT deregistration email error:', error);
+            console.error('Error message:', error.message);
+            console.error('Error code:', error.code);
+            if (error.response) {
+                console.error('SMTP response:', error.response);
+            }
+            return { success: false, error: error.message, details: error.response || error.code };
         }
     }
 }

@@ -13,12 +13,22 @@ const SocialWorkPageContentController = {
             
             if (!content) {
                 console.log('No content found for pageType:', pageType);
+                // Пытаемся найти категорию для получения названия
+                const category = await prisma.socialWorkCategory.findUnique({
+                    where: { pageType }
+                });
+                
                 // Создаем дефолтный контент, если его нет
+                // Используем название категории, если она найдена
                 const defaultContent = await prisma.socialWorkPageContent.create({
                     data: {
                         pageType,
-                        title: 'Социальная работа',
-                        subtitle: 'Информация о социальной работе на предприятии',
+                        title: category?.name || 'Социальная работа',
+                        titleEn: category?.nameEn || null,
+                        titleBe: category?.nameBe || null,
+                        subtitle: category?.description || 'Информация о социальной работе на предприятии',
+                        subtitleEn: category?.descriptionEn || null,
+                        subtitleBe: category?.descriptionBe || null,
                         content: [],
                         contentEn: [],
                         contentBe: []

@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Settings, Users, Flag, Star, User, Heart, Wrench, Bird } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGetSocialWorkPageContentQuery, useUpdateSocialWorkPageContentMutation } from '@/app/services/socialWorkPageContentApi';
+import { useGetAllSocialWorkCategoriesQuery } from '@/app/services/socialWorkCategoryApi';
 import ContentConstructor from './admin/ContentConstructor';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getTranslatedField } from '../utils/translationHelpers';
@@ -59,12 +60,28 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
   const { language } = useLanguage();
   const { data: pageContent, refetch: refetchPageContent } = useGetSocialWorkPageContentQuery(pageType);
   const [updatePageContent, { isLoading: isUpdatingContent }] = useUpdateSocialWorkPageContentMutation();
+  const { data: socialWorkCategories } = useGetAllSocialWorkCategoriesQuery();
 
   const { isAuthenticated, user } = useSelector((state: any) => state.auth);
   const roleValue = user?.role;
   const roleName = (typeof roleValue === 'string' ? roleValue : roleValue?.name) ?? '';
   const permissions = getRolePermissions(roleName);
   const isAdmin = permissions.canManageSocial;
+
+  // Находим категорию социальной работы по pageType для получения названия
+  const socialWorkCategory = socialWorkCategories && Array.isArray(socialWorkCategories)
+    ? socialWorkCategories.find((cat: any) => cat.pageType === pageType)
+    : null;
+  
+  // Отладочная информация (можно удалить после проверки)
+  // console.log('SocialWorkPage debug:', {
+  //   pageType,
+  //   language,
+  //   socialWorkCategories: socialWorkCategories?.length,
+  //   socialWorkCategory,
+  //   categoryName: socialWorkCategory ? getTranslatedField(socialWorkCategory, 'name', language) : null,
+  //   pageContentTitle: pageContent ? getTranslatedField(pageContent, 'title', language) : null
+  // });
 
   const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
   const [editableTitle, setEditableTitle] = useState('');
@@ -129,15 +146,64 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
   const pageConfig = PAGE_CONFIG[pageType as keyof typeof PAGE_CONFIG];
   const IconComponent = pageConfig?.icon || Users;
   
+  // Получаем переведенное название категории
+  // Приоритет: название категории > заголовок из контента (если не дефолтный) > fallback
+  const getPageTitle = () => {
+    // Сначала проверяем категорию - это основной источник названия
+    // Название категории всегда должно использоваться, если оно доступно
+    if (socialWorkCategory) {
+      const categoryName = getTranslatedField(socialWorkCategory, 'name', language);
+      if (categoryName) {
+        return categoryName;
+      }
+      // Если перевода нет, используем базовое название
+      if (socialWorkCategory.name) {
+        return socialWorkCategory.name;
+      }
+    }
+    
+    // Если категории нет, проверяем заголовок в контенте
+    const contentTitle = getTranslatedField(pageContent, 'title', language);
+    // Используем заголовок из контента только если он не является дефолтным
+    const defaultTitles = ['Социальная работа', 'Social work', 'Сацыяльная праца'];
+    if (contentTitle && !defaultTitles.includes(contentTitle)) {
+      return contentTitle;
+    }
+    
+    // Fallback на PAGE_CONFIG
+    return pageConfig?.title || 'Социальная работа';
+  };
+
+  const getPageSubtitle = () => {
+    // Сначала проверяем описание категории
+    if (socialWorkCategory) {
+      const categoryDescription = getTranslatedField(socialWorkCategory, 'description', language) || socialWorkCategory.description;
+      if (categoryDescription) {
+        return categoryDescription;
+      }
+    }
+    
+    // Если категории нет или нет описания, проверяем подзаголовок в контенте
+    const contentSubtitle = getTranslatedField(pageContent, 'subtitle', language);
+    if (contentSubtitle) {
+      return contentSubtitle;
+    }
+    
+    // Fallback на PAGE_CONFIG
+    return pageConfig?.defaultSubtitle || '';
+  };
+
+  const pageTitle = getPageTitle();
+  const pageSubtitle = getPageSubtitle();
 
   const handleOpenContentEditor = () => {
     if (pageContent) {
-      setEditableTitle(getTranslatedField(pageContent, 'title', language) || pageConfig?.title || 'Социальная работа');
-      setEditableSubtitle(getTranslatedField(pageContent, 'subtitle', language) || pageConfig?.defaultSubtitle || '');
+      setEditableTitle(getTranslatedField(pageContent, 'title', language) || pageTitle);
+      setEditableSubtitle(getTranslatedField(pageContent, 'subtitle', language) || pageSubtitle);
       setEditableContent(getTranslatedField(pageContent, 'content', language) || []);
     } else {
-      setEditableTitle(pageConfig?.title || 'Социальная работа');
-      setEditableSubtitle(pageConfig?.defaultSubtitle || '');
+      setEditableTitle(pageTitle);
+      setEditableSubtitle(pageSubtitle);
       setEditableContent([]);
     }
     setIsContentEditorOpen(true);
@@ -325,7 +391,7 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
             <div className="flex items-center justify-center gap-3 mb-4">
               <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3">
                 <IconComponent className="w-12 h-12 text-blue-600" />
-                {pageConfig?.title || getTranslatedField(pageContent, 'title', language) || 'Социальная работа'}
+                {pageTitle}
               </h1>
               {isAuthenticated && isAdmin && (
                 <Button
@@ -340,7 +406,7 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
               )}
             </div>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              {pageConfig?.defaultSubtitle || getTranslatedField(pageContent, 'subtitle', language) || 'Информация о социальной и идеологической работе на предприятии.'}
+              {pageSubtitle || 'Информация о социальной и идеологической работе на предприятии.'}
             </p>
           </div>
 
@@ -365,7 +431,7 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
                   <IconComponent className="w-16 h-16 text-gray-400" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                  {pageConfig?.title || 'Социальная работа'}
+                  {pageTitle}
                 </h3>
                 <p className="text-gray-500 mb-6">
                   Здесь будет размещена информация о социальной и идеологической работе.
@@ -401,7 +467,7 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
               <Input
                 value={editableTitle}
                 onChange={(e) => setEditableTitle(e.target.value)}
-                placeholder={pageConfig?.title || 'Социальная работа'}
+                placeholder={pageTitle}
               />
             </div>
             <div>
@@ -409,7 +475,7 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
               <Textarea
                 value={editableSubtitle}
                 onChange={(e) => setEditableSubtitle(e.target.value)}
-                placeholder={pageConfig?.defaultSubtitle || 'Описание страницы...'}
+                placeholder={pageSubtitle || 'Описание страницы...'}
                 className="min-h-[80px] resize-none"
               />
             </div>

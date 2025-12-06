@@ -5,7 +5,7 @@ import { Provider } from "react-redux";
 import { store } from "./store";
 import "./index.css";
 import App from "./App.tsx";
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Layout } from "@/components/Layout.tsx";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { AccessibilityProvider } from "./contexts/AccessibilityContext";
@@ -24,9 +24,7 @@ import VacanciesPage from "@/components/VacanciesPage";
 import VacancyManagement from "@/components/admin/VacancyManagement";
 import CookiePolicyPage from "@/components/CookiePolicyPage";
 import UserProfile from "@/components/UserProfile";
-import HistoryPage from "@/components/HistoryPage";
 import AboutCompanyPage from "@/components/AboutCompanyPage";
-import SecurityPolicyPage from "@/components/SecurityPolicyPage";
 import TradeUnionPage from "@/components/social/TradeUnionPage";
 import BelayaRusPage from "@/components/social/BelayaRusPage";
 import BRSMPage from "@/components/social/BRSMPage";
@@ -35,6 +33,11 @@ import HealthyLifestylePage from "@/components/social/HealthyLifestylePage";
 import ImprovementYearPage from "@/components/social/ImprovementYearPage";
 import MemoryPage from "@/components/social/MemoryPage";
 import DynamicPage from "@/components/DynamicPage";
+import CategoryListPage from "@/components/CategoryListPage";
+import { useGetAllAboutCompanyCategoriesQuery } from "@/app/services/aboutCompanyCategoryApi";
+import { useGetAeronauticalInfoCategoriesQuery } from "@/app/services/aeronauticalInfoCategoryApi";
+import { useGetAppealsCategoriesQuery } from "@/app/services/appealsCategoryApi";
+import { useGetAllSocialWorkCategoriesQuery } from "@/app/services/socialWorkCategoryApi";
 import ServicesPage from "@/components/ServicesPage";
 import VoluntaryReportForm from "@/components/VoluntaryReportForm";
 import SearchResults from "@/pages/SearchResults";
@@ -55,15 +58,32 @@ const router = createBrowserRouter([
             { path: "/news/emergency", element: <NewsCategoryPage title="МЧС информирует" categoryName="МЧС информирует" /> },
             { path: "/news/police", element: <NewsCategoryPage title="МВД информирует" categoryName="МВД информирует" /> },
             { path: "/news/energy-saving", element: <NewsCategoryPage title="Энергосбережение" categoryName="Энергосбережение" /> },
-            { path: "/about", element: <Navigate to="/about/company" replace /> },
+            { path: "/about", element: (
+                <CategoryListPage
+                    title="О предприятии"
+                    subtitle="Разделы с информацией о предприятии"
+                    // @ts-ignore - хук без аргументов
+                    useCategoriesHook={useGetAllAboutCompanyCategoriesQuery as any}
+                    slugField="pageType"
+                    basePath="/about"
+                />
+            ) },
             { path: "/about/management", element: <ManagementPage /> },
             { path: "/about/branches", element: <BranchesPage /> },
             { path: "/about/branches/:id", element: <BranchDetailsPage /> },
-            { path: "/about/history", element: <HistoryPage /> },
             { path: "/about/company", element: <AboutCompanyPage /> },
-            { path: "/about/security-policy", element: <SecurityPolicyPage /> },
             { path: "/about/vacancies", element: <VacanciesPage /> },
             { path: "/about/:pageType", element: <DynamicPage pageType="about" /> },
+            { path: "/social", element: (
+                <CategoryListPage
+                    title="Социальная и идеологическая работа"
+                    subtitle="Разделы социальной и идеологической работы"
+                    // @ts-ignore
+                    useCategoriesHook={useGetAllSocialWorkCategoriesQuery as any}
+                    slugField="pageType"
+                    basePath="/social"
+                />
+            ) },
             { path: "/social/trade-union", element: <TradeUnionPage /> },
             { path: "/social/belaya-rus", element: <BelayaRusPage /> },
             { path: "/social/brsm", element: <BRSMPage /> },
@@ -72,7 +92,27 @@ const router = createBrowserRouter([
             { path: "/social/improvement-year", element: <ImprovementYearPage /> },
             { path: "/social/memory", element: <MemoryPage /> },
             { path: "/social/:pageType", element: <DynamicPage pageType="social" /> },
+            { path: "/air-navigation", element: (
+                <CategoryListPage
+                    title="Аэронавигационная информация"
+                    subtitle="Разделы аэронавигационной информации"
+                    // @ts-ignore
+                    useCategoriesHook={useGetAeronauticalInfoCategoriesQuery as any}
+                    slugField="pageType"
+                    basePath="/air-navigation"
+                />
+            ) },
             { path: "/air-navigation/:pageType", element: <DynamicPage pageType="aeronautical" /> },
+            { path: "/appeals", element: (
+                <CategoryListPage
+                    title="Обращения"
+                    subtitle="Разделы и сервисы для обращений"
+                    // @ts-ignore
+                    useCategoriesHook={useGetAppealsCategoriesQuery as any}
+                    slugField="pageType"
+                    basePath="/appeals"
+                />
+            ) },
             { path: "/appeals/:pageType", element: <DynamicPage pageType="appeals" /> },
             { path: "/appeals/voluntary-report", element: <VoluntaryReportForm /> },
             { path: "/services/:pageType", element: <DynamicPage pageType="services" /> },

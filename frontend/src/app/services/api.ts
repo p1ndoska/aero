@@ -6,17 +6,44 @@ import { BASE_URL } from "../../constants"
 const baseQuery = fetchBaseQuery({
     baseUrl: `${BASE_URL}/api`,
     prepareHeaders: (headers, { getState }) => {
-        const token =
-            (getState() as RootState).auth.token || localStorage.getItem("token")
+        // Сначала пытаемся получить токен из state, затем из localStorage
+        const state = getState() as RootState;
+        let token = state?.auth?.token;
+        
+        // Если токена нет в state, пытаемся получить из localStorage
+        if (!token) {
+            try {
+                token = localStorage.getItem("token");
+            } catch (e) {
+                // localStorage недоступен
+            }
+        }
 
         if (token) {
-            headers.set("authorization", `Bearer ${token}`)
+            // Убеждаемся, что заголовок устанавливается правильно
+            // Удаляем пробелы и лишние символы из токена
+            const cleanToken = token.trim();
+            headers.set("authorization", `Bearer ${cleanToken}`);
         }
-        return headers
+        return headers;
     },
 })
 
-const baseQueryWithRetry = retry(baseQuery, { maxRetries: 0 })
+// Обработка ошибок авторизации
+const baseQueryWithAuth = async (args, api, extraOptions) => {
+    const result = await baseQuery(args, api, extraOptions);
+    
+    // Если получили 401, токен невалидный или истек
+    if (result.error && result.error.status === 401) {
+        console.error('API: Unauthorized (401) - Token may be invalid or expired');
+        // Можно добавить логику для автоматического выхода пользователя
+        // Например: dispatch(logout()) или window.location.href = '/login'
+    }
+    
+    return result;
+};
+
+const baseQueryWithRetry = retry(baseQueryWithAuth, { maxRetries: 0 })
 
 export const api = createApi({
     reducerPath: "splitApi",
@@ -24,6 +51,6 @@ export const api = createApi({
     refetchOnMountOrArgChange: true,
     refetchOnFocus: true,
     refetchOnReconnect: true,
-           tagTypes: ['HistoryPageContent', 'News', 'Category', 'User', 'Management', 'Branch', 'Vacancy', 'SocialWorkCategory', 'AboutCompanyCategory', 'AeronauticalInfoCategory', 'AppealsCategory', 'ServicesCategory', 'SocialWorkPageContent', 'AboutCompanyPageContent', 'SecurityPolicyPageContent', 'VacancyPageContent', 'OrganizationLogo', 'ReceptionSlot', 'Role', 'UserProfile', 'IncidentReport', 'AeronauticalInfoPageContent', 'AppealsPageContent', 'ServicesPageContent'],
+           tagTypes: ['HistoryPageContent', 'News', 'Category', 'User', 'Management', 'Branch', 'Vacancy', 'SocialWorkCategory', 'AboutCompanyCategory', 'AeronauticalInfoCategory', 'AppealsCategory', 'ServicesCategory', 'SocialWorkPageContent', 'AboutCompanyPageContent', 'SecurityPolicyPageContent', 'VacancyPageContent', 'OrganizationLogo', 'ReceptionSlot', 'Role', 'Roles', 'UserProfile', 'IncidentReport', 'AeronauticalInfoPageContent', 'AppealsPageContent', 'ServicesPageContent', 'ELTDocument', 'ELTInstruction'],
     endpoints: () => ({}),
 })

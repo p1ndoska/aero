@@ -17,6 +17,7 @@ const initialState: AuthState = {
   token: localStorage.getItem("token"),
   isAuthenticated: !!localStorage.getItem("token"),
   isLoading: false,
+  mustChangePassword: false,
 };
 
 const userSlice = createSlice({
@@ -25,12 +26,18 @@ const userSlice = createSlice({
   reducers: {
     setCredentials: (
       state,
-      action: PayloadAction<{ user: User; token: string }>
+      action: PayloadAction<{ user: User; token: string; mustChangePassword?: boolean }>
     ) => {
-      const { user, token } = action.payload;
+      const { user, token, mustChangePassword = false } = action.payload;
+      
+      if (!token) {
+        return;
+      }
+      
       state.user = user;
       state.token = token;
       state.isAuthenticated = true;
+      state.mustChangePassword = mustChangePassword;
       localStorage.setItem("token", token);
       try { localStorage.setItem("user", JSON.stringify(user)); } catch {}
     },
@@ -38,6 +45,7 @@ const userSlice = createSlice({
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
+      state.mustChangePassword = false;
       localStorage.removeItem("token");
       localStorage.removeItem("user");
     },
@@ -49,8 +57,11 @@ const userSlice = createSlice({
         state.user = { ...state.user, ...action.payload };
       }
     },
+    clearMustChangePassword: (state) => {
+      state.mustChangePassword = false;
+    },
   },
 });
 
-export const { setCredentials, logout, setLoading, updateUser } = userSlice.actions;
+export const { setCredentials, logout, setLoading, updateUser, clearMustChangePassword } = userSlice.actions;
 export default userSlice.reducer; 

@@ -10,9 +10,11 @@ export function getTranslatedField(obj: any, field: string, language: string): a
   
   switch (language) {
     case 'en':
-      return obj[`${field}En`] || obj[field];
+      // Если есть перевод на английском, используем его, иначе базовое значение
+      return obj[`${field}En`] != null && obj[`${field}En`] !== '' ? obj[`${field}En`] : obj[field];
     case 'be':
-      return obj[`${field}Be`] || obj[field];
+      // Если есть перевод на белорусском, используем его, иначе базовое значение
+      return obj[`${field}Be`] != null && obj[`${field}Be`] !== '' ? obj[`${field}Be`] : obj[field];
     default: // 'ru' или по умолчанию
       return obj[field];
   }

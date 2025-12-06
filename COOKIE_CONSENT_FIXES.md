@@ -112,3 +112,5 @@ loadMarketingScript('https://connect.facebook.net/en_US/fbevents.js', 'facebook-
 - ✅ Возможность изменить настройки в любое время
 
 
+
+

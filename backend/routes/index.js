@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const {UserController, AdminController, NewsController, CategoryController, RoleController, ManagementController, IncidentReportController, BranchController, VacancyController, VacancyPageContentController, HistoryPageContentController, AboutCompanyPageContentController, SecurityPolicyPageContentController, SocialWorkPageContentController, OrganizationLogoController, SocialWorkCategoryController, AboutCompanyCategoryController, AeronauticalInfoCategoryController, AppealsCategoryController, ServicesCategoryController, ReceptionSlotController, UserProfileController, AeronauticalInfoPageContentController, AppealsPageContentController, ServicesPageContentController, ServiceRequestController} = require("../controllers");
 const {authenticationToken} = require("../middleware/auth");
 const checkRole = require('../middleware/checkRole');
@@ -145,8 +146,8 @@ router.delete('/news/:id', authenticationToken, checkRole(['SUPER_ADMIN','NEWS_A
 
 //category
 router.post('/category/create', authenticationToken, checkRole(['SUPER_ADMIN','NEWS_ADMIN']), CategoryController.createCategory);
-router.get('/category', authenticationToken, checkRole(['SUPER_ADMIN','NEWS_ADMIN']), CategoryController.getCategories);
-router.get('/category/:id', authenticationToken, checkRole(['SUPER_ADMIN','NEWS_ADMIN']), CategoryController.getCategoryById);
+router.get('/category', CategoryController.getCategories); // Публичный доступ для отображения в меню
+router.get('/category/:id', CategoryController.getCategoryById); // Публичный доступ
 router.put('/category/:id', authenticationToken, checkRole(['SUPER_ADMIN','NEWS_ADMIN']), CategoryController.updateCategory);
 router.delete('/category/:id', authenticationToken, checkRole(['SUPER_ADMIN','NEWS_ADMIN']), CategoryController.deleteCategory);
 
@@ -182,9 +183,9 @@ router.delete('/reception-slots/recurring-templates/:templateId', authentication
 router.put('/reception-slots/recurring-templates/:templateId', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ReceptionSlotController.updateRecurringTemplate);
 
 //branch
-router.get('/branch', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), BranchController.getAllBranches);
+router.get('/branch', BranchController.getAllBranches); // Публичный доступ для отображения филиалов
 router.post('/branch', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), BranchController.createBranch);
-router.get('/branch/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), BranchController.getBranchById);
+router.get('/branch/:id', BranchController.getBranchById); // Публичный доступ для просмотра деталей филиала
 router.put('/branch/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), BranchController.updateBranch);
 router.delete('/branch/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), BranchController.deleteBranch);
 
@@ -215,8 +216,8 @@ router.put('/vacancy-page-content', authenticationToken, checkRole(['SUPER_ADMIN
 //user profile routes
 router.get('/profile', authenticationToken, UserProfileController.getProfile);
 router.put('/profile', authenticationToken, UserProfileController.updateProfile);
-router.post('/profile/avatar', authenticationToken, upload.single('avatar'), UserProfileController.updateAvatar);
 router.put('/profile/password', authenticationToken, UserProfileController.changePassword);
+router.put('/profile/force-change-password', authenticationToken, UserProfileController.forceChangePassword);
 router.get('/profile/stats', authenticationToken, UserProfileController.getUserStats);
 router.delete('/profile', authenticationToken, UserProfileController.deleteAccount);
 
@@ -305,6 +306,81 @@ router.post('/services-page-content', authenticationToken, checkRole(['SUPER_ADM
 router.put('/services-page-content/:pageType', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServicesPageContentController.updateServicesPageContent);
 router.delete('/services-page-content/:pageType', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServicesPageContentController.deleteServicesPageContent);
 
+//ELT document routes
+const ELTDocumentController = require('../controllers/ELTDocumentController');
+
+// Настройка multer для загрузки документов ELT (PDF, DOCX)
+const eltDocumentStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadsDir = path.join(__dirname, '../uploads/documents');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    cb(null, uploadsDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, `elt-contract-${uniqueSuffix}${ext}`);
+  }
+});
+
+const eltDocumentFileFilter = (req, file, cb) => {
+  const allowedMimeTypes = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  ];
+  if (allowedMimeTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Разрешены только PDF и DOC/DOCX файлы!'), false);
+  }
+};
+
+const uploadELTDocument = multer({
+  storage: eltDocumentStorage,
+  fileFilter: eltDocumentFileFilter,
+  limits: {
+    fileSize: 20 * 1024 * 1024 // Ограничение размера файла до 20MB
+  }
+});
+
+router.post('/elt-document/upload', authenticationToken, checkRole(['SUPER_ADMIN', 'ACTIVITY_ADMIN']), (req, res, next) => {
+  uploadELTDocument.single('document')(req, res, (err) => {
+    if (err) {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(413).json({ error: 'Файл слишком большой. Максимальный размер: 20MB' });
+        }
+        return res.status(400).json({ error: 'Ошибка загрузки файла: ' + err.message });
+      }
+      return res.status(400).json({ error: err.message || 'Ошибка загрузки файла' });
+    }
+    next();
+  });
+}, ELTDocumentController.uploadDocument);
+router.get('/elt-document', ELTDocumentController.getDocument);
+router.delete('/elt-document', authenticationToken, checkRole(['SUPER_ADMIN', 'ACTIVITY_ADMIN']), ELTDocumentController.deleteDocument);
+
+// ELT instruction routes
+router.post('/elt-instruction/upload', authenticationToken, checkRole(['SUPER_ADMIN', 'ACTIVITY_ADMIN']), (req, res, next) => {
+  uploadELTDocument.single('instruction')(req, res, (err) => {
+    if (err) {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(413).json({ error: 'Файл слишком большой. Максимальный размер: 20MB' });
+        }
+        return res.status(400).json({ error: 'Ошибка загрузки файла: ' + err.message });
+      }
+      return res.status(400).json({ error: err.message || 'Ошибка загрузки файла' });
+    }
+    next();
+  });
+}, ELTDocumentController.uploadInstruction);
+router.get('/elt-instruction', ELTDocumentController.getInstruction);
+router.delete('/elt-instruction', authenticationToken, checkRole(['SUPER_ADMIN', 'ACTIVITY_ADMIN']), ELTDocumentController.deleteInstruction);
+
 //service requests routes
 router.post('/service-requests', ServiceRequestController.createServiceRequest);
 router.get('/service-requests', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServiceRequestController.getAllServiceRequests);
@@ -318,5 +394,11 @@ router.use('/questionnaire', require('./questionnaire'));
 
 //voluntary report routes
 router.use('/voluntary-report', require('./voluntaryReport'));
+
+//ELT registration routes
+router.use('/elt-registration', require('./eltRegistration'));
+
+//ELT deregistration routes
+router.use('/elt-deregistration', require('./eltDeregistration'));
 
 module.exports = router;

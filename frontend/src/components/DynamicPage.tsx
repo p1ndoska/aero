@@ -1,20 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Building2, Settings, FileText, Plane, MessageSquare, Send } from 'lucide-react';
+import { Building2, Settings, FileText, Plane, MessageSquare, Send, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getTranslatedField } from '../utils/translationHelpers';
 import ContentConstructor from './admin/ContentConstructor';
 import ServiceRequestForm from './ServiceRequestForm';
+import ELTRegistrationForm from './ELTRegistrationForm';
+import ELTDeregistrationForm from './ELTDeregistrationForm';
 
 // Импорты для API запросов
 import { useGetAboutCompanyPageContentByPageTypeQuery, useUpdateAboutCompanyPageContentByPageTypeMutation, useCreateAboutCompanyPageContentMutation } from '@/app/services/aboutCompanyPageContentApi';
 import { useGetAeronauticalInfoPageContentByPageTypeQuery, useUpdateAeronauticalInfoPageContentByPageTypeMutation, useCreateAeronauticalInfoPageContentMutation } from '@/app/services/aeronauticalInfoPageContentApi';
 import { useGetAppealsPageContentByPageTypeQuery, useUpdateAppealsPageContentByPageTypeMutation, useCreateAppealsPageContentMutation } from '@/app/services/appealsPageContentApi';
 import { useGetServicesPageContentQuery, useUpdateServicesPageContentMutation, useCreateServicesPageContentMutation } from '@/app/services/servicesPageContentApi';
+import { useGetAllServicesCategoriesQuery } from '@/app/services/servicesCategoryApi';
+import { useGetAllAboutCompanyCategoriesQuery } from '@/app/services/aboutCompanyCategoryApi';
+import { useGetELTDocumentQuery, useUploadELTDocumentMutation, useDeleteELTDocumentMutation, useGetELTInstructionQuery, useUploadELTInstructionMutation, useDeleteELTInstructionMutation } from '@/app/services/eltDocumentApi';
+import { BASE_URL } from '@/constants';
 import SocialWorkPage from './SocialWorkPage';
 import VoluntaryReportForm from './VoluntaryReportForm';
 import ConsumerQuestionnaireForm from './ConsumerQuestionnaireForm';
@@ -26,6 +32,7 @@ interface DynamicPageProps {
 
 export default function DynamicPage({ pageType }: DynamicPageProps) {
   const { pageType: urlPageType } = useParams<{ pageType: string }>();
+  const { language, t } = useLanguage();
   
   // Для социальных страниц используем специальный компонент
   if (pageType === 'social') {
@@ -41,8 +48,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
   if (pageType === 'appeals' && (urlPageType === 'consumer-questionnaire' || urlPageType === 'customer-questionnaire')) {
     return <ConsumerQuestionnaireForm />;
   }
-  
-  const { language } = useLanguage();
+
   const { isAuthenticated, user } = useSelector((state: any) => state.auth);
   const roleValue = user?.role;
   const roleName = (typeof roleValue === 'string' ? roleValue : roleValue?.name) ?? '';
@@ -66,9 +72,145 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
 
   const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
+  const [showELTForm, setShowELTForm] = useState(false);
+  const [showELTDeregistrationForm, setShowELTDeregistrationForm] = useState(false);
   const [editableTitle, setEditableTitle] = useState('');
   const [editableSubtitle, setEditableSubtitle] = useState('');
   const [editableContent, setEditableContent] = useState<any[]>([]);
+
+  // Вызываем все хуки на верхнем уровне (правило React Hooks)
+  // Используем skip для условных запросов
+  const aboutPageContentQuery = useGetAboutCompanyPageContentByPageTypeQuery(urlPageType || '', {
+    skip: pageType !== 'about' || !urlPageType
+  });
+  const aeronauticalPageContentQuery = useGetAeronauticalInfoPageContentByPageTypeQuery(urlPageType || '', {
+    skip: pageType !== 'aeronautical' || !urlPageType
+  });
+  const appealsPageContentQuery = useGetAppealsPageContentByPageTypeQuery(urlPageType || '', {
+    skip: pageType !== 'appeals' || !urlPageType
+  });
+  const servicesPageContentQuery = useGetServicesPageContentQuery(urlPageType || '', {
+    skip: pageType !== 'services' || !urlPageType
+  });
+
+  // Мутации всегда доступны
+  const [updateAboutPageContent] = useUpdateAboutCompanyPageContentByPageTypeMutation();
+  const [createAboutPageContent] = useCreateAboutCompanyPageContentMutation();
+  const [updateAeronauticalPageContent] = useUpdateAeronauticalInfoPageContentByPageTypeMutation();
+  const [createAeronauticalPageContent] = useCreateAeronauticalInfoPageContentMutation();
+  const [updateAppealsPageContent] = useUpdateAppealsPageContentByPageTypeMutation();
+  const [createAppealsPageContent] = useCreateAppealsPageContentMutation();
+  const [updateServicesPageContent] = useUpdateServicesPageContentMutation();
+  const [createServicesPageContent] = useCreateServicesPageContentMutation();
+
+  // Получаем категории услуг (всегда вызываем хук, но используем skip)
+  const servicesCategoriesQuery = useGetAllServicesCategoriesQuery(undefined, {
+    skip: pageType !== 'services'
+  });
+  const servicesCategories = servicesCategoriesQuery?.data || [];
+
+  // Получаем категории "О предприятии" (всегда вызываем хук, но используем skip)
+  const aboutCompanyCategoriesQuery = useGetAllAboutCompanyCategoriesQuery(undefined, {
+    skip: pageType !== 'about'
+  });
+  const aboutCompanyCategories = (aboutCompanyCategoriesQuery?.data || []) as any[];
+  
+  // Отладочная информация для категорий
+  useEffect(() => {
+    if (pageType === 'about') {
+      console.log('About Company Categories Debug:', {
+        isLoading: aboutCompanyCategoriesQuery?.isLoading,
+        isError: aboutCompanyCategoriesQuery?.isError,
+        error: aboutCompanyCategoriesQuery?.error,
+        data: aboutCompanyCategoriesQuery?.data,
+        categoriesCount: aboutCompanyCategories.length,
+        categories: aboutCompanyCategories.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          nameEn: c.nameEn,
+          nameBe: c.nameBe,
+          pageType: c.pageType
+        })),
+        urlPageType,
+        foundCategory: aboutCompanyCategories.find((cat: any) => cat.pageType === urlPageType)
+      });
+    }
+  }, [pageType, aboutCompanyCategoriesQuery, aboutCompanyCategories, urlPageType]);
+
+  // Определяем какой API использовать в зависимости от типа страницы
+  let pageContentQuery, updatePageContentMutation, createPageContentMutation, defaultTitle, defaultSubtitle, icon;
+
+  switch (pageType) {
+    case 'about':
+      pageContentQuery = aboutPageContentQuery;
+      updatePageContentMutation = updateAboutPageContent;
+      createPageContentMutation = createAboutPageContent;
+      defaultTitle = t('about_company');
+      defaultSubtitle = t('about_company_default_subtitle');
+      icon = Building2;
+      break;
+    case 'aeronautical':
+      pageContentQuery = aeronauticalPageContentQuery;
+      updatePageContentMutation = updateAeronauticalPageContent;
+      createPageContentMutation = createAeronauticalPageContent;
+      defaultTitle = t('aeronautical_information');
+      defaultSubtitle = t('aeronautical_information_subtitle');
+      icon = Plane;
+      break;
+    case 'appeals':
+      pageContentQuery = appealsPageContentQuery;
+      updatePageContentMutation = updateAppealsPageContent;
+      createPageContentMutation = createAppealsPageContent;
+      defaultTitle = t('appeals');
+      defaultSubtitle = t('appeals_subtitle');
+      icon = MessageSquare;
+      break;
+    case 'services':
+      pageContentQuery = servicesPageContentQuery;
+      updatePageContentMutation = updateServicesPageContent;
+      createPageContentMutation = createServicesPageContent;
+      defaultTitle = t('services');
+      defaultSubtitle = t('services_subtitle');
+      icon = FileText;
+      break;
+    default:
+      // Для неизвестных типов страниц создаем пустой объект запроса
+      pageContentQuery = { 
+        data: undefined, 
+        refetch: () => Promise.resolve(), 
+        isLoading: false, 
+        error: null,
+        isError: false,
+        isSuccess: false,
+        isFetching: false
+      };
+      updatePageContentMutation = [null, { isLoading: false }];
+      createPageContentMutation = [null, { isLoading: false }];
+      defaultTitle = t('page');
+      defaultSubtitle = t('information');
+      icon = FileText;
+  }
+
+  // Безопасно извлекаем данные из запроса
+  // RTK Query всегда возвращает объект, даже когда skip: true
+  const pageContent = (pageContentQuery && 'data' in pageContentQuery) 
+    ? (pageContentQuery.data || null)
+    : null;
+  const refetchPageContent = (pageContentQuery && 'refetch' in pageContentQuery && typeof pageContentQuery.refetch === 'function')
+    ? pageContentQuery.refetch
+    : (() => Promise.resolve());
+  
+  // Безопасно извлекаем мутации
+  const updatePageContent = Array.isArray(updatePageContentMutation) 
+    ? updatePageContentMutation[0]
+    : (typeof updatePageContentMutation === 'function' ? updatePageContentMutation : null);
+  const mutationState = Array.isArray(updatePageContentMutation) 
+    ? updatePageContentMutation[1]
+    : { isLoading: false };
+  const createPageContent = Array.isArray(createPageContentMutation) 
+    ? createPageContentMutation[0]
+    : (typeof createPageContentMutation === 'function' ? createPageContentMutation : null);
+  const isUpdatingContent = (mutationState as any)?.isLoading || false;
 
   // Принудительное применение стилей выравнивания и цветов после рендеринга
   useEffect(() => {
@@ -125,68 +267,171 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
     return () => clearTimeout(timeoutId);
   }, [editableContent]);
 
-  // Определяем какой API использовать в зависимости от типа страницы
-  let pageContentQuery, updatePageContentMutation, defaultTitle, defaultSubtitle, icon, createPageContentMutation;
-
-  switch (pageType) {
-    case 'about':
-      pageContentQuery = useGetAboutCompanyPageContentByPageTypeQuery(urlPageType || '');
-      updatePageContentMutation = useUpdateAboutCompanyPageContentByPageTypeMutation();
-      createPageContentMutation = useCreateAboutCompanyPageContentMutation();
-      defaultTitle = 'О предприятии';
-      defaultSubtitle = 'Информация о нашем предприятии, его структуре, целях и принципах работы в сфере аэронавигационного обслуживания воздушного движения.';
-      icon = Building2;
-      break;
-    case 'aeronautical':
-      pageContentQuery = useGetAeronauticalInfoPageContentByPageTypeQuery(urlPageType || '');
-      updatePageContentMutation = useUpdateAeronauticalInfoPageContentByPageTypeMutation();
-      createPageContentMutation = useCreateAeronauticalInfoPageContentMutation();
-      defaultTitle = 'Аэронавигационная информация';
-      defaultSubtitle = 'Информация о правилах и процедурах аэронавигационного обслуживания воздушного движения.';
-      icon = Plane;
-      break;
-    case 'appeals':
-      pageContentQuery = useGetAppealsPageContentByPageTypeQuery(urlPageType || '');
-      updatePageContentMutation = useUpdateAppealsPageContentByPageTypeMutation();
-      createPageContentMutation = useCreateAppealsPageContentMutation();
-      defaultTitle = 'Обращения';
-      defaultSubtitle = 'Информация о порядке подачи и рассмотрения обращений граждан и юридических лиц.';
-      icon = MessageSquare;
-      break;
-    case 'services':
-      pageContentQuery = useGetServicesPageContentQuery(urlPageType || '');
-      updatePageContentMutation = useUpdateServicesPageContentMutation();
-      createPageContentMutation = useCreateServicesPageContentMutation();
-      defaultTitle = 'Услуги';
-      defaultSubtitle = 'Информация об услугах предприятия.';
-      icon = FileText;
-      break;
-    default:
-      pageContentQuery = { data: null, refetch: () => {} };
-      updatePageContentMutation = [null, { isLoading: false }];
-      defaultTitle = 'Страница';
-      defaultSubtitle = 'Информация';
-      icon = FileText;
-  }
-
-  const { data: pageContent, refetch: refetchPageContent } = pageContentQuery;
-  const [updatePageContent, mutationState] = updatePageContentMutation;
-  const [createPageContent] = (createPageContentMutation as any) || [null];
-  const isUpdatingContent = (mutationState as any)?.isLoading || false;
+  // Получаем документ ELT, если это страница ELT
+  const isELTPage = pageType === 'services' && urlPageType === 'elt-registration-services';
+  const eltDocumentQuery = useGetELTDocumentQuery(undefined, {
+    // Пропускаем запрос, если это не страница ELT
+    skip: !isELTPage,
+    // Не показываем ошибку, если документ не найден (404)
+    refetchOnMountOrArgChange: false,
+  });
+  const eltDocument = eltDocumentQuery?.data;
+  const [uploadELTDocument, { isLoading: isUploadingDocument }] = useUploadELTDocumentMutation();
+  const [deleteELTDocument] = useDeleteELTDocumentMutation();
+  
+  // Получаем документ инструкции ELT
+  const eltInstructionQuery = useGetELTInstructionQuery(undefined, {
+    skip: !isELTPage,
+    refetchOnMountOrArgChange: false,
+  });
+  const eltInstruction = eltInstructionQuery?.data;
+  const [uploadELTInstruction, { isLoading: isUploadingInstruction }] = useUploadELTInstructionMutation();
+  const [deleteELTInstruction] = useDeleteELTInstructionMutation();
+  
+  const canManageELTDocument = isAuthenticated && (roleName === 'SUPER_ADMIN' || roleName === 'ACTIVITY_ADMIN');
 
   // Приводим pageContent к общему типу
+  // Если pageContentQuery был пропущен (skip: true), pageContent будет undefined
   const content = pageContent as any;
   
-  // Отладочная информация
-  console.log('DynamicPage content:', { pageType, urlPageType, content, pageContent });
+  // Проверяем, что запрос выполнен или пропущен корректно
+  // Если запрос был пропущен (skip: true), pageContentQuery может быть undefined
+  // RTK Query всегда возвращает объект, даже когда skip: true
+  if (pageContentQuery && 'isError' in pageContentQuery && pageContentQuery.isError && !pageContentQuery.isLoading) {
+    console.error('Error loading page content:', pageContentQuery.error);
+  }
+  
+  // Находим категорию услуги по pageType для получения названия
+  const serviceCategory = pageType === 'services' && urlPageType
+    ? (servicesCategories as any[]).find((cat: any) => cat.pageType === urlPageType)
+    : null;
+
+  // Находим категорию "О предприятии" по pageType для получения названия
+  // Используем useMemo для мемоизации, чтобы пересчитывать при изменении категорий или urlPageType
+  const aboutCompanyCategory = useMemo(() => {
+    if (pageType === 'about' && urlPageType && aboutCompanyCategories.length > 0) {
+      const found = aboutCompanyCategories.find((cat: any) => cat.pageType === urlPageType);
+      return found || null;
+    }
+    return null;
+  }, [pageType, urlPageType, aboutCompanyCategories]);
+  
+  // Определяем заголовок: приоритет - название категории, затем заголовок из контента, затем дефолтный
+  const pageTitle = useMemo(() => {
+    // Для "О предприятии" - всегда используем название категории, если доступно
+    if (pageType === 'about' && aboutCompanyCategory) {
+      const categoryName = getTranslatedField(aboutCompanyCategory, 'name', language);
+      // getTranslatedField уже возвращает правильное значение (перевод или базовое)
+      // Проверяем, что значение не пустое и не null/undefined
+      if (categoryName != null && String(categoryName).trim() !== '') {
+        return String(categoryName);
+      }
+      // Если перевод пустой, используем базовое значение
+      if (aboutCompanyCategory.name != null && String(aboutCompanyCategory.name).trim() !== '') {
+        return String(aboutCompanyCategory.name);
+      }
+    }
+    
+    // Для услуг - используем название категории, если доступно
+    if (pageType === 'services' && serviceCategory) {
+      const categoryName = getTranslatedField(serviceCategory, 'name', language);
+      if (categoryName) {
+        return categoryName;
+      }
+      if (serviceCategory.name) {
+        return serviceCategory.name;
+      }
+    }
+    
+    // Если категории нет или для других типов страниц, используем заголовок из контента или дефолтный
+    if (content) {
+      const contentTitle = getTranslatedField(content, 'title', language);
+      if (contentTitle) {
+        return contentTitle;
+      }
+    }
+    return defaultTitle || t('page');
+  }, [pageType, urlPageType, aboutCompanyCategory, serviceCategory, content, language, defaultTitle, t, aboutCompanyCategories]);
+  
+  // Функция для получения подзаголовка: приоритет - описание категории, затем подзаголовок из контента, затем дефолтный
+  const pageSubtitle = useMemo(() => {
+    // Для "О предприятии" - используем описание категории, если доступно
+    if (pageType === 'about' && aboutCompanyCategory) {
+      const categoryDescription = getTranslatedField(aboutCompanyCategory, 'description', language);
+      // getTranslatedField уже возвращает правильное значение (перевод или базовое)
+      // Проверяем, что значение не пустое и не null/undefined
+      if (categoryDescription != null && String(categoryDescription).trim() !== '') {
+        return String(categoryDescription);
+      }
+      // Если перевод пустой, используем базовое значение
+      if (aboutCompanyCategory.description != null && String(aboutCompanyCategory.description).trim() !== '') {
+        return String(aboutCompanyCategory.description);
+      }
+    }
+    
+    // Для услуг - используем описание категории, если доступно
+    if (pageType === 'services' && serviceCategory) {
+      const categoryDescription = getTranslatedField(serviceCategory, 'description', language);
+      if (categoryDescription) {
+        return categoryDescription;
+      }
+      if (serviceCategory.description) {
+        return serviceCategory.description;
+      }
+    }
+    
+    // Для остальных типов страниц используем стандартную логику
+    if (content) {
+      const contentSubtitle = getTranslatedField(content, 'subtitle', language);
+      if (contentSubtitle) {
+        return contentSubtitle;
+      }
+    }
+    return defaultSubtitle || t('information');
+  }, [pageType, urlPageType, aboutCompanyCategory, serviceCategory, content, language, defaultSubtitle, t, aboutCompanyCategories]);
+  
+  // Отладочная информация (раскомментируйте для отладки)
+  useEffect(() => {
+    if (pageType === 'about') {
+      console.log('DynamicPage about debug:', {
+        pageType,
+        urlPageType,
+        aboutCompanyCategoriesLoading: aboutCompanyCategoriesQuery?.isLoading,
+        aboutCompanyCategoriesError: aboutCompanyCategoriesQuery?.error,
+        aboutCompanyCategories: aboutCompanyCategories.length,
+        aboutCompanyCategoriesData: aboutCompanyCategories.map((c: any) => ({ name: c.name, pageType: c.pageType, nameEn: c.nameEn, nameBe: c.nameBe })),
+        aboutCompanyCategory,
+        categoryName: aboutCompanyCategory ? getTranslatedField(aboutCompanyCategory, 'name', language) : null,
+        contentTitle: content ? getTranslatedField(content, 'title', language) : null,
+        pageTitle,
+        language
+      });
+    }
+  }, [pageType, urlPageType, aboutCompanyCategories, aboutCompanyCategory, content, pageTitle, language, aboutCompanyCategoriesQuery]);
 
   const handleOpenContentEditor = () => {
     if (content) {
-      setEditableTitle(getTranslatedField(content, 'title', language) || defaultTitle);
+      const contentTitle = getTranslatedField(content, 'title', language);
+      // Если заголовок дефолтный "Услуги" и есть категория, используем название категории
+      if (pageType === 'services' && contentTitle === 'Услуги' && serviceCategory) {
+        setEditableTitle(getTranslatedField(serviceCategory, 'name', language));
+      } else if (pageType === 'about' && aboutCompanyCategory) {
+        // Для "О предприятии" используем название категории
+        setEditableTitle(getTranslatedField(aboutCompanyCategory, 'name', language) || contentTitle || defaultTitle);
+      } else {
+        setEditableTitle(contentTitle || defaultTitle);
+      }
       setEditableSubtitle(getTranslatedField(content, 'subtitle', language) || '');
       setEditableContent(getTranslatedField(content, 'content', language) || []);
     } else {
-      setEditableTitle(defaultTitle);
+      // Если контент не создан, используем название категории
+      if (pageType === 'services' && serviceCategory) {
+        setEditableTitle(getTranslatedField(serviceCategory, 'name', language));
+      } else if (pageType === 'about' && aboutCompanyCategory) {
+        setEditableTitle(getTranslatedField(aboutCompanyCategory, 'name', language));
+      } else {
+        setEditableTitle(defaultTitle);
+      }
       setEditableSubtitle('');
       setEditableContent([]);
     }
@@ -247,7 +492,42 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
           const status = error?.status || error?.data?.statusCode;
         if ((pageType === 'services' || pageType === 'about' || pageType === 'aeronautical' || pageType === 'appeals') && status === 404 && typeof createPageContent === 'function') {
           // Создаём запись и не падаем с ошибкой
-          await (createPageContent as any)({ pageType: urlPageType, title: editableTitle, subtitle: editableSubtitle, content: editableContent });
+          // Для "О предприятии" используем название категории, если доступно
+          let createTitle = editableTitle;
+          let createSubtitle = editableSubtitle;
+          let createTitleEn = undefined;
+          let createTitleBe = undefined;
+          let createSubtitleEn = undefined;
+          let createSubtitleBe = undefined;
+          
+          if (pageType === 'about' && aboutCompanyCategory) {
+            createTitle = getTranslatedField(aboutCompanyCategory, 'name', 'ru') || aboutCompanyCategory.name || editableTitle;
+            createTitleEn = aboutCompanyCategory.nameEn;
+            createTitleBe = aboutCompanyCategory.nameBe;
+            createSubtitle = getTranslatedField(aboutCompanyCategory, 'description', 'ru') || aboutCompanyCategory.description || editableSubtitle;
+            createSubtitleEn = aboutCompanyCategory.descriptionEn;
+            createSubtitleBe = aboutCompanyCategory.descriptionBe;
+          } else if (pageType === 'services' && serviceCategory) {
+            createTitle = getTranslatedField(serviceCategory, 'name', 'ru') || serviceCategory.name || editableTitle;
+            createTitleEn = serviceCategory.nameEn;
+            createTitleBe = serviceCategory.nameBe;
+            createSubtitle = getTranslatedField(serviceCategory, 'description', 'ru') || serviceCategory.description || editableSubtitle;
+            createSubtitleEn = serviceCategory.descriptionEn;
+            createSubtitleBe = serviceCategory.descriptionBe;
+          }
+          
+          await (createPageContent as any)({ 
+            pageType: urlPageType, 
+            title: createTitle,
+            titleEn: createTitleEn,
+            titleBe: createTitleBe,
+            subtitle: createSubtitle,
+            subtitleEn: createSubtitleEn,
+            subtitleBe: createSubtitleBe,
+            content: editableContent,
+            contentEn: [],
+            contentBe: []
+          });
           } else {
             console.error('Error updating page content:', error);
             throw error;
@@ -300,9 +580,101 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
         const items = element.props?.items || [];
         return (
           <ul className="list-disc list-inside mb-4 space-y-2">
-            {items.map((item: string, idx: number) => (
-              <li key={idx} className="text-gray-700 break-words">{item}</li>
-            ))}
+            {items.map((item: string, idx: number) => {
+              // Если это страница ELT, проверяем элементы списка по ключевым словам на всех языках
+              if (pageType === 'services' && urlPageType === 'elt-registration-services') {
+                // Проверяем на всех языках: русский, английский, белорусский
+                const isRegistrationForm = 
+                  item.includes('ЗАЯВЛЕНИЕ о регистрации') || 
+                  item.includes('APPLICATION for registration') ||
+                  item.includes('ЗАЯЎЛЕННЕ пра рэгістрацыю');
+                
+                const isDeregistrationForm = 
+                  item.includes('ЗАЯВЛЕНИЕ о снятии с регистрации') || 
+                  item.includes('APPLICATION for deregistration') ||
+                  item.includes('ЗАЯЎЛЕННЕ пра зняцце з рэгістрацыі');
+                
+                const isContract = 
+                  item.includes('ДОГОВОР') || 
+                  item.includes('CONTRACT') ||
+                  item.includes('ДОГАВОР');
+                
+                const isInstruction = 
+                  item.includes('ИНСТРУКЦИЯ') || 
+                  item.includes('INSTRUCTIONS') ||
+                  item.includes('ІНСТРУКЦЫЯ');
+                
+                if (isRegistrationForm) {
+                  return (
+                    <li key={idx} className="text-gray-700 break-words">
+                      <button
+                        onClick={() => setShowELTForm(true)}
+                        className="text-blue-600 hover:underline cursor-pointer"
+                      >
+                        {item}
+                      </button>
+                    </li>
+                  );
+                }
+                if (isDeregistrationForm) {
+                  return (
+                    <li key={idx} className="text-gray-700 break-words">
+                      <button
+                        onClick={() => setShowELTDeregistrationForm(true)}
+                        className="text-blue-600 hover:underline cursor-pointer"
+                      >
+                        {item}
+                      </button>
+                    </li>
+                  );
+                }
+                // Если это "ДОГОВОР", делаем его кликабельным для открытия документа
+                if (isContract) {
+                  const handleContractClick = () => {
+                    if (eltDocument?.documentUrl) {
+                      window.open(`${BASE_URL}${eltDocument.documentUrl}`, '_blank');
+                    } else {
+                      toast.error(t('document_not_found'));
+                    }
+                  };
+                  return (
+                    <li key={idx} className="text-gray-700 break-words">
+                      <button
+                        onClick={handleContractClick}
+                        className="text-blue-600 hover:underline cursor-pointer"
+                        disabled={!eltDocument?.documentUrl}
+                      >
+                        {item}
+                      </button>
+                    </li>
+                  );
+                }
+                // Если это "ИНСТРУКЦИЯ", делаем его кликабельным для открытия документа
+                if (isInstruction) {
+                  const handleInstructionClick = () => {
+                    if (eltInstruction?.instructionUrl) {
+                      window.open(`${BASE_URL}${eltInstruction.instructionUrl}`, '_blank');
+                    } else {
+                      toast.error(t('instruction_document_not_found'));
+                    }
+                  };
+                  return (
+                    <li key={idx} className="text-gray-700 break-words">
+                      <button
+                        onClick={handleInstructionClick}
+                        className="text-blue-600 hover:underline cursor-pointer"
+                        disabled={!eltInstruction?.instructionUrl}
+                      >
+                        {item}
+                      </button>
+                    </li>
+                  );
+                }
+              }
+              return (
+                <li key={idx} className="text-gray-700 break-words">{item}</li>
+              );
+            })}
           </ul>
         );
       case 'link':
@@ -404,6 +776,15 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
 
   const IconComponent = icon;
 
+  // Если открыта форма ELT, показываем её (после всех хуков)
+  if (showELTForm && pageType === 'services' && urlPageType === 'elt-registration-services') {
+    return <ELTRegistrationForm />;
+  }
+
+  if (showELTDeregistrationForm && pageType === 'services' && urlPageType === 'elt-registration-services') {
+    return <ELTDeregistrationForm />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       <div className="container mx-auto px-4 py-12">
@@ -414,7 +795,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
             <div className="flex items-center justify-center gap-3 mb-4">
               <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3">
                 <IconComponent className="w-10 h-10 text-blue-600" />
-                {getTranslatedField(content, 'title', language) || defaultTitle}
+                {pageTitle}
               </h1>
               <div className="flex gap-2">
                 {pageType === 'services' && (
@@ -441,7 +822,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
               </div>
             </div>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              {getTranslatedField(content, 'subtitle', language) || defaultSubtitle}
+              {pageSubtitle}
             </p>
           </div>
 
@@ -449,7 +830,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
           {content?.content && Array.isArray(content.content) && content.content.length > 0 && (
             <div className="w-full mb-12">
               <div className="py-8">
-                {getTranslatedField(content, 'content', language).map((element: any) => {
+                {(getTranslatedField(content, 'content', language) || []).map((element: any) => {
                   // Проверяем, является ли блок приватным и авторизован ли пользователь
                   if (element.isPrivate && !isAuthenticated) {
                     return (
@@ -489,9 +870,9 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
             <div className="w-full">
               <div className="bg-blue-50 py-12 text-center rounded-lg">
                 <IconComponent className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">{defaultTitle}</h3>
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">{pageTitle}</h3>
                 <p className="text-gray-500 mb-6">
-                  {defaultSubtitle}
+                  {pageSubtitle}
                 </p>
                 {isAuthenticated && isAdmin && (
                   <Button
@@ -537,6 +918,208 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[80px] resize-none"
               />
             </div>
+            {/* Управление документом ELT (только для страницы ELT и админов) */}
+            {isELTPage && canManageELTDocument && (
+              <div className="border-t pt-6">
+                <label className="block text-sm font-medium mb-4">Документ договора ELT</label>
+                <div className="space-y-4">
+                  {eltDocument?.documentUrl ? (
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-5 h-5 text-gray-600" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{eltDocument.documentName}</p>
+                          <a
+                            href={`${BASE_URL}${eltDocument.documentUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 hover:underline"
+                          >
+                            Открыть документ
+                          </a>
+                        </div>
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            await deleteELTDocument().unwrap();
+                            toast.success('Документ удален');
+                            eltDocumentQuery?.refetch();
+                          } catch (error: any) {
+                            toast.error(error?.data?.error || 'Ошибка при удалении документа');
+                          }
+                        }}
+                      >
+                        Удалить
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 mb-2">Документ не загружен</p>
+                  )}
+                  <div>
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        
+                        // Проверка типа файла
+                        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                        if (!allowedTypes.includes(file.type)) {
+                          toast.error('Разрешены только PDF и DOC/DOCX файлы');
+                          return;
+                        }
+                        
+                        // Проверка размера (20MB)
+                        if (file.size > 20 * 1024 * 1024) {
+                          toast.error('Размер файла не должен превышать 20MB');
+                          return;
+                        }
+                        
+                        try {
+                          // Проверяем, что пользователь авторизован
+                          const token = localStorage.getItem('token');
+                          if (!token) {
+                            toast.error('Необходима авторизация для загрузки документа');
+                            return;
+                          }
+
+                          const formData = new FormData();
+                          formData.append('document', file);
+                          
+                          await uploadELTDocument(formData).unwrap();
+                          toast.success('Документ успешно загружен');
+                          eltDocumentQuery?.refetch();
+                          e.target.value = ''; // Очищаем input
+                        } catch (error: any) {
+                          console.error('Upload error:', error);
+                          if (error?.status === 401 || error?.status === 'FETCH_ERROR') {
+                            toast.error('Ошибка авторизации. Пожалуйста, войдите в систему заново');
+                          } else {
+                            toast.error(error?.data?.error || error?.data?.message || 'Ошибка при загрузке документа');
+                          }
+                        }
+                      }}
+                      className="hidden"
+                      id="elt-document-upload"
+                      disabled={isUploadingDocument}
+                    />
+                    <label
+                      htmlFor="elt-document-upload"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Upload className="w-4 h-4" />
+                      {isUploadingDocument ? 'Загрузка...' : eltDocument?.documentUrl ? 'Заменить документ' : 'Загрузить документ'}
+                    </label>
+                    <p className="text-xs text-gray-500 mt-2">Разрешены файлы PDF, DOC, DOCX (макс. 20MB)</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Управление документом инструкции ELT (только для страницы ELT и админов) */}
+            {isELTPage && canManageELTDocument && (
+              <div className="border-t pt-6">
+                <label className="block text-sm font-medium mb-4">Документ инструкции ELT</label>
+                <div className="space-y-4">
+                  {eltInstruction?.instructionUrl ? (
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-5 h-5 text-gray-600" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{eltInstruction.instructionName}</p>
+                          <a
+                            href={`${BASE_URL}${eltInstruction.instructionUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 hover:underline"
+                          >
+                            Открыть документ
+                          </a>
+                        </div>
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            await deleteELTInstruction().unwrap();
+                            toast.success('Документ инструкции удален');
+                            eltInstructionQuery?.refetch();
+                          } catch (error: any) {
+                            toast.error(error?.data?.error || 'Ошибка при удалении документа инструкции');
+                          }
+                        }}
+                      >
+                        Удалить
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 mb-2">Документ инструкции не загружен</p>
+                  )}
+                  <div>
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        
+                        // Проверка типа файла
+                        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                        if (!allowedTypes.includes(file.type)) {
+                          toast.error('Разрешены только PDF и DOC/DOCX файлы');
+                          return;
+                        }
+                        
+                        // Проверка размера (20MB)
+                        if (file.size > 20 * 1024 * 1024) {
+                          toast.error('Размер файла не должен превышать 20MB');
+                          return;
+                        }
+                        
+                        try {
+                          // Проверяем, что пользователь авторизован
+                          const token = localStorage.getItem('token');
+                          if (!token) {
+                            toast.error('Необходима авторизация для загрузки документа');
+                            return;
+                          }
+
+                          const formData = new FormData();
+                          formData.append('instruction', file);
+                          
+                          await uploadELTInstruction(formData).unwrap();
+                          toast.success('Документ инструкции успешно загружен');
+                          eltInstructionQuery?.refetch();
+                          e.target.value = ''; // Очищаем input
+                        } catch (error: any) {
+                          console.error('Upload error:', error);
+                          if (error?.status === 401 || error?.status === 'FETCH_ERROR') {
+                            toast.error('Ошибка авторизации. Пожалуйста, войдите в систему заново');
+                          } else {
+                            toast.error(error?.data?.error || error?.data?.message || 'Ошибка при загрузке документа инструкции');
+                          }
+                        }
+                      }}
+                      className="hidden"
+                      id="elt-instruction-upload"
+                      disabled={isUploadingInstruction}
+                    />
+                    <label
+                      htmlFor="elt-instruction-upload"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Upload className="w-4 h-4" />
+                      {isUploadingInstruction ? 'Загрузка...' : eltInstruction?.instructionUrl ? 'Заменить документ инструкции' : 'Загрузить документ инструкции'}
+                    </label>
+                    <p className="text-xs text-gray-500 mt-2">Разрешены файлы PDF, DOC, DOCX (макс. 20MB)</p>
+                  </div>
+                </div>
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium mb-4">Основной контент</label>
               <ContentConstructor
@@ -559,15 +1142,15 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
       {/* Диалог подачи заявки на услугу */}
       {pageType === 'services' && (
         <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
+            <DialogHeader className="bg-white">
               <DialogTitle>
                 {language === 'en' ? 'Service Request' : language === 'be' ? 'Заяўка на паслугу' : 'Заявка на услугу'}
               </DialogTitle>
             </DialogHeader>
             <ServiceRequestForm
               serviceType={urlPageType || ''}
-              serviceName={getTranslatedField(content, 'title', language) || defaultTitle}
+              serviceName={pageTitle}
               onClose={() => setIsRequestDialogOpen(false)}
             />
           </DialogContent>

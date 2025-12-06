@@ -47,7 +47,11 @@ async function main() {
   const hashed = bcrypt.hashSync(superAdminPassword, 10)
   await prisma.user.upsert({
     where: { email: superAdminEmail },
-    update: { roleId: superRole.id, password: hashed },
+    update: { 
+      roleId: superRole.id, 
+      password: hashed,
+      // При обновлении не меняем mustChangePassword, чтобы не сбрасывать флаг для существующих пользователей
+    },
     create: {
       email: superAdminEmail,
       password: hashed,
@@ -55,6 +59,8 @@ async function main() {
       firstName: 'Super',
       lastName: 'Admin',
       isActive: true,
+      mustChangePassword: true, // Требуется смена пароля при первом входе
+      passwordChangedAt: new Date(), // Устанавливаем дату создания как дату смены пароля
     },
   })
 

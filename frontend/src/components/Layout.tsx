@@ -5,9 +5,13 @@ import { motion } from "framer-motion";
 import { ToastContainer } from "react-toastify";
 import CookieConsent from "./CookieConsent";
 import Footer from "./Footer";
+import { ForcePasswordChangeModal } from "./ForcePasswordChangeModal";
+import { useSelector } from "react-redux";
 
 
 export const Layout = () => {
+    const { mustChangePassword } = useSelector((state: any) => state.auth);
+    
     // Анимация для сайдбара
     const sidebarVariants = {
         hidden: { x: -280 }, // Сайдбар скрыт (за пределами экрана слева)
@@ -60,6 +64,9 @@ export const Layout = () => {
             
             {/* Баннер согласия на cookie */}
             <CookieConsent />
+            
+            {/* Модальное окно принудительной смены пароля */}
+            {mustChangePassword && <ForcePasswordChangeModal isOpen={true} />}
         </div>
 
     );

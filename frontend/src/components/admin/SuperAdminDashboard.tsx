@@ -411,7 +411,9 @@ export default function SuperAdminDashboard() {
 }
 
 function RolesPanel() {
-    const { data: roles, refetch } = useGetRolesQuery();
+    const { data: roles, isLoading, isError, error } = useGetRolesQuery(undefined, {
+        refetchOnMountOrArgChange: true
+    });
     const [createRole, { isLoading: isCreating }] = useCreateRoleMutation();
     const [updateRole, { isLoading: isUpdating }] = useUpdateRoleMutation();
     const [deleteRole] = useDeleteRoleMutation();
@@ -419,6 +421,7 @@ function RolesPanel() {
     const [newRole, setNewRole] = useState("");
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editingName, setEditingName] = useState("");
+
 
     const add = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -428,7 +431,7 @@ function RolesPanel() {
             await createRole({ name }).unwrap();
             toast.success("Роль создана");
             setNewRole("");
-            refetch();
+            // Не нужно вызывать refetch, так как invalidatesTags автоматически обновит кеш
         } catch (e: any) { toast.error(e.data?.error || "Ошибка"); }
     };
 
@@ -439,13 +442,18 @@ function RolesPanel() {
         try {
             await updateRole({ id: editingId, name }).unwrap();
             toast.success("Роль обновлена");
-            setEditingId(null); setEditingName(""); refetch();
+            setEditingId(null); setEditingName("");
+            // Не нужно вызывать refetch, так как invalidatesTags автоматически обновит кеш
         } catch (e: any) { toast.error(e.data?.error || "Ошибка"); }
     };
 
     const remove = async (id: number) => {
         if (!confirm("Удалить роль?")) return;
-        try { await deleteRole(id).unwrap(); toast.success("Удалено"); refetch(); }
+        try { 
+            await deleteRole(id).unwrap(); 
+            toast.success("Удалено");
+            // Не нужно вызывать refetch, так как invalidatesTags автоматически обновит кеш
+        }
         catch (e: any) { toast.error(e.data?.error || "Ошибка"); }
     };
 
@@ -476,7 +484,19 @@ function RolesPanel() {
 
             <div className="space-y-3">
                        <h3 className="text-lg font-semibold text-[#213659]">Существующие роли</h3>
-                {roles?.map((r)=> (
+                {isLoading && <div className="text-center py-4 text-gray-500">Загрузка ролей...</div>}
+                {isError && (
+                    <div className="text-center py-4 text-red-500">
+                        Ошибка загрузки ролей: {error ? ('data' in error && error.data ? JSON.stringify(error.data) : 'Неизвестная ошибка') : 'Неизвестная ошибка'}
+                    </div>
+                )}
+                {!isLoading && !isError && (!roles || roles.length === 0) && (
+                    <div className="text-center py-4 text-gray-500">
+                        Роли не найдены
+                        <div className="text-xs mt-2">Debug: isLoading={String(isLoading)}, isError={String(isError)}, roles={roles ? `Array(${roles.length})` : 'null'}</div>
+                    </div>
+                )}
+                {!isLoading && !isError && roles && roles.length > 0 && roles.map((r: any) => (
                     <div key={r.id} className="flex items-center gap-3 border border-gray-200 p-4 bg-white rounded-lg hover:shadow-md transition-shadow">
                         {editingId === r.id ? (
                             <>
@@ -514,7 +534,9 @@ function RolesPanel() {
 
 function UsersPanel() {
     const { data: users, refetch } = useGetAllUsersQuery();
-    const { data: roles } = useGetRolesQuery();
+    const { data: roles, isLoading: isLoadingRoles, isError: isErrorRoles } = useGetRolesQuery(undefined, {
+        refetchOnMountOrArgChange: true
+    });
     const [updateUser, { isLoading }] = useUpdateUserMutation();
     const [deleteUser] = useDeleteUserMutation();
     const [register] = useRegisterMutation();
@@ -523,6 +545,7 @@ function UsersPanel() {
     const [newUser, setNewUser] = useState({ firstName: "", lastName: "", email: "", password: "", role: "" });
     const [searchTerm, setSearchTerm] = useState("");
     const [roleFilter, setRoleFilter] = useState("");
+
 
     const save = async (id: number) => {
         const roleName = selected[id];
@@ -596,7 +619,10 @@ function UsersPanel() {
     }) || [];
 
     // Получение уникальных ролей для фильтра
-    const availableRoles = users?.users ? [...new Set(users.users.map((user: any) => user.role?.name).filter(Boolean))] : [];
+    // Используем роли из запроса roles, если они доступны, иначе из пользователей
+    const availableRoles = roles && roles.length > 0 
+        ? roles.map((role: any) => role.name)
+        : (users?.users ? [...new Set(users.users.map((user: any) => user.role?.name).filter(Boolean))] : []);
 
     return (
         <div className="space-y-6">
@@ -612,16 +638,19 @@ function UsersPanel() {
                     <Input required type="email" placeholder="Email" value={newUser.email} onChange={(e)=>setNewUser({ ...newUser, email: e.target.value })} />
                     <Input required type="password" placeholder="Пароль" value={newUser.password} onChange={(e)=>setNewUser({ ...newUser, password: e.target.value })} />
                     <Select 
-                        value={newUser.role || undefined} 
+                        value={newUser.role || ""} 
                         onValueChange={(value) => setNewUser({ ...newUser, role: value })}
                         required
                     >
                         <SelectTrigger>
-                            <SelectValue placeholder="Выберите роль" />
+                            <SelectValue placeholder={isLoadingRoles ? "Загрузка ролей..." : isErrorRoles ? "Ошибка загрузки ролей" : "Выберите роль"} />
                         </SelectTrigger>
-                        <SelectContent>
-                            {roles?.map((role) => (
-                                <SelectItem key={role.id} value={role.name}>
+                        <SelectContent className="bg-white text-[#213659] border border-[#B1D1E0]">
+                            {isLoadingRoles && <SelectItem value="loading" disabled>Загрузка...</SelectItem>}
+                            {isErrorRoles && <SelectItem value="error" disabled>Ошибка загрузки ролей</SelectItem>}
+                            {!isLoadingRoles && !isErrorRoles && (!roles || roles.length === 0) && <SelectItem value="empty" disabled>Роли не найдены</SelectItem>}
+                            {!isLoadingRoles && !isErrorRoles && roles && roles.length > 0 && roles.map((role) => (
+                                <SelectItem key={role.id} value={role.name} className="focus:bg-[#EFF6FF] focus:text-[#213659]">
                                     {role.name}
                                 </SelectItem>
                             ))}
@@ -655,9 +684,9 @@ function UsersPanel() {
                                 <SelectTrigger>
                                     <SelectValue placeholder="Все роли" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="bg-white text-[#213659] border border-[#B1D1E0]">
                                     {availableRoles.map((role) => (
-                                        <SelectItem key={role} value={role}>{role}</SelectItem>
+                                        <SelectItem key={role} value={role} className="focus:bg-[#EFF6FF] focus:text-[#213659]">{role}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -701,14 +730,17 @@ function UsersPanel() {
                         </div>
                         <div className="flex items-center gap-2">
                             <Select 
-                                value={selected[u.id] || undefined} 
+                                value={selected[u.id] || ""} 
                                 onValueChange={(value) => setSelected({ ...selected, [u.id]: value })}
                             >
                                 <SelectTrigger className="w-60 bg-white border-[#B1D1E0] focus:border-[#213659]">
-                                    <SelectValue placeholder="Выберите новую роль" />
+                                    <SelectValue placeholder={isLoadingRoles ? "Загрузка ролей..." : isErrorRoles ? "Ошибка загрузки ролей" : "Выберите новую роль"} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {roles?.map((role) => (
+                                    {isLoadingRoles && <SelectItem value="loading" disabled>Загрузка...</SelectItem>}
+                                    {isErrorRoles && <SelectItem value="error" disabled>Ошибка загрузки ролей</SelectItem>}
+                                    {!isLoadingRoles && !isErrorRoles && (!roles || roles.length === 0) && <SelectItem value="empty" disabled>Роли не найдены</SelectItem>}
+                                    {!isLoadingRoles && !isErrorRoles && roles && roles.length > 0 && roles.map((role) => (
                                         <SelectItem key={role.id} value={role.name}>
                                             {role.name}
                                         </SelectItem>

@@ -12,6 +12,10 @@ export interface ServicesPageContent {
   content: any[];
   contentEn?: any[];
   contentBe?: any[];
+  documentUrl?: string;
+  documentName?: string;
+  instructionUrl?: string;
+  instructionName?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -40,6 +44,10 @@ export interface UpdateServicesPageContentRequest {
   content?: any[];
   contentEn?: any[];
   contentBe?: any[];
+  documentUrl?: string;
+  documentName?: string;
+  instructionUrl?: string;
+  instructionName?: string;
 }
 
 export const servicesPageContentApi = api.injectEndpoints({

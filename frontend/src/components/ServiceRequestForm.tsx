@@ -125,8 +125,8 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
+    <Card className="w-full max-w-4xl mx-auto bg-white">
+      <CardHeader className="bg-white">
         <CardTitle className="text-2xl font-bold text-[#213659] text-center">
           {getTranslatedText(
             'Заявка на услугу',
@@ -142,7 +142,7 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
           )}
         </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="bg-white">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Контактная информация */}
           <div className="space-y-4">

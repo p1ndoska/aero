@@ -11,6 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Search, Filter, Eye, Edit, Trash2, Calendar, Mail, Phone, Building } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useGetAllServicesCategoriesQuery } from '@/app/services/servicesCategoryApi';
+import { getTranslatedField } from '@/utils/translationHelpers';
 
 interface ServiceRequest {
   id: number;
@@ -57,6 +59,18 @@ const ServiceRequestManagement: React.FC = () => {
   const [selectedRequest, setSelectedRequest] = useState<ServiceRequest | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  // Получаем категории услуг для преобразования serviceType в названия
+  const { data: servicesCategories = [] } = useGetAllServicesCategoriesQuery(undefined);
+
+  // Функция для получения названия услуги по serviceType
+  const getServiceNameByType = (serviceType: string): string => {
+    const category = (servicesCategories as any[]).find((cat: any) => cat.pageType === serviceType);
+    if (category) {
+      return getTranslatedField(category, 'name', language) || category.name || serviceType;
+    }
+    return serviceType;
+  };
   const [filters, setFilters] = useState({
     search: '',
     status: 'all',
@@ -227,7 +241,8 @@ const ServiceRequestManagement: React.FC = () => {
   useEffect(() => {
     fetchServiceRequests();
     fetchStats();
-  }, [pagination.page, filters]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagination.page, filters.search, filters.status, filters.serviceType]);
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters(prev => ({
@@ -313,12 +328,22 @@ const ServiceRequestManagement: React.FC = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="Все статусы" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все статусы</SelectItem>
-                  <SelectItem value="pending">Ожидает</SelectItem>
-                  <SelectItem value="in_progress">В работе</SelectItem>
-                  <SelectItem value="completed">Завершена</SelectItem>
-                  <SelectItem value="cancelled">Отменена</SelectItem>
+                <SelectContent className="bg-white border border-[#B1D1E0]">
+                  <SelectItem value="all" className="focus:bg-[#EFF6FF] focus:text-[#213659]">
+                    Все статусы
+                  </SelectItem>
+                  <SelectItem value="pending" className="focus:bg-[#EFF6FF] focus:text-[#213659]">
+                    Ожидает
+                  </SelectItem>
+                  <SelectItem value="in_progress" className="focus:bg-[#EFF6FF] focus:text-[#213659]">
+                    В работе
+                  </SelectItem>
+                  <SelectItem value="completed" className="focus:bg-[#EFF6FF] focus:text-[#213659]">
+                    Завершена
+                  </SelectItem>
+                  <SelectItem value="cancelled" className="focus:bg-[#EFF6FF] focus:text-[#213659]">
+                    Отменена
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -328,13 +353,22 @@ const ServiceRequestManagement: React.FC = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="Все типы" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все типы</SelectItem>
-                  {stats?.byServiceType.map((type) => (
-                    <SelectItem key={type.serviceType} value={type.serviceType}>
-                      {type.serviceType} ({type.count})
-                    </SelectItem>
-                  ))}
+                <SelectContent className="bg-white border border-[#B1D1E0]">
+                  <SelectItem value="all" className="focus:bg-[#EFF6FF] focus:text-[#213659]">
+                    Все типы
+                  </SelectItem>
+                  {stats?.byServiceType.map((type) => {
+                    const serviceName = getServiceNameByType(type.serviceType);
+                    return (
+                      <SelectItem 
+                        key={type.serviceType} 
+                        value={type.serviceType}
+                        className="focus:bg-[#EFF6FF] focus:text-[#213659]"
+                      >
+                        {serviceName} ({type.count})
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
@@ -348,22 +382,29 @@ const ServiceRequestManagement: React.FC = () => {
           <CardTitle>Заявки на услуги</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Клиент</TableHead>
-                  <TableHead>Услуга</TableHead>
-                  <TableHead>Тема</TableHead>
-                  <TableHead>Приоритет</TableHead>
-                  <TableHead>Статус</TableHead>
-                  <TableHead>Дата</TableHead>
-                  <TableHead>Действия</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {serviceRequests.map((request) => (
+          {serviceRequests.length === 0 ? (
+            <div className="text-center py-12">
+              <Mail className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+              <p className="text-gray-600 text-lg">Заявки не найдены</p>
+              <p className="text-gray-500 text-sm">Заявки на услуги будут отображаться здесь</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Клиент</TableHead>
+                    <TableHead>Услуга</TableHead>
+                    <TableHead>Тема</TableHead>
+                    <TableHead>Приоритет</TableHead>
+                    <TableHead>Статус</TableHead>
+                    <TableHead>Дата</TableHead>
+                    <TableHead>Действия</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {serviceRequests.map((request) => (
                   <TableRow key={request.id}>
                     <TableCell className="font-medium">#{request.id}</TableCell>
                     <TableCell>
@@ -376,9 +417,8 @@ const ServiceRequestManagement: React.FC = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div>
-                        <div className="font-medium">{request.serviceName}</div>
-                        <div className="text-sm text-gray-500">{request.serviceType}</div>
+                      <div className="font-medium">
+                        {getServiceNameByType(request.serviceType)}
                       </div>
                     </TableCell>
                     <TableCell className="max-w-xs truncate">{request.subject}</TableCell>
@@ -388,9 +428,30 @@ const ServiceRequestManagement: React.FC = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(request.status)}>
-                        {getStatusText(request.status)}
-                      </Badge>
+                      <Select
+                        value={request.status}
+                        onValueChange={(value) => {
+                          updateServiceRequest(request.id, { status: value });
+                        }}
+                      >
+                        <SelectTrigger className={`w-36 h-7 text-xs border-0 ${getStatusColor(request.status)} cursor-pointer hover:opacity-80 transition-opacity`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border border-[#B1D1E0]">
+                          <SelectItem value="pending" className="focus:bg-yellow-50 cursor-pointer">
+                            {getStatusText('pending')}
+                          </SelectItem>
+                          <SelectItem value="in_progress" className="focus:bg-blue-50 cursor-pointer">
+                            {getStatusText('in_progress')}
+                          </SelectItem>
+                          <SelectItem value="completed" className="focus:bg-green-50 cursor-pointer">
+                            {getStatusText('completed')}
+                          </SelectItem>
+                          <SelectItem value="cancelled" className="focus:bg-red-50 cursor-pointer">
+                            {getStatusText('cancelled')}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell>
                       {new Date(request.createdAt).toLocaleDateString('ru-RU')}
@@ -425,10 +486,11 @@ const ServiceRequestManagement: React.FC = () => {
                 ))}
               </TableBody>
             </Table>
-          </div>
+            </div>
+          )}
 
           {/* Пагинация */}
-          {pagination.pages > 1 && (
+          {serviceRequests.length > 0 && pagination.pages > 1 && (
             <div className="flex justify-center mt-4">
               <div className="flex space-x-2">
                 <Button
@@ -501,11 +563,7 @@ const ServiceRequestManagement: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label>Услуга</Label>
-                    <div className="font-medium">{selectedRequest.serviceName}</div>
-                  </div>
-                  <div>
-                    <Label>Тип услуги</Label>
-                    <div className="font-medium">{selectedRequest.serviceType}</div>
+                    <div className="font-medium">{getServiceNameByType(selectedRequest.serviceType)}</div>
                   </div>
                   <div>
                     <Label>Тема</Label>
@@ -607,14 +665,22 @@ const ServiceRequestManagement: React.FC = () => {
                   value={selectedRequest.status}
                   onValueChange={(value) => setSelectedRequest(prev => prev ? { ...prev, status: value } : null)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={`${getStatusColor(selectedRequest.status)}`}>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Ожидает</SelectItem>
-                    <SelectItem value="in_progress">В работе</SelectItem>
-                    <SelectItem value="completed">Завершена</SelectItem>
-                    <SelectItem value="cancelled">Отменена</SelectItem>
+                  <SelectContent className="bg-white border border-[#B1D1E0]">
+                    <SelectItem value="pending" className="focus:bg-yellow-50">
+                      {getStatusText('pending')}
+                    </SelectItem>
+                    <SelectItem value="in_progress" className="focus:bg-blue-50">
+                      {getStatusText('in_progress')}
+                    </SelectItem>
+                    <SelectItem value="completed" className="focus:bg-green-50">
+                      {getStatusText('completed')}
+                    </SelectItem>
+                    <SelectItem value="cancelled" className="focus:bg-red-50">
+                      {getStatusText('cancelled')}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -625,14 +691,22 @@ const ServiceRequestManagement: React.FC = () => {
                   value={selectedRequest.priority}
                   onValueChange={(value) => setSelectedRequest(prev => prev ? { ...prev, priority: value } : null)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={`${getPriorityColor(selectedRequest.priority)}`}>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Низкий</SelectItem>
-                    <SelectItem value="medium">Средний</SelectItem>
-                    <SelectItem value="high">Высокий</SelectItem>
-                    <SelectItem value="urgent">Срочный</SelectItem>
+                  <SelectContent className="bg-white border border-[#B1D1E0]">
+                    <SelectItem value="low" className="focus:bg-green-50">
+                      {getPriorityText('low')}
+                    </SelectItem>
+                    <SelectItem value="medium" className="focus:bg-yellow-50">
+                      {getPriorityText('medium')}
+                    </SelectItem>
+                    <SelectItem value="high" className="focus:bg-orange-50">
+                      {getPriorityText('high')}
+                    </SelectItem>
+                    <SelectItem value="urgent" className="focus:bg-red-50">
+                      {getPriorityText('urgent')}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

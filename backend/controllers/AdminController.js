@@ -31,12 +31,23 @@ const AdminController = {
 
             const hashedPassword = await bcrypt.hash(password, 12);
 
-            const png = jdenticon.toPng(firstName, 200);
-            const avatarName = `${firstName}_${Date.now()}.png`;
+            // Генерируем аватарку на основе email для уникальности
+            // Используем комбинацию firstName + lastName + email для более уникального аватара
+            const avatarSeed = `${firstName}${lastName}${email}`;
+            const png = jdenticon.toPng(avatarSeed, 200);
+            const avatarName = `avatar_${Date.now()}_${email.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
             const avatarPath = path.join(__dirname, "../uploads", avatarName);
+            
+            // Убеждаемся, что папка uploads существует
+            const uploadsDir = path.join(__dirname, "../uploads");
+            if (!fs.existsSync(uploadsDir)) {
+              fs.mkdirSync(uploadsDir, { recursive: true });
+            }
+            
             fs.writeFileSync(avatarPath, png);
 
             // создаём пользователя и связываем с ролью
+            // Новые пользователи должны сменить пароль при первом входе
             const user = await prisma.user.create({
                 data: {
                     firstName,
@@ -45,6 +56,8 @@ const AdminController = {
                     phone: phone || undefined,
                     password: hashedPassword,
                     avatar: `/uploads/${avatarName}`,
+                    mustChangePassword: true, // Требуется смена пароля при первом входе
+                    passwordChangedAt: new Date(), // Устанавливаем дату создания как дату смены пароля
                     role: {
                         connect: { id: existingRole.id }, // связываем по id
                     },

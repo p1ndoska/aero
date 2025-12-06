@@ -36,10 +36,26 @@ export const LoginForm: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
 
     try {
       const result = await login({ email, password }).unwrap();
-      dispatch(setCredentials(result));
-      toast.success(`Добро пожаловать, ${result.user.email}! 🎉`, {
-        position: "top-right",
-      });
+      
+      if (!result.token) {
+        toast.error("Ошибка: токен не получен от сервера", {
+          position: "top-right",
+        });
+        return;
+      }
+      
+      dispatch(setCredentials({
+        user: result.user,
+        token: result.token,
+        mustChangePassword: result.mustChangePassword || false
+      }));
+      
+      // Не показываем toast при принудительной смене пароля
+      if (!result.mustChangePassword) {
+        toast.success(`Добро пожаловать, ${result.user.email}! 🎉`, {
+          position: "top-right",
+        });
+      }
       onClose(); // Закрываем модальное окно после успешного входа
     } catch (err: any) {
       toast.error(err.data?.error || "Ошибка входа", {

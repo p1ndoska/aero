@@ -35,6 +35,9 @@ model User {
   emailVerificationToken String? // Токен для подтверждения email
   resetPasswordToken String? // Токен для сброса пароля
   resetPasswordExpires DateTime? // Время истечения токена сброса
+  passwordChangedAt DateTime? // Дата последней смены пароля
+  mustChangePassword Boolean @default(true) // Требуется ли смена пароля при следующем входе
+  previousPasswords String[] @default([]) // Массив хешей предыдущих паролей (для проверки отличия)
 }
 
 model Role {
@@ -436,6 +439,10 @@ model ServicesPageContent {
   content     Json?     // Контент конструктор (параграфы, списки, заголовки, изображения)
   contentEn   Json?     // Контент на английском
   contentBe   Json?     // Контент на беларуском
+  documentUrl String?   // URL документа (например, договор ELT)
+  documentName String?  // Название документа
+  instructionUrl String? // URL документа инструкции
+  instructionName String? // Название документа инструкции
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }

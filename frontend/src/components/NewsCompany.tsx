@@ -20,8 +20,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Edit, Trash2, Image, Calendar, Tag, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getTranslatedField } from '../utils/translationHelpers';
 
 export const NewsCompany = () => {
+    const { t, language } = useLanguage();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
@@ -160,7 +163,8 @@ export const NewsCompany = () => {
     };
 
     const handleDeleteClick = async (news: NewsItem) => {
-        if (window.confirm(`Вы уверены, что хотите удалить новость "${news.name}"?`)) {
+        const translatedName = getTranslatedField(news, 'name', language) || news.name;
+        if (window.confirm(`${t('confirm_delete_news')} "${translatedName}"?`)) {
             try {
                 await deleteNews(news.id).unwrap();
                 toast.success('Новость успешно удалена! 🗑️');
@@ -388,20 +392,22 @@ export const NewsCompany = () => {
 
             {/* Список новостей */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {newsData?.map((news) => (
+                {newsData?.map((news) => {
+                    const translatedName = getTranslatedField(news, 'name', language) || news.name;
+                    return (
                     <Card key={news.id} className="hover:shadow-lg transition-shadow bg-white p-0 overflow-hidden">
                         <Link to={`/news/${news.id}`} className="block">
                             {news.photo && (
                                 <div className="relative h-48 overflow-hidden">
                                     <img
                                         src={`${BASE_URL}/${news.photo}`}
-                                        alt={news.name}
+                                        alt={translatedName}
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
                             )}
                             <CardHeader className="pb-4">
-                                <CardTitle className="text-lg text-[#213659] line-clamp-2">{news.name}</CardTitle>
+                                <CardTitle className="text-lg text-[#213659] line-clamp-2">{translatedName}</CardTitle>
                             </CardHeader>
                         </Link>
 
@@ -426,7 +432,8 @@ export const NewsCompany = () => {
                             </div>
                         )}
                     </Card>
-                ))}
+                    );
+                })}
             </div>
 
             {!newsData?.length && (

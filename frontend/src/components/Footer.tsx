@@ -40,10 +40,26 @@ const Footer: React.FC = () => {
         <div>
           <h3 className="text-lg font-semibold mb-4">{t('useful_links')}</h3>
           <ul className="space-y-2 text-sm">
-            <li><Link to="/about/company" className="hover:underline">{t('about_company')}</Link></li>
-            <li><Link to="/vacancies" className="hover:underline">{t('vacancies')}</Link></li>
-            <li><Link to="/contacts" className="hover:underline">{t('contacts')}</Link></li>
-            <li><Link to="/cookie-policy" className="hover:underline">{t('cookie_policy')}</Link></li>
+            <li>
+              <Link to="/about" className="hover:underline transition-colors">
+                {t('about_company')}
+              </Link>
+            </li>
+            <li>
+              <Link to="/about/vacancies" className="hover:underline transition-colors">
+                {t('open_vacancies') || t('vacancies')}
+              </Link>
+            </li>
+            <li>
+              <Link to="/about/branches" className="hover:underline transition-colors">
+                {t('contacts')}
+              </Link>
+            </li>
+            <li>
+              <Link to="/cookie-policy" className="hover:underline transition-colors">
+                {t('cookie_policy')}
+              </Link>
+            </li>
           </ul>
         </div>
 

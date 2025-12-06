@@ -199,7 +199,11 @@ const NewsController = {
                     select: {
                         id: true,
                         name: true,
+                        nameEn: true,
+                        nameBe: true,
                         content: true,
+                        contentEn: true,
+                        contentBe: true,
                         photo: true,
                         images: true,
                         createdAt: true,
@@ -208,7 +212,9 @@ const NewsController = {
                         newsCategory: {
                             select: {
                                 id: true,
-                                name: true
+                                name: true,
+                                nameEn: true,
+                                nameBe: true
                             }
                         }
                     }
@@ -230,7 +236,11 @@ const NewsController = {
                 select: {
                     id: true,
                     name: true,
+                    nameEn: true,
+                    nameBe: true,
                     content: true,
+                    contentEn: true,
+                    contentBe: true,
                     photo: true,
                     images: true,
                     createdAt: true,
@@ -240,6 +250,8 @@ const NewsController = {
                         select: {
                             id: true,
                             name: true,
+                            nameEn: true,
+                            nameBe: true,
                             createdAt: true,
                             updatedAt: true
                         }

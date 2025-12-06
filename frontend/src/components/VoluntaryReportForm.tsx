@@ -8,8 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CalendarIcon, ClockIcon } from 'lucide-react';
 import { voluntaryReportService, type VoluntaryReportData } from '@/app/services/voluntaryReportService';
 import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function VoluntaryReportForm() {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState<VoluntaryReportData>({
     fullName: '',
     organization: '',
@@ -39,7 +41,7 @@ export default function VoluntaryReportForm() {
     if (!formData.eventDate || !formData.eventTime || !formData.eventLocation || 
         !formData.eventDescription || !formData.compilationDate || !formData.compilationTime || 
         !formData.recurrenceProbability || !formData.consequences) {
-      toast.error('Пожалуйста, заполните все обязательные поля');
+      toast.error(t('fill_all_required_fields'));
       return;
     }
 
@@ -47,7 +49,7 @@ export default function VoluntaryReportForm() {
 
     try {
       await voluntaryReportService.sendVoluntaryReport(formData);
-      toast.success('Сообщение успешно отправлено');
+      toast.success(t('voluntary_report_sent_successfully'));
       
       // Очистка формы
       setFormData({
@@ -64,7 +66,7 @@ export default function VoluntaryReportForm() {
       });
     } catch (error) {
       console.error('Ошибка при отправке:', error);
-      toast.error('Ошибка при отправке сообщения');
+      toast.error(t('error_sending_voluntary_report'));
     } finally {
       setIsSubmitting(false);
     }
@@ -75,56 +77,52 @@ export default function VoluntaryReportForm() {
       <Card className="bg-white rounded-lg shadow-lg">
         <CardHeader className="pb-4">
           <CardTitle className="text-2xl font-bold text-center" style={{ color: '#213659' }}>
-            ДОБРОВОЛЬНОЕ СООБЩЕНИЕ О НЕБЕЗОПАСНОМ СОБЫТИИ
+            {t('voluntary_report_title')}
           </CardTitle>
         </CardHeader>
         <CardContent className="bg-white">
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <p className="text-sm text-gray-700 mb-2">
-              Информация, включаемая в данное сообщение, служит исключительно целям повышения безопасности полетов. 
-              Ф.И.О составителя сообщения можно не указывать. Если имя, должность, контактные данные составителя 
-              указываются, то они НЕ БУДУТ СОХРАНЯТЬСЯ, после проверки поступившей информации. Ни при каких 
-              обстоятельствах личность составителя не будет раскрыта или сообщена другому должностному лицу 
-              предприятия или иной организации.
+              {t('voluntary_report_description')}
             </p>
             <p className="text-sm text-red-600 font-medium">
-              Если имя и должность указываются, то после рассмотрения они будут исключены из сообщения.
+              {t('voluntary_report_warning')}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Информация о составителе */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Информация о составителе</h3>
+              <h3 className="text-lg font-semibold">{t('compiler_information')}</h3>
               
               <div>
-                <Label htmlFor="fullName">Ф.И.О.</Label>
+                <Label htmlFor="fullName">{t('full_name')}</Label>
                 <Input
                   id="fullName"
                   value={formData.fullName}
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
-                  placeholder="Введите Ф.И.О."
+                  placeholder={t('enter_full_name')}
                 />
               </div>
 
               <div>
-                <Label htmlFor="organization">Организация/должность, контактные данные</Label>
+                <Label htmlFor="organization">{t('organization_position_contacts')}</Label>
                 <Input
                   id="organization"
                   value={formData.organization}
                   onChange={(e) => handleInputChange('organization', e.target.value)}
-                  placeholder="Введите организацию/должность, контактные данные"
+                  placeholder={t('enter_organization_position_contacts')}
                 />
               </div>
             </div>
 
             {/* Информация о событии */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Информация о событии</h3>
+              <h3 className="text-lg font-semibold">{t('event_information')}</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="eventDate">Дата события *</Label>
+                  <Label htmlFor="eventDate">{t('event_date')} *</Label>
                   <div className="relative">
                     <Input
                       id="eventDate"
@@ -138,7 +136,7 @@ export default function VoluntaryReportForm() {
                 </div>
 
                 <div>
-                  <Label htmlFor="eventTime">Время события *</Label>
+                  <Label htmlFor="eventTime">{t('event_time')} *</Label>
                   <div className="relative">
                     <Input
                       id="eventTime"
@@ -153,23 +151,23 @@ export default function VoluntaryReportForm() {
               </div>
 
               <div>
-                <Label htmlFor="eventLocation">Место события *</Label>
+                <Label htmlFor="eventLocation">{t('event_location')} *</Label>
                 <Input
                   id="eventLocation"
                   value={formData.eventLocation}
                   onChange={(e) => handleInputChange('eventLocation', e.target.value)}
-                  placeholder="Введите место события"
+                  placeholder={t('enter_event_location')}
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="eventDescription">Описание события *</Label>
+                <Label htmlFor="eventDescription">{t('event_description')} *</Label>
                 <Textarea
                   id="eventDescription"
                   value={formData.eventDescription}
                   onChange={(e) => handleInputChange('eventDescription', e.target.value)}
-                  placeholder="Подробно опишите событие"
+                  placeholder={t('describe_event_in_detail')}
                   rows={4}
                   required
                 />
@@ -178,11 +176,11 @@ export default function VoluntaryReportForm() {
 
             {/* Дополнительная информация */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Дополнительная информация</h3>
+              <h3 className="text-lg font-semibold">{t('additional_information')}</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="compilationDate">Дата составления информации о событии *</Label>
+                  <Label htmlFor="compilationDate">{t('compilation_date')} *</Label>
                   <div className="relative">
                     <Input
                       id="compilationDate"
@@ -196,7 +194,7 @@ export default function VoluntaryReportForm() {
                 </div>
 
                 <div>
-                  <Label htmlFor="compilationTime">Время составления информации о событии *</Label>
+                  <Label htmlFor="compilationTime">{t('compilation_time')} *</Label>
                   <div className="relative">
                     <Input
                       id="compilationTime"
@@ -211,43 +209,43 @@ export default function VoluntaryReportForm() {
               </div>
 
               <div>
-                <Label htmlFor="recurrenceProbability">Вероятность повторения подобного события? *</Label>
+                <Label htmlFor="recurrenceProbability">{t('recurrence_probability')} *</Label>
                 <Select
                   value={formData.recurrenceProbability}
                   onValueChange={(value) => handleInputChange('recurrenceProbability', value)}
                   required
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Выберите вариант" />
+                    <SelectValue placeholder={t('select_option')} />
                   </SelectTrigger>
                   <SelectContent className="bg-white border border-gray-200 shadow-lg">
-                    <SelectItem value="очень высокая">Очень высокая</SelectItem>
-                    <SelectItem value="высокая">Высокая</SelectItem>
-                    <SelectItem value="средняя">Средняя</SelectItem>
-                    <SelectItem value="низкая">Низкая</SelectItem>
-                    <SelectItem value="очень низкая">Очень низкая</SelectItem>
-                    <SelectItem value="неизвестно">Неизвестно</SelectItem>
+                    <SelectItem value="очень высокая">{t('very_high')}</SelectItem>
+                    <SelectItem value="высокая">{t('high')}</SelectItem>
+                    <SelectItem value="средняя">{t('medium')}</SelectItem>
+                    <SelectItem value="низкая">{t('low')}</SelectItem>
+                    <SelectItem value="очень низкая">{t('very_low')}</SelectItem>
+                    <SelectItem value="неизвестно">{t('unknown')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label htmlFor="consequences">Каковы будут последствия события, если оно повторится? *</Label>
+                <Label htmlFor="consequences">{t('event_consequences')} *</Label>
                 <Select
                   value={formData.consequences}
                   onValueChange={(value) => handleInputChange('consequences', value)}
                   required
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Выберите вариант" />
+                    <SelectValue placeholder={t('select_option')} />
                   </SelectTrigger>
                   <SelectContent className="bg-white border border-gray-200 shadow-lg">
-                    <SelectItem value="катастрофические">Катастрофические</SelectItem>
-                    <SelectItem value="критические">Критические</SelectItem>
-                    <SelectItem value="значительные">Значительные</SelectItem>
-                    <SelectItem value="незначительные">Незначительные</SelectItem>
-                    <SelectItem value="минимальные">Минимальные</SelectItem>
-                    <SelectItem value="неизвестно">Неизвестно</SelectItem>
+                    <SelectItem value="катастрофические">{t('catastrophic')}</SelectItem>
+                    <SelectItem value="критические">{t('critical')}</SelectItem>
+                    <SelectItem value="значительные">{t('significant')}</SelectItem>
+                    <SelectItem value="незначительные">{t('minor')}</SelectItem>
+                    <SelectItem value="минимальные">{t('minimal')}</SelectItem>
+                    <SelectItem value="неизвестно">{t('unknown')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -262,7 +260,7 @@ export default function VoluntaryReportForm() {
                   backgroundColor: '#213659'
                 }}
               >
-                {isSubmitting ? 'Отправка...' : 'ОТПРАВИТЬ СООБЩЕНИЕ'}
+                {isSubmitting ? t('sending') : t('send_message')}
               </Button>
             </div>
           </form>

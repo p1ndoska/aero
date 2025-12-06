@@ -331,6 +331,30 @@ p[style*="--text-align: justify"] {
   display: none;  /* Safari and Chrome */
 }
 
+/* Кастомный скроллбар для модальных окон */
+.custom-scrollbar {
+  scrollbar-width: thin;  /* Firefox */
+  scrollbar-color: #cbd5e1 #f1f5f9;  /* Firefox: thumb and track */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;  /* Safari and Chrome */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;  /* Safari and Chrome */
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;  /* Safari and Chrome */
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;  /* Safari and Chrome */
+}
+
 /* Ограничение количества строк текста */
 .line-clamp-2 {
   display: -webkit-box;

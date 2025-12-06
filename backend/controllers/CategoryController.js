@@ -182,11 +182,19 @@ const CategoryController = {
     },
     getCategories: async (req, res) => {
         try{
-            const existingCategory = await prisma.newsCategory.findMany()
-            if(!existingCategory){
+            const categories = await prisma.newsCategory.findMany({
+                select: {
+                    id: true,
+                    name: true,
+                    nameEn: true,
+                    nameBe: true,
+                    createdAt: true,
+                    updatedAt: true
+                }
+            });
+            if(!categories || categories.length === 0){
                 return res.status(404).json({error:"Категорий нет"})
             }
-            const categories = await prisma.newsCategory.findMany()
             return res.status(200).json(categories);
         }catch(error){
             console.error('get Categories Error', error);

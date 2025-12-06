@@ -8,9 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Settings, Eye, RotateCcw } from 'lucide-react';
 import { useAccessibility } from '@/contexts/AccessibilityContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const AccessibilitySettings: React.FC = () => {
   const { settings, updateSettings, resetSettings, isAccessibilityMode, toggleAccessibilityMode } = useAccessibility();
+  const { t } = useLanguage();
 
   return (
     <Dialog>
@@ -21,28 +23,28 @@ const AccessibilitySettings: React.FC = () => {
           className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border-[#213659] text-[#213659]"
         >
           <Eye className="h-4 w-4" />
-          Версия для слабовидящих
+          {t('version_visually_impaired')}
         </Button>
       </DialogTrigger>
       
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
+      <DialogContent className="max-w-2xl max-h-[90vh] bg-white flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
-            Настройки доступности
+            {t('accessibility_settings')}
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-y-auto flex-1 pr-2 custom-scrollbar">
           {/* Переключатель режима доступности */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Режим доступности</CardTitle>
+              <CardTitle className="text-lg">{t('accessibility_mode')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <Label htmlFor="accessibility-mode" className="text-base">
-                  Включить версию для слабовидящих
+                  {t('enable_visually_impaired')}
                 </Label>
                 <Switch
                   id="accessibility-mode"
@@ -51,7 +53,7 @@ const AccessibilitySettings: React.FC = () => {
                 />
               </div>
               <p className="text-sm text-gray-600 mt-2">
-                Включает специальные настройки для улучшения доступности сайта
+                {t('accessibility_mode_description')}
               </p>
             </CardContent>
           </Card>
@@ -59,13 +61,13 @@ const AccessibilitySettings: React.FC = () => {
           {/* Настройки шрифта */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Настройки текста</CardTitle>
+              <CardTitle className="text-lg">{t('text_settings')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Размер шрифта */}
               <div>
                 <Label className="text-base">
-                  Размер шрифта: {Math.round(settings.fontSize * 100)}%
+                  {t('font_size')}: {Math.round(settings.fontSize * 100)}%
                 </Label>
                 <Slider
                   value={[settings.fontSize]}
@@ -76,14 +78,14 @@ const AccessibilitySettings: React.FC = () => {
                   className="mt-2"
                 />
                 <p className="text-sm text-gray-600 mt-1">
-                  Рекомендуется увеличение до 200% для слабовидящих
+                  {t('font_size_recommendation')}
                 </p>
               </div>
 
               {/* Межстрочный интервал */}
               <div>
                 <Label className="text-base">
-                  Межстрочный интервал: {settings.lineHeight}x
+                  {t('line_spacing')}: {settings.lineHeight}x
                 </Label>
                 <Slider
                   value={[settings.lineHeight]}
@@ -94,14 +96,14 @@ const AccessibilitySettings: React.FC = () => {
                   className="mt-2"
                 />
                 <p className="text-sm text-gray-600 mt-1">
-                  Рекомендуется 1.5x для лучшей читаемости
+                  {t('line_spacing_recommendation')}
                 </p>
               </div>
 
               {/* Межбуквенный интервал */}
               <div>
                 <Label className="text-base">
-                  Межбуквенный интервал: {settings.letterSpacing}px
+                  {t('letter_spacing')}: {settings.letterSpacing}px
                 </Label>
                 <Slider
                   value={[settings.letterSpacing]}
@@ -112,13 +114,13 @@ const AccessibilitySettings: React.FC = () => {
                   className="mt-2"
                 />
                 <p className="text-sm text-gray-600 mt-1">
-                  Увеличение интервала между буквами для лучшей читаемости
+                  {t('letter_spacing_recommendation')}
                 </p>
               </div>
 
               {/* Семейство шрифтов */}
               <div>
-                <Label className="text-base">Семейство шрифтов</Label>
+                <Label className="text-base">{t('font_family')}</Label>
                 <Select
                   value={settings.fontFamily}
                   onValueChange={(value: 'default' | 'arial') => updateSettings({ fontFamily: value })}
@@ -127,12 +129,12 @@ const AccessibilitySettings: React.FC = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="default">Стандартный шрифт</SelectItem>
-                    <SelectItem value="arial">Arial</SelectItem>
+                    <SelectItem value="default">{t('standard_font')}</SelectItem>
+                    <SelectItem value="arial">{t('arial_font')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-sm text-gray-600 mt-1">
-                  Arial рекомендуется для лучшей читаемости
+                  {t('arial_recommendation')}
                 </p>
               </div>
             </CardContent>
@@ -141,12 +143,12 @@ const AccessibilitySettings: React.FC = () => {
           {/* Настройки контрастности и цветов */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Цвета и контрастность</CardTitle>
+              <CardTitle className="text-lg">{t('colors_contrast')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Контрастность */}
               <div>
-                <Label className="text-base">Контрастность</Label>
+                <Label className="text-base">{t('contrast')}</Label>
                 <Select
                   value={settings.contrast}
                   onValueChange={(value: 'normal' | 'high') => updateSettings({ contrast: value })}
@@ -155,8 +157,8 @@ const AccessibilitySettings: React.FC = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="normal">Обычная</SelectItem>
-                    <SelectItem value="high">Высокая (7:1)</SelectItem>
+                    <SelectItem value="normal">{t('normal_contrast')}</SelectItem>
+                    <SelectItem value="high">{t('high_contrast')}</SelectItem>
                   </SelectContent>
                 </Select>
                 
@@ -164,7 +166,7 @@ const AccessibilitySettings: React.FC = () => {
 
               {/* Цветовая схема */}
               <div>
-                <Label className="text-base">Цветовая схема</Label>
+                <Label className="text-base">{t('color_scheme')}</Label>
                 <Select
                   value={settings.colorScheme}
                   onValueChange={(value: 'normal' | 'dark' | 'inverted') => updateSettings({ colorScheme: value })}
@@ -173,13 +175,13 @@ const AccessibilitySettings: React.FC = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="normal">Обычная</SelectItem>
-                    <SelectItem value="dark">Темная</SelectItem>
-                    <SelectItem value="inverted">Инвертированная</SelectItem>
+                    <SelectItem value="normal">{t('normal_contrast')}</SelectItem>
+                    <SelectItem value="dark">{t('dark_scheme')}</SelectItem>
+                    <SelectItem value="inverted">{t('inverted_scheme')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-sm text-gray-600 mt-1">
-                  Позволяет выбрать удобную цветовую схему
+                  {t('color_scheme_description')}
                 </p>
               </div>
             </CardContent>
@@ -188,17 +190,17 @@ const AccessibilitySettings: React.FC = () => {
           {/* Дополнительные настройки */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Дополнительные настройки</CardTitle>
+              <CardTitle className="text-lg">{t('additional_settings')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Уменьшение анимаций */}
               <div className="flex items-center justify-between">
                 <div>
                   <Label htmlFor="reduce-motion" className="text-base">
-                    Уменьшить анимации
+                    {t('reduce_motion')}
                   </Label>
                   <p className="text-sm text-gray-600">
-                    Отключает анимации для пользователей с вестибулярными расстройствами
+                    {t('reduce_motion_description')}
                   </p>
                 </div>
                 <Switch
@@ -212,10 +214,10 @@ const AccessibilitySettings: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <Label htmlFor="show-focus" className="text-base">
-                    Подсветка фокуса
+                    {t('show_focus')}
                   </Label>
                   <p className="text-sm text-gray-600">
-                    Четко показывает элемент в фокусе для навигации с клавиатуры
+                    {t('show_focus_description')}
                   </p>
                 </div>
                 <Switch
@@ -235,7 +237,7 @@ const AccessibilitySettings: React.FC = () => {
               className="flex items-center gap-2"
             >
               <RotateCcw className="h-4 w-4" />
-              Сбросить
+              {t('reset')}
             </Button>
             <Button
               onClick={() => {
@@ -244,7 +246,7 @@ const AccessibilitySettings: React.FC = () => {
                 closeButton?.click();
               }}
             >
-              Применить
+              {t('apply')}
             </Button>
           </div>
 

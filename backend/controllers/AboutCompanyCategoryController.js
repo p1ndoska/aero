@@ -5,6 +5,20 @@ const AboutCompanyCategoryController = {
     getAllCategories: async (req, res) => {
         try {
             const categories = await prisma.aboutCompanyCategory.findMany({
+                select: {
+                    id: true,
+                    name: true,
+                    nameEn: true,
+                    nameBe: true,
+                    description: true,
+                    descriptionEn: true,
+                    descriptionBe: true,
+                    pageType: true,
+                    isActive: true,
+                    sortOrder: true,
+                    createdAt: true,
+                    updatedAt: true
+                },
                 orderBy: { sortOrder: 'asc' }
             });
             res.json(categories);
@@ -19,7 +33,21 @@ const AboutCompanyCategoryController = {
         try {
             const { id } = req.params;
             const category = await prisma.aboutCompanyCategory.findUnique({
-                where: { id: parseInt(id) }
+                where: { id: parseInt(id) },
+                select: {
+                    id: true,
+                    name: true,
+                    nameEn: true,
+                    nameBe: true,
+                    description: true,
+                    descriptionEn: true,
+                    descriptionBe: true,
+                    pageType: true,
+                    isActive: true,
+                    sortOrder: true,
+                    createdAt: true,
+                    updatedAt: true
+                }
             });
 
             if (!category) {
@@ -82,8 +110,14 @@ const AboutCompanyCategoryController = {
                     create: {
                         pageType,
                         title: name || 'О предприятии',
-                        subtitle: '',
-                        content: []
+                        titleEn: nameEn || null,
+                        titleBe: nameBe || null,
+                        subtitle: description || '',
+                        subtitleEn: descriptionEn || null,
+                        subtitleBe: descriptionBe || null,
+                        content: [],
+                        contentEn: [],
+                        contentBe: []
                     }
                 });
             } catch (e) {

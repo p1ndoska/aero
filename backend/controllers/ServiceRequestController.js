@@ -57,13 +57,39 @@ const ServiceRequestController = {
 
             // Отправка email уведомлений
             try {
+                console.log('=== Attempting to send service request emails ===');
+                console.log('Service Request ID:', serviceRequest.id);
+                console.log('User Email:', serviceRequest.email);
+                console.log('User FullName:', serviceRequest.fullName);
+                
                 // Подтверждение заявителю
-                await emailService.sendServiceRequestConfirmation(serviceRequest);
+                const confirmationResult = await emailService.sendServiceRequestConfirmation(serviceRequest);
+                if (confirmationResult.success) {
+                    console.log('✅ Service request confirmation email sent successfully!');
+                    console.log('Message ID:', confirmationResult.messageId);
+                } else {
+                    console.error('❌ Failed to send service request confirmation email');
+                    console.error('Error:', confirmationResult.error);
+                    if (confirmationResult.details) {
+                        console.error('Details:', confirmationResult.details);
+                    }
+                }
                 
                 // Уведомление администратору
-                await emailService.sendServiceRequestNotification(serviceRequest);
+                const notificationResult = await emailService.sendServiceRequestNotification(serviceRequest);
+                if (notificationResult.success) {
+                    console.log('✅ Service request admin notification sent successfully!');
+                    console.log('Message ID:', notificationResult.messageId);
+                } else {
+                    console.error('❌ Failed to send service request admin notification');
+                    console.error('Error:', notificationResult.error);
+                    if (notificationResult.details) {
+                        console.error('Details:', notificationResult.details);
+                    }
+                }
             } catch (emailError) {
-                console.error('Email sending failed:', emailError);
+                console.error('❌ Email sending failed:', emailError);
+                console.error('Error message:', emailError.message);
                 // Не прерываем процесс, если email не отправился
             }
 

@@ -6,6 +6,25 @@ const ManagementController = {
     getManagers: async (req, res) => {
         try {
             const managers = await prisma.management.findMany({
+                select: {
+                    id: true,
+                    name: true,
+                    nameEn: true,
+                    nameBe: true,
+                    position: true,
+                    positionEn: true,
+                    positionBe: true,
+                    receptionSchedule: true,
+                    receptionScheduleEn: true,
+                    receptionScheduleBe: true,
+                    phone: true,
+                    offices: true,
+                    officesEn: true,
+                    officesBe: true,
+                    images: true,
+                    createdAt: true,
+                    updatedAt: true
+                },
                 orderBy: {
                     createdAt: 'desc'
                 }

@@ -3,10 +3,13 @@ import { useParams, Link, Navigate } from 'react-router-dom';
 import { useGetNewsByIdQuery } from '@/app/services/newsApi';
 import { ArrowLeft, Calendar, Tag, Image as ImageIcon, User, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { BASE_URL } from '@/constants';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { getTranslatedField } from '@/utils/translationHelpers';
 
 const NewsDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const newsId = id ? parseInt(id, 10) : null;
+  const { language, t } = useLanguage();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -85,88 +88,101 @@ const NewsDetailPage: React.FC = () => {
           className="text-[#213659] flex items-center gap-2 hover:underline"
         >
           <ArrowLeft className="w-4 h-4" />
-          Назад к новостям
+          {t('back_to_news')}
         </Link>
       </div>
 
       {/* Основной контент */}
-      <article className="bg-white rounded-xl shadow-lg overflow-hidden mx-auto w-full">
-        {/* Изображение новости */}
-        {news.photo && (
-          <div className="relative h-64 md:h-80 lg:h-96 overflow-hidden">
-            <img
-              src={`${BASE_URL}/${news.photo}`}
-              alt={news.name}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
-                if (placeholder) placeholder.style.display = 'flex';
-              }}
-            />
-            <div 
-              className="hidden w-full h-full bg-[#213659] items-center justify-center"
-            >
-              <ImageIcon className="w-16 h-16 text-white" />
-            </div>
-          </div>
-        )}
-
-        {/* Заголовок и метаданные */}
-        <div className="p-6 md:p-8">
-          <header className="mb-6">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#213659] mb-4 leading-tight">
-              {news.name}
-            </h1>
-            
-            <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-4">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                <span>{new Date(news.createdAt).toLocaleDateString('ru-RU', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}</span>
-              </div>
-              
-              {news.newsCategory && (
-                <div className="flex items-center gap-2">
-                  <Tag className="w-4 h-4" />
-                  <span className="bg-[#213659] text-white px-2 py-1 rounded-full text-xs">
-                    {news.newsCategory.name}
-                  </span>
+      {(() => {
+        const translatedName = getTranslatedField(news, 'name', language) || news.name;
+        const translatedContent = getTranslatedField(news, 'content', language) || news.content;
+        const translatedCategoryName = news.newsCategory ? getTranslatedField(news.newsCategory, 'name', language) || news.newsCategory.name : null;
+        
+        return (
+          <article className="bg-white rounded-xl shadow-lg overflow-hidden mx-auto w-full">
+            {/* Изображение новости */}
+            {news.photo && (
+              <div className="relative h-64 md:h-80 lg:h-96 overflow-hidden">
+                <img
+                  src={`${BASE_URL}/${news.photo}`}
+                  alt={translatedName}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
+                    if (placeholder) placeholder.style.display = 'flex';
+                  }}
+                />
+                <div 
+                  className="hidden w-full h-full bg-[#213659] items-center justify-center"
+                >
+                  <ImageIcon className="w-16 h-16 text-white" />
                 </div>
-              )}
-            </div>
-          </header>
-
-          {/* Содержание новости */}
-          <div className="prose max-w-none sm:prose-md md:prose-lg [&_img]:max-w-full [&_img]:h-auto [&_table]:w-full [&_table]:block [&_table]:overflow-x-auto break-words">
-            <div
-              className="text-gray-700 leading-relaxed whitespace-pre-wrap overflow-x-auto break-words [&_img]:max-w-full [&_img]:h-auto [&_table]:w-full [&_table]:block [&_table]:overflow-x-auto [&_td]:align-top"
-              dangerouslySetInnerHTML={{ __html: news.content || 'Содержание недоступно' }}
-            />
-          </div>
-
-          {/* Дополнительная информация */}
-          <footer className="mt-8 pt-6 border-t border-gray-200">
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <div className="flex items-center gap-2">
-                <User className="w-4 h-4" />
-                <span>Опубликовано администратором</span>
               </div>
-              <div>
-                Обновлено: {new Date(news.updatedAt || news.createdAt).toLocaleDateString('ru-RU')}
+            )}
+
+            {/* Заголовок и метаданные */}
+            <div className="p-6 md:p-8">
+              <header className="mb-6">
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#213659] mb-4 leading-tight">
+                  {translatedName}
+                </h1>
+                
+                <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-4">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>{new Date(news.createdAt).toLocaleDateString(
+                      language === 'en' ? 'en-US' : language === 'be' ? 'be-BY' : 'ru-RU',
+                      {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      }
+                    )}</span>
+                  </div>
+                  
+                  {news.newsCategory && (
+                    <div className="flex items-center gap-2">
+                      <Tag className="w-4 h-4" />
+                      <span className="bg-[#213659] text-white px-2 py-1 rounded-full text-xs">
+                        {translatedCategoryName}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </header>
+
+              {/* Содержание новости */}
+              <div className="prose max-w-none sm:prose-md md:prose-lg [&_img]:max-w-full [&_img]:h-auto [&_table]:w-full [&_table]:block [&_table]:overflow-x-auto break-words">
+                <div
+                  className="text-gray-700 leading-relaxed whitespace-pre-wrap overflow-x-auto break-words [&_img]:max-w-full [&_img]:h-auto [&_table]:w-full [&_table]:block [&_table]:overflow-x-auto [&_td]:align-top"
+                  dangerouslySetInnerHTML={{ __html: translatedContent || t('no_data') }}
+                />
               </div>
+
+              {/* Дополнительная информация */}
+              <footer className="mt-8 pt-6 border-t border-gray-200">
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    <span>{t('published_by_admin')}</span>
+                  </div>
+                  <div>
+                    {t('updated')}: {new Date(news.updatedAt || news.createdAt).toLocaleDateString(
+                      language === 'en' ? 'en-US' : language === 'be' ? 'be-BY' : 'ru-RU'
+                    )}
+                  </div>
+                </div>
+              </footer>
             </div>
-          </footer>
-        </div>
-      </article>
+          </article>
+        );
+      })()}
 
       {/* Дополнительные фото */}
       {news.images && news.images.length > 0 && (
         <div className="mt-8 pt-8 border-t border-gray-200">
-          <h3 className="text-xl font-bold text-[#213659] mb-4">Дополнительные фото</h3>
+          <h3 className="text-xl font-bold text-[#213659] mb-4">{t('additional_photos')}</h3>
           <div className="relative">
             {/* Стрелка влево */}
             <button
@@ -191,19 +207,22 @@ const NewsDetailPage: React.FC = () => {
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               <div className="flex gap-4 pb-2" style={{ minWidth: 'max-content' }}>
-                {news.images.map((image, index) => (
-                  <img
-                    key={index}
-                    src={`${BASE_URL}/${image}`}
-                    alt={`${news.name} - фото ${index + 1}`}
-                    className="w-64 h-48 object-cover rounded-lg border hover:shadow-md transition-shadow cursor-pointer hover:opacity-90 flex-shrink-0"
-                    onClick={() => {
-                      setSelectedImage(`${BASE_URL}/${image}`);
-                      setSelectedImageIndex(index);
-                    }}
-                    onError={(e) => (e.currentTarget.style.display = 'none')}
-                  />
-                ))}
+                {news.images.map((image, index) => {
+                  const translatedName = getTranslatedField(news, 'name', language) || news.name;
+                  return (
+                    <img
+                      key={index}
+                      src={`${BASE_URL}/${image}`}
+                      alt={`${translatedName} - фото ${index + 1}`}
+                      className="w-64 h-48 object-cover rounded-lg border hover:shadow-md transition-shadow cursor-pointer hover:opacity-90 flex-shrink-0"
+                      onClick={() => {
+                        setSelectedImage(`${BASE_URL}/${image}`);
+                        setSelectedImageIndex(index);
+                      }}
+                      onError={(e) => (e.currentTarget.style.display = 'none')}
+                    />
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -217,7 +236,7 @@ const NewsDetailPage: React.FC = () => {
           className="inline-flex items-center gap-2 px-6 py-3 bg-[#213659] text-white rounded-lg hover:bg-[#1a2a4a] transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Все новости
+          {t('all_news')}
         </Link>
       </div>
 

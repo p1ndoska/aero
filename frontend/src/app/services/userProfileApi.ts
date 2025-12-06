@@ -22,6 +22,8 @@ export interface UserProfile {
   lastLoginAt?: string;
   createdAt: string;
   updatedAt: string;
+  passwordChangedAt?: string;
+  mustChangePassword?: boolean;
   role: {
     id: number;
     name: string;
@@ -44,6 +46,10 @@ export interface UpdateProfileRequest {
 
 export interface ChangePasswordRequest {
   currentPassword: string;
+  newPassword: string;
+}
+
+export interface ForceChangePasswordRequest {
   newPassword: string;
 }
 
@@ -76,6 +82,8 @@ export const userProfileApi = createApi({
     getProfile: builder.query<UserProfile, void>({
       query: () => '/profile',
       providesTags: ['UserProfile'],
+      // Принудительно обновляем при монтировании и изменении аргументов
+      refetchOnMountOrArgChange: true,
     }),
 
     // Обновить профиль
@@ -86,22 +94,57 @@ export const userProfileApi = createApi({
         body: profileData,
       }),
       invalidatesTags: ['UserProfile'],
-    }),
-
-    // Обновить аватар
-    updateAvatar: builder.mutation<{ id: number; avatar: string }, FormData>({
-      query: (formData) => ({
-        url: '/profile/avatar',
-        method: 'POST',
-        body: formData,
-      }),
-      invalidatesTags: ['UserProfile'],
+      // Оптимистично обновляем кеш сразу после успешного обновления
+      onQueryStarted: async (arg, { dispatch, queryFulfilled }) => {
+        try {
+          const { data: updatedProfile } = await queryFulfilled;
+          // Обновляем кеш запроса профиля оптимистично
+          dispatch(
+            userProfileApi.util.updateQueryData('getProfile', undefined, (draft) => {
+              if (draft && updatedProfile) {
+                // Обновляем все поля из ответа сервера
+                draft.id = updatedProfile.id;
+                draft.email = updatedProfile.email;
+                draft.firstName = updatedProfile.firstName;
+                draft.lastName = updatedProfile.lastName;
+                draft.middleName = updatedProfile.middleName;
+                draft.phone = updatedProfile.phone;
+                draft.avatar = updatedProfile.avatar;
+                draft.birthDate = updatedProfile.birthDate;
+                draft.gender = updatedProfile.gender;
+                draft.address = updatedProfile.address;
+                draft.position = updatedProfile.position;
+                draft.department = updatedProfile.department;
+                draft.bio = updatedProfile.bio;
+                draft.preferences = updatedProfile.preferences;
+                draft.isEmailVerified = updatedProfile.isEmailVerified;
+                draft.isActive = updatedProfile.isActive;
+                draft.lastLoginAt = updatedProfile.lastLoginAt;
+                draft.createdAt = updatedProfile.createdAt;
+                draft.updatedAt = updatedProfile.updatedAt;
+                if (updatedProfile.role) {
+                  draft.role = updatedProfile.role;
+                }
+              }
+            })
+          );
+        } catch {}
+      },
     }),
 
     // Изменить пароль
     changePassword: builder.mutation<{ message: string }, ChangePasswordRequest>({
       query: (passwordData) => ({
         url: '/profile/password',
+        method: 'PUT',
+        body: passwordData,
+      }),
+    }),
+
+    // Принудительная смена пароля (без текущего пароля)
+    forceChangePassword: builder.mutation<{ message: string }, ForceChangePasswordRequest>({
+      query: (passwordData) => ({
+        url: '/profile/force-change-password',
         method: 'PUT',
         body: passwordData,
       }),
@@ -127,8 +170,8 @@ export const userProfileApi = createApi({
 export const {
   useGetProfileQuery,
   useUpdateProfileMutation,
-  useUpdateAvatarMutation,
   useChangePasswordMutation,
+  useForceChangePasswordMutation,
   useGetUserStatsQuery,
   useDeleteAccountMutation,
 } = userProfileApi;

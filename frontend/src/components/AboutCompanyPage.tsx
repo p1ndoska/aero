@@ -13,7 +13,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { getTranslatedField } from '../utils/translationHelpers';
 
 export default function AboutCompanyPage() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { data: pageContent, refetch: refetchPageContent } = useGetAboutCompanyPageContentQuery();
   const [updatePageContent, { isLoading: isUpdatingContent }] = useUpdateAboutCompanyPageContentMutation();
 
@@ -64,11 +64,11 @@ export default function AboutCompanyPage() {
       }
 
       await updatePageContent(updateData).unwrap();
-      toast.success('Контент страницы успешно обновлен');
+      toast.success(t('content_updated_successfully'));
       refetchPageContent();
       setIsContentEditorOpen(false);
     } catch (error: any) {
-      toast.error(error.data?.error || 'Ошибка при сохранении контента');
+      toast.error(error.data?.error || t('error_saving_content'));
     }
   };
 
@@ -144,7 +144,7 @@ export default function AboutCompanyPage() {
                   <tr>
                     {headers.map((header: string, idx: number) => (
                       <th key={idx} className="border border-gray-300 px-4 py-2 bg-gray-100 text-left font-medium">
-                        {header || `Колонка ${idx + 1}`}
+                        {header || `${t('column')} ${idx + 1}`}
                       </th>
                     ))}
                   </tr>
@@ -182,7 +182,7 @@ export default function AboutCompanyPage() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 break-words">
-                {element.props.fileName || 'Неизвестный файл'}
+                {element.props.fileName || t('unknown_file')}
               </p>
               <p className="text-xs text-gray-500">
                 {element.props.fileType && `${element.props.fileType} • `}
@@ -194,7 +194,7 @@ export default function AboutCompanyPage() {
               download={element.props.fileName}
               className="flex-shrink-0 text-blue-600 hover:text-blue-800 text-sm font-medium"
             >
-              Скачать
+              {t('download')}
             </a>
           </div>
         );
@@ -223,12 +223,12 @@ export default function AboutCompanyPage() {
                   className="ml-4"
                 >
                   <Settings className="w-4 h-4 mr-2" />
-                  Управление контентом
+                  {t('manage_content')}
                 </Button>
               )}
             </div>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              {getTranslatedField(pageContent, 'subtitle', language) || 'Информация о нашем предприятии, его структуре, целях и принципах работы в сфере аэронавигационного обслуживания воздушного движения.'}
+              {getTranslatedField(pageContent, 'subtitle', language) || t('about_company_default_subtitle')}
             </p>
           </div>
 
@@ -250,9 +250,9 @@ export default function AboutCompanyPage() {
             <div className="w-full">
               <div className="bg-blue-50 py-12 text-center rounded-lg">
                 <Building2 className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">О предприятии</h3>
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">{t('about_company')}</h3>
                 <p className="text-gray-500 mb-6">
-                  Здесь будет размещена информация о нашем предприятии, его истории, структуре и деятельности.
+                  {t('about_company_placeholder')}
                 </p>
                 {isAuthenticated && isAdmin && (
                   <Button
@@ -261,7 +261,7 @@ export default function AboutCompanyPage() {
                     className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
                   >
                     <Settings className="w-4 h-4 mr-2" />
-                    Добавить контент
+                    {t('add_content')}
                   </Button>
                 )}
               </div>
@@ -274,31 +274,31 @@ export default function AboutCompanyPage() {
       <Dialog open={isContentEditorOpen} onOpenChange={setIsContentEditorOpen}>
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-white min-w-0 dialog-content">
           <DialogHeader>
-            <DialogTitle>Управление контентом страницы о предприятии</DialogTitle>
+            <DialogTitle>{t('manage_about_company_content')}</DialogTitle>
             <DialogDescription>
-              Редактируйте заголовок, подзаголовок и основной контент страницы о предприятии.
+              {t('edit_about_company_content_description')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">Заголовок страницы</label>
+              <label className="block text-sm font-medium mb-2">{t('page_title')}</label>
               <Input
                 value={editableTitle}
                 onChange={(e) => setEditableTitle(e.target.value)}
-                placeholder="О предприятии"
+                placeholder={t('about_company')}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Подзаголовок</label>
+              <label className="block text-sm font-medium mb-2">{t('subtitle')}</label>
               <Textarea
                 value={editableSubtitle}
                 onChange={(e) => setEditableSubtitle(e.target.value)}
-                placeholder="Краткое описание предприятия..."
+                placeholder={t('company_description_placeholder')}
                 className="min-h-[80px] resize-none"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-4">Основной контент</label>
+              <label className="block text-sm font-medium mb-4">{t('main_content')}</label>
               <ContentConstructor
                 content={editableContent}
                 onChange={setEditableContent}
@@ -306,10 +306,10 @@ export default function AboutCompanyPage() {
             </div>
             <div className="flex justify-end gap-3 pt-4 border-t">
               <Button variant="outline" onClick={() => setIsContentEditorOpen(false)}>
-                Отмена
+                {t('cancel')}
               </Button>
               <Button onClick={handleSaveContent} disabled={isUpdatingContent}>
-                {isUpdatingContent ? 'Сохранение...' : 'Сохранить изменения'}
+                {isUpdatingContent ? t('saving') : t('save_changes')}
               </Button>
             </div>
           </div>

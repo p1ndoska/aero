@@ -1,24 +1,85 @@
 //@ts-nocheck
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Briefcase, MapPin, Clock, DollarSign, FileText, Settings, Type, Heading, Image as ImageIcon, List } from 'lucide-react';
+import { Briefcase, MapPin, Clock, FileText, Settings, Type, Heading, Image as ImageIcon, List, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGetAllVacanciesQuery } from '@/app/services/vacancyApi';
 import { useGetVacancyPageContentQuery, useUpdateVacancyPageContentMutation } from '@/app/services/vacancyPageContentApi';
+import { useGetAllAboutCompanyCategoriesQuery } from '@/app/services/aboutCompanyCategoryApi';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getTranslatedField } from '../utils/translationHelpers';
 import type { Vacancy } from '@/types/vacancy';
 import VacancyApplicationForm from './VacancyApplicationForm';
 import ContentConstructor from './admin/ContentConstructor';
 
 export default function VacanciesPage() {
+  const HR_EMAIL = 'office@ban.by';
+
+  const handleSendResumeByEmail = (vacancy: Vacancy) => {
+    const translatedTitle = getTranslatedField(vacancy, 'title', language) || vacancy.title;
+    const subject = `${t('application_for_vacancy')}: ${translatedTitle}`;
+    const body = [
+      t('hello'),
+      '',
+      `${t('application_for_vacancy')}: ${translatedTitle}`,
+      '',
+      `${t('full_name')}: `,
+      `${t('phone')}: `,
+      `${t('cover_letter')}: `,
+      '',
+      t('resume_attached')
+    ].join('%0D%0A');
+    const mailto = `mailto:${HR_EMAIL}?subject=${encodeURIComponent(subject)}&body=${body}`;
+    window.location.href = mailto;
+  };
+  const { language, t } = useLanguage();
   const { data: vacancies, isLoading } = useGetAllVacanciesQuery({ active: true });
   const { data: pageContent, refetch: refetchPageContent } = useGetVacancyPageContentQuery();
   const [updatePageContent, { isLoading: isUpdatingContent }] = useUpdateVacancyPageContentMutation();
   
+  // Получаем категории "О предприятии" для получения переведенного названия
+  const { data: aboutCompanyCategories, isLoading: isLoadingCategories } = useGetAllAboutCompanyCategoriesQuery();
+  const vacanciesCategory = useMemo(() => {
+    return aboutCompanyCategories?.find((cat: any) => cat.pageType === 'vacancies') || null;
+  }, [aboutCompanyCategories]);
+
+  // Мемоизируем заголовок страницы
+  const pageTitle = useMemo(() => {
+    // Приоритет: название категории > заголовок из контента > дефолтный
+    if (vacanciesCategory) {
+      const categoryName = getTranslatedField(vacanciesCategory, 'name', language);
+      if (categoryName) {
+        return categoryName;
+      }
+      if (vacanciesCategory.name) {
+        return vacanciesCategory.name;
+      }
+    }
+    const contentTitle = pageContent ? getTranslatedField(pageContent, 'title', language) : null;
+    return contentTitle || 'Открытые вакансии';
+  }, [vacanciesCategory, pageContent, language]);
+
+  // Мемоизируем подзаголовок страницы
+  const pageSubtitle = useMemo(() => {
+    // Приоритет: описание категории > подзаголовок из контента > дефолтный
+    if (vacanciesCategory) {
+      const categoryDescription = getTranslatedField(vacanciesCategory, 'description', language);
+      if (categoryDescription) {
+        return categoryDescription;
+      }
+      if (vacanciesCategory.description) {
+        return vacanciesCategory.description;
+      }
+    }
+    const contentSubtitle = pageContent ? getTranslatedField(pageContent, 'subtitle', language) : null;
+    return contentSubtitle || 'Присоединяйтесь к нашей команде профессионалов. Мы ищем талантливых специалистов для работы в сфере аэронавигации.';
+  }, [vacanciesCategory, pageContent, language]);
+
   const { isAuthenticated, user } = useSelector((state: any) => state.auth);
   const roleValue = user?.role;
   const roleName = (typeof roleValue === 'string' ? roleValue : roleValue?.name) ?? '';
@@ -51,11 +112,18 @@ export default function VacanciesPage() {
 
   const handleOpenContentEditor = () => {
     if (pageContent) {
-      setEditableTitle(pageContent.title || 'Открытые вакансии');
-      setEditableSubtitle(pageContent.subtitle || '');
-      setEditableContent(pageContent.content || []);
+      // Используем переведенное название категории, если доступно
+      const categoryTitle = vacanciesCategory ? getTranslatedField(vacanciesCategory, 'name', language) : null;
+      const contentTitle = getTranslatedField(pageContent, 'title', language);
+      const contentSubtitle = getTranslatedField(pageContent, 'subtitle', language);
+      const content = getTranslatedField(pageContent, 'content', language);
+      setEditableTitle(contentTitle || categoryTitle || 'Открытые вакансии');
+      setEditableSubtitle(contentSubtitle || '');
+      setEditableContent(Array.isArray(content) ? content : []);
     } else {
-      setEditableTitle('Открытые вакансии');
+      // Используем переведенное название категории, если доступно
+      const categoryTitle = vacanciesCategory ? getTranslatedField(vacanciesCategory, 'name', language) : null;
+      setEditableTitle(categoryTitle || 'Открытые вакансии');
       setEditableSubtitle('');
       setEditableContent([]);
     }
@@ -64,16 +132,31 @@ export default function VacanciesPage() {
 
   const handleSaveContent = async () => {
     try {
-      await updatePageContent({
-        title: editableTitle,
-        subtitle: editableSubtitle,
+      // Сохраняем переводы в зависимости от текущего языка
+      const updateData: any = {
         content: editableContent,
-      }).unwrap();
-      toast.success('Контент страницы успешно обновлен');
+      };
+
+      if (language === 'en') {
+        updateData.titleEn = editableTitle;
+        updateData.subtitleEn = editableSubtitle;
+        updateData.contentEn = editableContent;
+      } else if (language === 'be') {
+        updateData.titleBe = editableTitle;
+        updateData.subtitleBe = editableSubtitle;
+        updateData.contentBe = editableContent;
+      } else {
+        updateData.title = editableTitle;
+        updateData.subtitle = editableSubtitle;
+        updateData.content = editableContent;
+      }
+
+      await updatePageContent(updateData).unwrap();
+      toast.success(t('content_updated_successfully'));
       refetchPageContent();
       setIsContentEditorOpen(false);
     } catch (error: any) {
-      toast.error(error.data?.error || 'Ошибка при сохранении контента');
+      toast.error(error.data?.error || t('error_saving_content'));
     }
   };
 
@@ -101,7 +184,7 @@ export default function VacanciesPage() {
         );
       case 'list':
         const items = element.props?.items || [];
-        console.log('VacanciesPage rendering list:', element, items);
+        // Render list element
         return (
           <ul className="list-disc list-inside mb-4 space-y-2">
             {items.map((item: string, idx: number) => (
@@ -121,7 +204,7 @@ export default function VacanciesPage() {
           </a>
         );
       case 'image':
-        console.log('VacanciesPage rendering image:', element.props?.src);
+        // Render image element
         return (
           <div className="mb-6 flex flex-col items-center">
             <img 
@@ -134,7 +217,7 @@ export default function VacanciesPage() {
                 e.currentTarget.style.display = 'none';
               }}
               onLoad={() => {
-                console.log('Image loaded successfully in VacanciesPage:', element.props?.src);
+                // Image loaded successfully
               }}
             />
             {element.props?.alt && <p className="text-sm text-gray-500 mt-2 text-center">{element.props.alt}</p>}
@@ -213,7 +296,7 @@ export default function VacanciesPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-lg">Загрузка вакансий...</div>
+        <div className="text-lg">{t('loading_vacancies')}</div>
       </div>
     );
   }
@@ -228,7 +311,7 @@ export default function VacanciesPage() {
           <div className="flex items-center justify-center gap-3 mb-4">
             <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3">
               <Briefcase className="w-10 h-10 text-blue-600" />
-              {pageContent?.title || 'Открытые вакансии'}
+              {pageTitle}
             </h1>
             {isAuthenticated && isAdmin && (
               <Button
@@ -238,27 +321,30 @@ export default function VacanciesPage() {
                 className="ml-4"
               >
                 <Settings className="w-4 h-4 mr-2" />
-                Управление контентом
+                {t('manage_content')}
               </Button>
             )}
           </div>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            {pageContent?.subtitle || 'Присоединяйтесь к нашей команде профессионалов. Мы ищем талантливых специалистов для работы в сфере аэронавигации.'}
+            {pageSubtitle}
           </p>
         </div>
 
         {/* Дополнительный контент */}
-        {pageContent?.content && Array.isArray(pageContent.content) && pageContent.content.length > 0 && (
-          <div className="w-full mb-12">
-            <div className="py-8">
-              {pageContent.content.map((element: any) => (
-                <div key={element.id}>
-                  {renderContentElement(element)}
-                </div>
-              ))}
+        {(() => {
+          const translatedContent = pageContent ? getTranslatedField(pageContent, 'content', language) : null;
+          return translatedContent && Array.isArray(translatedContent) && translatedContent.length > 0 ? (
+            <div className="w-full mb-12">
+              <div className="py-8">
+                {translatedContent.map((element: any) => (
+                  <div key={element.id}>
+                    {renderContentElement(element)}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          ) : null;
+        })()}
 
         {/* Список вакансий */}
         <div className="grid gap-6 max-w-5xl mx-auto">
@@ -271,42 +357,59 @@ export default function VacanciesPage() {
                   className="hover:shadow-lg transition-shadow duration-300 border-l-4 border-l-blue-600"
                 >
                   <CardHeader>
-                    <CardTitle className="text-2xl text-gray-900 line-clamp-2 break-words">{vacancy.title}</CardTitle>
+                    <CardTitle className="text-2xl text-gray-900 line-clamp-2 break-words">
+                      {getTranslatedField(vacancy, 'title', language) || vacancy.title}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-700 mb-4 line-clamp-3">{vacancy.description}</p>
+                    <p className="text-gray-700 mb-4 line-clamp-3">
+                      {getTranslatedField(vacancy, 'description', language) || vacancy.description}
+                    </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                      {vacancy.salary && (
-                        <div className="flex items-center text-gray-600">
-                          <DollarSign className="w-5 h-5 mr-2 text-green-600" />
-                          <span className="font-medium">{vacancy.salary}</span>
-                        </div>
-                      )}
-                      {vacancy.location && (
-                        <div className="flex items-center text-gray-600">
-                          <MapPin className="w-5 h-5 mr-2 text-red-600" />
-                          <span>{vacancy.location}</span>
-                        </div>
-                      )}
-                      {vacancy.employmentType && (
-                        <div className="flex items-center text-gray-600">
-                          <Clock className="w-5 h-5 mr-2 text-blue-600" />
-                          <span>{vacancy.employmentType}</span>
-                        </div>
-                      )}
+                      {(() => {
+                        const translatedSalary = getTranslatedField(vacancy, 'salary', language) || vacancy.salary;
+                        return translatedSalary ? (
+                          <div className="flex items-center text-gray-600">
+                            <span className="w-9 mr-2 text-green-600 font-bold text-lg flex items-center justify-center">BYN</span>
+                            <span className="font-medium">{translatedSalary}</span>
+                          </div>
+                        ) : null;
+                      })()}
+                      {(() => {
+                        const translatedLocation = getTranslatedField(vacancy, 'location', language) || vacancy.location;
+                        return translatedLocation ? (
+                          <div className="flex items-center text-gray-600">
+                            <MapPin className="w-5 h-5 mr-2 text-red-600" />
+                            <span>{translatedLocation}</span>
+                          </div>
+                        ) : null;
+                      })()}
+                      {(() => {
+                        const translatedEmploymentType = getTranslatedField(vacancy, 'employmentType', language) || vacancy.employmentType;
+                        return translatedEmploymentType ? (
+                          <div className="flex items-center text-gray-600">
+                            <Clock className="w-5 h-5 mr-2 text-blue-600" />
+                            <span>{translatedEmploymentType}</span>
+                          </div>
+                        ) : null;
+                      })()}
                       <div className="flex items-center text-gray-500 text-sm">
                         <FileText className="w-5 h-5 mr-2" />
-                        <span>Опубликовано: {new Date(vacancy.createdAt).toLocaleDateString()}</span>
+                        <span>{t('published')}: {new Date(vacancy.createdAt).toLocaleDateString(language === 'en' ? 'en-US' : language === 'be' ? 'be-BY' : 'ru-RU')}</span>
                       </div>
                     </div>
 
                     <div className="flex gap-3">
                       <Button onClick={() => handleViewDetails(vacancy)} variant="outline">
-                        Подробнее
+                        {t('details')}
                       </Button>
                       <Button onClick={() => handleApply(vacancy)} className="bg-[#213659] hover:bg-[#1a2a4a] text-white">
-                        Откликнуться
+                        {t('apply')}
+                      </Button>
+                      <Button onClick={() => handleSendResumeByEmail(vacancy)} variant="outline" className="flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        {t('send_resume')}
                       </Button>
                     </div>
                   </CardContent>
@@ -316,8 +419,8 @@ export default function VacanciesPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Briefcase className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">Нет доступных вакансий</h3>
-                <p className="text-gray-500">В настоящее время открытых вакансий нет. Пожалуйста, зайдите позже.</p>
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">{t('no_vacancies_available')}</h3>
+                <p className="text-gray-500">{t('no_vacancies_message')}</p>
               </CardContent>
             </Card>
           )}
@@ -328,34 +431,34 @@ export default function VacanciesPage() {
           <Card className="bg-blue-50 border-blue-200">
             <CardContent className="py-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-                Почему стоит работать с нами?
+                {t('why_work_with_us')}
               </h2>
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="text-center">
                   <div className="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                     1
                   </div>
-                  <h3 className="font-semibold mb-2">Стабильность</h3>
+                  <h3 className="font-semibold mb-2">{t('stability')}</h3>
                   <p className="text-sm text-gray-600">
-                    Работа в крупной государственной организации с гарантированной занятостью
+                    {t('stability_description')}
                   </p>
                 </div>
                 <div className="text-center">
                   <div className="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                     2
                   </div>
-                  <h3 className="font-semibold mb-2">Развитие</h3>
+                  <h3 className="font-semibold mb-2">{t('development')}</h3>
                   <p className="text-sm text-gray-600">
-                    Возможности для профессионального роста и обучения
+                    {t('development_description')}
                   </p>
                 </div>
                 <div className="text-center">
                   <div className="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                     3
                   </div>
-                  <h3 className="font-semibold mb-2">Социальный пакет</h3>
+                  <h3 className="font-semibold mb-2">{t('social_package')}</h3>
                   <p className="text-sm text-gray-600">
-                    Полный социальный пакет и дополнительные льготы
+                    {t('social_package_description')}
                   </p>
                 </div>
               </div>
@@ -371,55 +474,78 @@ export default function VacanciesPage() {
           {selectedVacancy && (
             <>
               <DialogHeader>
-                <DialogTitle className="text-2xl break-words">{selectedVacancy.title}</DialogTitle>
+                <DialogTitle className="text-2xl break-words">
+                  {getTranslatedField(selectedVacancy, 'title', language) || selectedVacancy.title}
+                </DialogTitle>
               </DialogHeader>
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">Описание</h3>
-                  <p className="text-gray-700 whitespace-pre-line">{selectedVacancy.description}</p>
+                  <h3 className="text-lg font-semibold mb-2">{t('description')}</h3>
+                  <p className="text-gray-700 whitespace-pre-line">
+                    {getTranslatedField(selectedVacancy, 'description', language) || selectedVacancy.description}
+                  </p>
                 </div>
 
-                {selectedVacancy.requirements && (
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Требования</h3>
-                    <p className="text-gray-700 whitespace-pre-line">{selectedVacancy.requirements}</p>
-                  </div>
-                )}
+                {(() => {
+                  const translatedRequirements = getTranslatedField(selectedVacancy, 'requirements', language) || selectedVacancy.requirements;
+                  return translatedRequirements ? (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">{t('requirements')}</h3>
+                      <p className="text-gray-700 whitespace-pre-line">{translatedRequirements}</p>
+                    </div>
+                  ) : null;
+                })()}
 
-                {selectedVacancy.conditions && (
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Условия работы</h3>
-                    <p className="text-gray-700 whitespace-pre-line">{selectedVacancy.conditions}</p>
-                  </div>
-                )}
+                {(() => {
+                  const translatedConditions = getTranslatedField(selectedVacancy, 'conditions', language) || selectedVacancy.conditions;
+                  return translatedConditions ? (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">{t('work_conditions')}</h3>
+                      <p className="text-gray-700 whitespace-pre-line">{translatedConditions}</p>
+                    </div>
+                  ) : null;
+                })()}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
-                  {selectedVacancy.salary && (
-                    <div>
-                      <span className="font-semibold">Зарплата:</span>
-                      <p className="text-gray-700">{selectedVacancy.salary}</p>
-                    </div>
-                  )}
-                  {selectedVacancy.location && (
-                    <div>
-                      <span className="font-semibold">Местоположение:</span>
-                      <p className="text-gray-700">{selectedVacancy.location}</p>
-                    </div>
-                  )}
-                  {selectedVacancy.employmentType && (
-                    <div>
-                      <span className="font-semibold">Тип занятости:</span>
-                      <p className="text-gray-700">{selectedVacancy.employmentType}</p>
-                    </div>
-                  )}
+                  {(() => {
+                    const translatedSalary = getTranslatedField(selectedVacancy, 'salary', language) || selectedVacancy.salary;
+                    return translatedSalary ? (
+                      <div>
+                        <span className="font-semibold">{t('salary')}:</span>
+                        <p className="text-gray-700">{translatedSalary}</p>
+                      </div>
+                    ) : null;
+                  })()}
+                  {(() => {
+                    const translatedLocation = getTranslatedField(selectedVacancy, 'location', language) || selectedVacancy.location;
+                    return translatedLocation ? (
+                      <div>
+                        <span className="font-semibold">{t('location')}:</span>
+                        <p className="text-gray-700">{translatedLocation}</p>
+                      </div>
+                    ) : null;
+                  })()}
+                  {(() => {
+                    const translatedEmploymentType = getTranslatedField(selectedVacancy, 'employmentType', language) || selectedVacancy.employmentType;
+                    return translatedEmploymentType ? (
+                      <div>
+                        <span className="font-semibold">{t('employment_type')}:</span>
+                        <p className="text-gray-700">{translatedEmploymentType}</p>
+                      </div>
+                    ) : null;
+                  })()}
                 </div>
 
                 <div className="flex gap-3 justify-end">
                   <Button variant="outline" onClick={() => setIsDetailDialogOpen(false)}>
-                    Закрыть
+                    {t('close')}
                   </Button>
                   <Button onClick={() => handleApply(selectedVacancy)} className="bg-[#213659] hover:bg-[#1a2a4a] text-white">
-                    Откликнуться на вакансию
+                    {t('apply_to_vacancy')}
+                  </Button>
+                  <Button onClick={() => handleSendResumeByEmail(selectedVacancy)} variant="outline" className="flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    {t('send_by_email')}
                   </Button>
                 </div>
               </div>
@@ -442,28 +568,28 @@ export default function VacanciesPage() {
       <Dialog open={isContentEditorOpen} onOpenChange={setIsContentEditorOpen}>
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-white min-w-0 dialog-content">
           <DialogHeader>
-            <DialogTitle>Управление контентом страницы вакансий</DialogTitle>
+            <DialogTitle>{t('manage_vacancies_page_content')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">Заголовок страницы</label>
+              <label className="block text-sm font-medium mb-2">{t('page_title')}</label>
               <Input
                 value={editableTitle}
                 onChange={(e) => setEditableTitle(e.target.value)}
-                placeholder="Открытые вакансии"
+                placeholder={t('open_vacancies')}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Подзаголовок</label>
+              <label className="block text-sm font-medium mb-2">{t('subtitle')}</label>
               <Textarea
                 value={editableSubtitle}
                 onChange={(e) => setEditableSubtitle(e.target.value)}
-                placeholder="Присоединяйтесь к нашей команде..."
+                placeholder={t('join_our_team_placeholder')}
                 className="min-h-[80px] resize-none"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-4">Дополнительный контент</label>
+              <label className="block text-sm font-medium mb-4">{t('additional_content')}</label>
               <ContentConstructor
                 content={editableContent}
                 onChange={setEditableContent}
@@ -471,10 +597,10 @@ export default function VacanciesPage() {
             </div>
             <div className="flex justify-end gap-3 pt-4 border-t">
               <Button variant="outline" onClick={() => setIsContentEditorOpen(false)}>
-                Отмена
+                {t('cancel')}
               </Button>
               <Button onClick={handleSaveContent} disabled={isUpdatingContent}>
-                {isUpdatingContent ? 'Сохранение...' : 'Сохранить изменения'}
+                {isUpdatingContent ? t('saving') : t('save_changes')}
               </Button>
             </div>
           </div>

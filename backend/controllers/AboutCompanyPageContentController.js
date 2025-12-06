@@ -76,12 +76,79 @@ const AboutCompanyPageContentController = {
     getAboutCompanyPageContentByPageType: async (req, res) => {
         try {
             const { pageType } = req.params;
-            const content = await prisma.aboutCompanyPageContent.findUnique({
-                where: { pageType }
+            let content = await prisma.aboutCompanyPageContent.findUnique({
+                where: { pageType },
+                select: {
+                    id: true,
+                    pageType: true,
+                    title: true,
+                    titleEn: true,
+                    titleBe: true,
+                    subtitle: true,
+                    subtitleEn: true,
+                    subtitleBe: true,
+                    content: true,
+                    contentEn: true,
+                    contentBe: true,
+                    createdAt: true,
+                    updatedAt: true
+                }
             });
+            
             if (!content) {
-                return res.status(404).json({ error: 'About company page content not found' });
+                // Пытаемся найти категорию для получения названия
+                const category = await prisma.aboutCompanyCategory.findUnique({
+                    where: { pageType },
+                    select: {
+                        name: true,
+                        nameEn: true,
+                        nameBe: true,
+                        description: true,
+                        descriptionEn: true,
+                        descriptionBe: true
+                    }
+                });
+                
+                // Создаем дефолтный контент на основе категории, если она найдена
+                if (category) {
+                    content = await prisma.aboutCompanyPageContent.create({
+                        data: {
+                            pageType,
+                            title: category.name || 'О предприятии',
+                            titleEn: category.nameEn || null,
+                            titleBe: category.nameBe || null,
+                            subtitle: category.description || null,
+                            subtitleEn: category.descriptionEn || null,
+                            subtitleBe: category.descriptionBe || null,
+                            content: [],
+                            contentEn: [],
+                            contentBe: []
+                        },
+                        select: {
+                            id: true,
+                            pageType: true,
+                            title: true,
+                            titleEn: true,
+                            titleBe: true,
+                            subtitle: true,
+                            subtitleEn: true,
+                            subtitleBe: true,
+                            content: true,
+                            contentEn: true,
+                            contentBe: true,
+                            createdAt: true,
+                            updatedAt: true
+                        }
+                    });
+                    return res.json(content);
+                } else {
+                    // Если категория не найдена, возвращаем 404
+                    return res.status(404).json({ 
+                        error: 'About company page content and category not found'
+                    });
+                }
             }
+            
             res.json(content);
         } catch (error) {
             console.error('Error fetching about company page content by pageType:', error);

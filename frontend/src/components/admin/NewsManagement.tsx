@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { useGetAllNewsQuery, useCreateNewsMutation, useUpdateNewsMutation, useDeleteNewsMutation } from '@/app/services/newsApi';
 import { useGetCategoriesQuery } from '@/app/services/categoryApi';
 import type { NewsItem } from '@/types/News';
+import { BASE_URL } from '@/constants';
 
 interface CreateNewsRequest {
   name: string;
@@ -297,9 +298,16 @@ export default function NewsManagement() {
           <div className="mt-2">
             <p className="text-sm text-gray-600 mb-2">Текущее фото:</p>
             <img 
-              src={editingNews.photo} 
+              src={`${BASE_URL}${editingNews.photo.startsWith('/') ? '' : '/'}${editingNews.photo}`}
               alt="Текущее фото" 
               className="w-32 h-32 object-cover rounded border"
+              onError={(e) => {
+                console.error('❌ Ошибка загрузки изображения новости:', editingNews.photo);
+                e.currentTarget.style.display = 'none';
+              }}
+              onLoad={() => {
+                console.log('✅ Изображение новости загружено:', editingNews.photo);
+              }}
             />
           </div>
         )}
@@ -475,9 +483,16 @@ export default function NewsManagement() {
                     <span className="font-medium text-[#213659]">Фото:</span>
                     <div className="mt-2">
                       <img 
-                        src={newsItem.photo} 
+                        src={`${BASE_URL}${newsItem.photo.startsWith('/') ? '' : '/'}${newsItem.photo}`}
                         alt={newsItem.name}
                         className="w-32 h-32 object-cover rounded border"
+                        onError={(e) => {
+                          console.error('❌ Ошибка загрузки изображения новости:', newsItem.photo);
+                          e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="128"%3E%3Crect width="128" height="128" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-size="12"%3EОшибка загрузки%3C/text%3E%3C/svg%3E';
+                        }}
+                        onLoad={() => {
+                          console.log('✅ Изображение новости загружено:', newsItem.photo);
+                        }}
                       />
                     </div>
                   </div>

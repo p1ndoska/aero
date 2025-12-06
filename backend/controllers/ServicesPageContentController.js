@@ -71,7 +71,11 @@ const updateServicesPageContent = async (req, res) => {
       subtitleBe,
       content,
       contentEn,
-      contentBe
+      contentBe,
+      documentUrl,
+      documentName,
+      instructionUrl,
+      instructionName
     } = req.body;
 
     const updateData = {};
@@ -84,6 +88,10 @@ const updateServicesPageContent = async (req, res) => {
     if (content !== undefined) updateData.content = content;
     if (contentEn !== undefined) updateData.contentEn = contentEn;
     if (contentBe !== undefined) updateData.contentBe = contentBe;
+    if (documentUrl !== undefined) updateData.documentUrl = documentUrl;
+    if (documentName !== undefined) updateData.documentName = documentName;
+    if (instructionUrl !== undefined) updateData.instructionUrl = instructionUrl;
+    if (instructionName !== undefined) updateData.instructionName = instructionName;
 
     // Обновляем, а если записи ещё нет — создаём её
     const pageContent = await prisma.servicesPageContent.upsert({
@@ -100,6 +108,8 @@ const updateServicesPageContent = async (req, res) => {
         content: content ?? [],
         contentEn: contentEn ?? [],
         contentBe: contentBe ?? [],
+        documentUrl: documentUrl ?? null,
+        documentName: documentName ?? null,
       }
     });
 

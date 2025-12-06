@@ -14,6 +14,7 @@ export interface LoginRequest {
 export interface LoginResponse {
   token: string;
   user: User;
+  mustChangePassword?: boolean;
 }
 
 export interface AuthState {
@@ -21,4 +22,5 @@ export interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  mustChangePassword: boolean;
 } 

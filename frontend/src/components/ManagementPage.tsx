@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import type { TimeSlot, Management } from '@/types/management';
 
 export default function ManagementPage() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { data: managers, isLoading, error } = useGetAllManagersQuery();
   const [selectedManagerForBooking, setSelectedManagerForBooking] = useState<number | null>(null);
   const [expandedManager, setExpandedManager] = useState<number | null>(null);
@@ -40,7 +40,7 @@ export default function ManagementPage() {
 
   const handleBookingSubmit = async () => {
     if (!selectedSlot || !bookingForm.fullName || !bookingForm.email) {
-      toast.error('Заполните все обязательные поля');
+      toast.error(t('fill_required_fields') || 'Заполните все обязательные поля');
       return;
     }
 
@@ -54,7 +54,7 @@ export default function ManagementPage() {
         }
       }).unwrap();
 
-      toast.success('Запись на прием успешно оформлена!');
+      toast.success(t('booking_success') || 'Запись на прием успешно оформлена!');
       setIsBookingDialogOpen(false);
       setBookingForm({ fullName: '', email: '', notes: '' });
       setSelectedSlot(null);
@@ -95,14 +95,16 @@ export default function ManagementPage() {
   };
 
   const formatTime = (timeString: string) => {
-    return new Date(timeString).toLocaleTimeString('ru-RU', {
+    const locale = language === 'en' ? 'en-US' : language === 'be' ? 'be-BY' : 'ru-RU';
+    return new Date(timeString).toLocaleTimeString(locale, {
       hour: '2-digit',
       minute: '2-digit'
     });
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ru-RU', {
+    const locale = language === 'en' ? 'en-US' : language === 'be' ? 'be-BY' : 'ru-RU';
+    return new Date(dateString).toLocaleDateString(locale, {
       weekday: 'long',
       day: 'numeric',
       month: 'long'
@@ -114,7 +116,7 @@ export default function ManagementPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#213659] mx-auto mb-4"></div>
-          <p className="text-gray-600">Загрузка информации о руководителях...</p>
+          <p className="text-gray-600">{t('loading_managers') || 'Загрузка информации о руководителях...'}</p>
         </div>
       </div>
     );
@@ -126,8 +128,8 @@ export default function ManagementPage() {
         <div className="text-center py-12">
           <div className="text-red-600 mb-4">
             <Users className="w-16 h-16 mx-auto mb-4" />
-            <p className="text-lg">Ошибка загрузки данных</p>
-            <p className="text-sm">Попробуйте обновить страницу</p>
+            <p className="text-lg">{t('error_loading_data') || 'Ошибка загрузки данных'}</p>
+            <p className="text-sm">{t('try_refresh_page') || 'Попробуйте обновить страницу'}</p>
           </div>
         </div>
       </div>
@@ -139,15 +141,16 @@ export default function ManagementPage() {
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-[#213659] mb-4 flex items-center justify-space-between gap-3">
           <Users className="w-8 h-8" />
-          РУКОВОДСТВО ГОСУДАРСТВЕННОГО ПРЕДПРИЯТИЯ «БЕЛАЭРОНАВИГАЦИЯ»        </h1>
+          {t('management_title') || 'РУКОВОДСТВО ГОСУДАРСТВЕННОГО ПРЕДПРИЯТИЯ «БЕЛАЭРОНАВИГАЦИЯ»'}
+        </h1>
 
       </div>
 
       {!managers?.managers?.length ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
           <Users className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-          <p className="text-gray-600 text-lg">Информация о руководителях отсутствует</p>
-          <p className="text-gray-500 text-sm">Данные будут добавлены в ближайшее время</p>
+          <p className="text-gray-600 text-lg">{t('no_managers_info') || 'Информация о руководителях отсутствует'}</p>
+          <p className="text-gray-500 text-sm">{t('data_will_be_added') || 'Данные будут добавлены в ближайшее время'}</p>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -177,8 +180,12 @@ export default function ManagementPage() {
                       <Users className="w-16 h-16 md:w-20 md:h-20 text-white" />
                     </div>
                   )}
-                  <h3 className="text-xl font-bold text-[#213659] mb-1">{manager.name}</h3>
-                  <p className="text-[#6A81A9] font-medium">{manager.position}</p>
+                  <h3 className="text-xl font-bold text-[#213659] mb-1">
+                    {getTranslatedField(manager, 'name', language) || manager.name}
+                  </h3>
+                  <p className="text-[#6A81A9] font-medium">
+                    {getTranslatedField(manager, 'position', language) || manager.position}
+                  </p>
                 </div>
 
                 <div className="space-y-3">
@@ -190,14 +197,18 @@ export default function ManagementPage() {
                   {manager.offices && (
                     <div className="flex items-center gap-3">
                       <MapPin className="w-5 h-5 text-[#213659]" />
-                      <span className="text-gray-700">Кабинеты: {manager.offices}</span>
+                      <span className="text-gray-700">
+                        {language === 'en' ? 'Offices: ' : language === 'be' ? 'Кабінеты: ' : 'Кабинеты: '}
+                        {getTranslatedField(manager, 'offices', language) || manager.offices}
+                      </span>
                     </div>
                   )}
 
                   <div className="flex items-center gap-3">
                     <Clock className="w-5 h-5 text-[#213659]" />
                     <span className="text-gray-700">
-                      Расписание приема: {getTranslatedField(manager, 'receptionSchedule', language)}
+                      {language === 'en' ? 'Reception schedule: ' : language === 'be' ? 'Расклад прыёму: ' : 'Расписание приема: '}
+                      {getTranslatedField(manager, 'receptionSchedule', language) || manager.receptionSchedule}
                     </span>
                   </div>
                 </div>
@@ -212,7 +223,9 @@ export default function ManagementPage() {
                     className="w-full flex items-center justify-center gap-2 bg-[#213659] text-white hover:bg-[#1a2a4a] border-[#213659]"
                   >
                     <UserPlus className="w-4 h-4" />
-                    {selectedManagerForBooking === manager.id ? 'Скрыть запись' : 'Записаться на прием'}
+                    {selectedManagerForBooking === manager.id 
+                      ? (t('hide_booking') || 'Скрыть запись')
+                      : (t('book_appointment') || 'Записаться на прием')}
                   </Button>
                 </div>
 
@@ -257,9 +270,9 @@ export default function ManagementPage() {
       <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
         <DialogContent className="max-w-md bg-white">
           <DialogHeader>
-            <DialogTitle>Запись на прием</DialogTitle>
+            <DialogTitle>{t('booking_appointment') || 'Запись на прием'}</DialogTitle>
             <DialogDescription>
-              Заполните форму для записи на прием к руководителю
+              {t('fill_booking_form') || 'Заполните форму для записи на прием к руководителю'}
             </DialogDescription>
           </DialogHeader>
           
@@ -267,18 +280,18 @@ export default function ManagementPage() {
             {selectedSlot && (
               <div className="bg-blue-50 p-3 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  <strong>Выбранное время:</strong> {formatDate(selectedSlot.date)} в {formatTime(selectedSlot.startTime)}
+                  <strong>{t('selected_time') || 'Выбранное время'}:</strong> {formatDate(selectedSlot.date)} {language === 'en' ? 'at' : language === 'be' ? 'у' : 'в'} {formatTime(selectedSlot.startTime)}
                 </p>
               </div>
             )}
             
             <div>
-              <Label htmlFor="fullName" className="text-[#213659] font-medium">ФИО *</Label>
+              <Label htmlFor="fullName" className="text-[#213659] font-medium">{t('full_name') || 'ФИО'} *</Label>
               <Input
                 id="fullName"
                 value={bookingForm.fullName}
                 onChange={(e) => setBookingForm({ ...bookingForm, fullName: e.target.value })}
-                placeholder="Введите ваше полное имя"
+                placeholder={t('enter_full_name') || 'Введите ваше полное имя'}
                 className="bg-white border-[#B1D1E0] focus:border-[#213659]"
                 required
               />
@@ -291,19 +304,19 @@ export default function ManagementPage() {
                 type="email"
                 value={bookingForm.email}
                 onChange={(e) => setBookingForm({ ...bookingForm, email: e.target.value })}
-                placeholder="Введите ваш email"
+                placeholder={t('enter_email') || 'Введите ваш email'}
                 className="bg-white border-[#B1D1E0] focus:border-[#213659]"
                 required
               />
             </div>
             
             <div>
-              <Label htmlFor="notes" className="text-[#213659] font-medium">Дополнительная информация</Label>
+              <Label htmlFor="notes" className="text-[#213659] font-medium">{t('additional_info') || 'Дополнительная информация'}</Label>
               <Input
                 id="notes"
                 value={bookingForm.notes}
                 onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
-                placeholder="Опишите цель визита (необязательно)"
+                placeholder={t('describe_visit_purpose') || 'Опишите цель визита (необязательно)'}
                 className="bg-white border-[#B1D1E0] focus:border-[#213659]"
               />
             </div>
@@ -311,7 +324,7 @@ export default function ManagementPage() {
 
           <div className="flex justify-end gap-3 pt-4 border-t">
             <Button variant="outline" onClick={() => setIsBookingDialogOpen(false)}>
-              Отмена
+              {t('cancel') || 'Отмена'}
             </Button>
             <Button 
               onClick={handleBookingSubmit}
@@ -319,7 +332,7 @@ export default function ManagementPage() {
               className="bg-[#213659] hover:bg-[#213659] text-white"
             >
               <Check className="w-4 h-4 mr-2" />
-              Записаться
+              {t('book') || 'Записаться'}
             </Button>
           </div>
         </DialogContent>
@@ -338,6 +351,7 @@ function ManagerBookingSection({
   onBookAppointment: (slot: any, manager: Management, refetchFn?: () => void) => void;
   refetchSlots?: () => void;
 }) {
+  const { language, t } = useLanguage();
   // Получаем доступные слоты для этого руководителя
   const { data: availableSlots, isLoading: slotsLoading, refetch: refetchSlotsQuery } = useGetSlotsByManagerQuery({
     managementId: manager.id,
@@ -349,14 +363,16 @@ function ManagerBookingSection({
   const refetchFn = refetchSlots || refetchSlotsQuery;
 
   const formatTime = (timeString: string) => {
-    return new Date(timeString).toLocaleTimeString('ru-RU', {
+    const locale = language === 'en' ? 'en-US' : language === 'be' ? 'be-BY' : 'ru-RU';
+    return new Date(timeString).toLocaleTimeString(locale, {
       hour: '2-digit',
       minute: '2-digit'
     });
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ru-RU', {
+    const locale = language === 'en' ? 'en-US' : language === 'be' ? 'be-BY' : 'ru-RU';
+    return new Date(dateString).toLocaleDateString(locale, {
       day: 'numeric',
       month: 'short'
     });
@@ -369,13 +385,13 @@ function ManagerBookingSection({
     <div className="mt-4 pt-4 border-t border-gray-200">
       <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
         <Calendar className="w-4 h-4" />
-        Слоты для записи
+        {t('booking_slots') || 'Слоты для записи'}
       </h4>
       
       {slotsLoading ? (
         <div className="text-center py-4">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#213659] mx-auto mb-2"></div>
-          <p className="text-sm text-gray-600">Загрузка расписания...</p>
+          <p className="text-sm text-gray-600">{t('loading_schedule') || 'Загрузка расписания...'}</p>
         </div>
       ) : allSlots.length > 0 ? (
         <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -398,12 +414,12 @@ function ManagerBookingSection({
                   <span className="text-gray-600">{formatTime(slot.startTime)}</span>
                   {isBooked && (
                     <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
-                      Занято
+                      {t('booked') || 'Занято'}
                     </span>
                   )}
                   {!isAvailable && !isBooked && (
                     <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">
-                      Недоступен
+                      {t('unavailable') || 'Недоступен'}
                     </span>
                   )}
                 </div>
@@ -418,7 +434,7 @@ function ManagerBookingSection({
                   }`}
                 >
                   <UserPlus className="w-3 h-3 mr-1" />
-                  {isBooked ? 'Занято' : !isAvailable ? 'Недоступен' : 'Записаться'}
+                  {isBooked ? (t('booked') || 'Занято') : !isAvailable ? (t('unavailable') || 'Недоступен') : (t('book') || 'Записаться')}
                 </Button>
               </div>
             );
@@ -427,8 +443,8 @@ function ManagerBookingSection({
       ) : (
         <div className="text-center py-6 text-gray-500">
           <Calendar className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-          <p className="text-sm">Нет доступных слотов для записи</p>
-          <p className="text-xs mt-1">Обратитесь к администратору для настройки расписания</p>
+          <p className="text-sm">{t('no_available_slots') || 'Нет доступных слотов для записи'}</p>
+          <p className="text-xs mt-1">{t('contact_administrator') || 'Обратитесь к администратору для настройки расписания'}</p>
         </div>
       )}
     </div>

@@ -9,7 +9,12 @@ import { getTranslatedField } from '../utils/translationHelpers';
 
 export default function BranchesPage() {
   const { language } = useLanguage();
-  const { data: branchesResponse, isLoading, error } = useGetAllBranchesQuery();
+  const { data: branchesResponse, isLoading, error, refetch } = useGetAllBranchesQuery(undefined, {
+    // Принудительно обновляем при монтировании
+    refetchOnMountOrArgChange: true,
+    // Не используем кэш, если была ошибка
+    skip: false,
+  });
 
   if (isLoading) {
     return (

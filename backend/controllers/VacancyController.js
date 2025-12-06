@@ -88,7 +88,35 @@ const VacancyController = {
 
             const vacancies = await prisma.vacancy.findMany({
                 where,
-                include: {
+                select: {
+                    id: true,
+                    title: true,
+                    titleEn: true,
+                    titleBe: true,
+                    description: true,
+                    descriptionEn: true,
+                    descriptionBe: true,
+                    requirements: true,
+                    requirementsEn: true,
+                    requirementsBe: true,
+                    conditions: true,
+                    conditionsEn: true,
+                    conditionsBe: true,
+                    salary: true,
+                    salaryEn: true,
+                    salaryBe: true,
+                    location: true,
+                    locationEn: true,
+                    locationBe: true,
+                    employmentType: true,
+                    employmentTypeEn: true,
+                    employmentTypeBe: true,
+                    content: true,
+                    images: true,
+                    files: true,
+                    isActive: true,
+                    createdAt: true,
+                    updatedAt: true,
                     applications: {
                         select: {
                             id: true,

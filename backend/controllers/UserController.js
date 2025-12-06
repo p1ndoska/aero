@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const jdenticon = require('jdenticon');
 const fs = require('fs');
 const path = require('path');
+const { checkPasswordExpiry } = require('../utils/passwordValidator');
 
 const UserController = {
     login: async (req, res) => {
@@ -28,6 +29,83 @@ const UserController = {
                 return res.status(400).json({ error: "Неверные данные" });
             }
 
+            // Проверяем необходимость смены пароля
+            let mustChangePassword = user.mustChangePassword || false;
+            
+            // Проверяем срок жизни пароля
+            const passwordExpiry = checkPasswordExpiry(user.passwordChangedAt, user.role?.name);
+            const passwordExpired = passwordExpiry.expired;
+
+            // Если пароль истек, устанавливаем флаг mustChangePassword в базе данных
+            if (passwordExpired && !mustChangePassword) {
+                await prisma.user.update({
+                    where: { id: user.id },
+                    data: { mustChangePassword: true }
+                });
+                mustChangePassword = true;
+            }
+
+            // Если пароль истек или требуется смена при первом входе
+            if (mustChangePassword || passwordExpired) {
+                const token = jwt.sign(
+                    { userId: user.id, role: user.role?.name, mustChangePassword: true },
+                    process.env.SECRET_KEY,
+                    { expiresIn: "1h" } // Короткий срок для принудительной смены пароля
+                );
+
+                // Обновляем пользователя, чтобы вернуть актуальные данные
+                const updatedUser = await prisma.user.findUnique({
+                    where: { id: user.id },
+                    select: {
+                        id: true,
+                        email: true,
+                        firstName: true,
+                        lastName: true,
+                        middleName: true,
+                        phone: true,
+                        avatar: true,
+                        birthDate: true,
+                        gender: true,
+                        address: true,
+                        position: true,
+                        department: true,
+                        bio: true,
+                        preferences: true,
+                        isEmailVerified: true,
+                        isActive: true,
+                        lastLoginAt: true,
+                        createdAt: true,
+                        updatedAt: true,
+                        passwordChangedAt: true,
+                        mustChangePassword: true,
+                        role: {
+                            select: {
+                                id: true,
+                                name: true
+                            }
+                        }
+                    }
+                });
+
+                const { password: _, ...userData } = updatedUser || user;
+                return res.status(200).json({
+                    message: mustChangePassword 
+                        ? "Требуется смена пароля при первом входе" 
+                        : "Срок действия пароля истек. Требуется смена пароля",
+                    token,
+                    user: userData,
+                    mustChangePassword: true,
+                    passwordExpired: passwordExpired,
+                    daysRemaining: passwordExpired ? 0 : passwordExpiry.daysRemaining
+                });
+            }
+
+            // Обновляем время последнего входа
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { lastLoginAt: new Date() }
+            });
+
             const token = jwt.sign(
                 { userId: user.id, role: user.role?.name },
                 process.env.SECRET_KEY,
@@ -41,6 +119,9 @@ const UserController = {
                 message: "Успешный вход",
                 token,
                 user: userData,
+                mustChangePassword: false,
+                passwordExpired: false,
+                daysRemaining: passwordExpiry.daysRemaining
             });
         } catch (error) {
             console.error("login error", error);

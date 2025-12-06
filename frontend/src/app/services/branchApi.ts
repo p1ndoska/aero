@@ -12,11 +12,13 @@ export const branchApi = api.injectEndpoints({
     // Получить все филиалы
     getAllBranches: builder.query<BranchResponse, void>({
       query: () => "/branch",
+      providesTags: ['Branch'],
     }),
 
     // Получить филиал по ID
     getBranchById: builder.query<SingleBranchResponse, number>({
       query: (id) => `/branch/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Branch', id }],
     }),
 
     // Создать новый филиал
