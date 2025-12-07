@@ -8,7 +8,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { getTranslatedField } from '../utils/translationHelpers';
 
 export default function BranchesPage() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { data: branchesResponse, isLoading, error, refetch } = useGetAllBranchesQuery(undefined, {
     // Принудительно обновляем при монтировании
     refetchOnMountOrArgChange: true,
@@ -21,7 +21,7 @@ export default function BranchesPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#213659] mx-auto mb-4"></div>
-          <p className="text-gray-600">Загрузка информации о филиалах...</p>
+          <p className="text-gray-600">{t('loading_branches') || 'Загрузка информации о филиалах...'}</p>
         </div>
       </div>
     );
@@ -31,8 +31,8 @@ export default function BranchesPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12 text-red-600">
-          <p>Ошибка загрузки данных о филиалах.</p>
-          <p>Пожалуйста, попробуйте еще раз позже.</p>
+          <p>{t('error_loading_branches') || 'Ошибка загрузки данных о филиалах.'}</p>
+          <p>{t('please_try_again_later') || 'Пожалуйста, попробуйте еще раз позже.'}</p>
         </div>
       </div>
     );
@@ -45,15 +45,15 @@ export default function BranchesPage() {
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-[#213659] mb-2 flex items-center justify-center gap-3">
           <Building2 className="w-8 h-8" />
-            Структурные подразделения
+            {t('structural_units') || 'Структурные подразделения'}
         </h1>
       </div>
 
       {!branches.length ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
           <Building2 className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-          <p className="text-gray-600 text-lg">Филиалы не найдены</p>
-          <p className="text-gray-500 text-sm">Данные будут добавлены в ближайшее время</p>
+          <p className="text-gray-600 text-lg">{t('branches_not_found') || 'Филиалы не найдены'}</p>
+          <p className="text-gray-500 text-sm">{t('data_will_be_added_soon') || 'Данные будут добавлены в ближайшее время'}</p>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

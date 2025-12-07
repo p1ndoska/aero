@@ -8,7 +8,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { getTranslatedField } from '../utils/translationHelpers';
 
 export default function BranchDetailsPage() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { id } = useParams();
   const numericId = Number(id);
   const { data, isLoading, error } = useGetBranchByIdQuery(numericId, { skip: isNaN(numericId) });
@@ -115,7 +115,7 @@ export default function BranchDetailsPage() {
   if (isNaN(numericId)) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <p className="text-red-600">Неверный идентификатор филиала</p>
+        <p className="text-red-600">{t('invalid_branch_id') || 'Неверный идентификатор филиала'}</p>
       </div>
     );
   }
@@ -125,7 +125,7 @@ export default function BranchDetailsPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#213659] mx-auto mb-4"></div>
-          <p className="text-gray-600">Загрузка информации о филиале...</p>
+          <p className="text-gray-600">{t('loading_branch') || 'Загрузка информации о филиале...'}</p>
         </div>
       </div>
     );
@@ -134,7 +134,7 @@ export default function BranchDetailsPage() {
   if (error || !data?.branch) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <p className="text-red-600">Не удалось загрузить данные о филиале</p>
+        <p className="text-red-600">{t('error_loading_branch') || 'Не удалось загрузить данные о филиале'}</p>
       </div>
     );
   }
@@ -151,7 +151,7 @@ export default function BranchDetailsPage() {
       <div className="mb-6 flex items-center justify-between">
         <Link to="/about/branches" className="text-[#213659] flex items-center gap-2 hover:underline">
           <ArrowLeft className="w-4 h-4" />
-          Назад к списку
+          {t('back_to_list') || 'Назад к списку'}
         </Link>
       </div>
 
@@ -205,7 +205,7 @@ export default function BranchDetailsPage() {
             <div className="md:col-span-2">
               <div className="flex items-start gap-3 mb-2">
                 <Phone className="w-5 h-5 text-[#213659] flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700 font-medium">Контактные телефоны:</span>
+                <span className="text-gray-700 font-medium">{t('contact_phones') || 'Контактные телефоны:'}</span>
               </div>
               <div className="pl-8 space-y-1">
                 {phones.map((p, idx) => (
@@ -227,21 +227,26 @@ export default function BranchDetailsPage() {
         </div>
 
         {/* Описание */}
-        {branch.description && (
-          <div className="mb-8">
-            <h3 className="text-xl font-bold text-[#213659] mb-4">Описание</h3>
-            <p className="text-gray-700 leading-relaxed">{branch.description}</p>
-          </div>
-        )}
+        {(() => {
+          const translatedDescription = getTranslatedField(branch, 'description', language);
+          return translatedDescription && (
+            <div className="mb-8">
+              <h3 className="text-xl font-bold text-[#213659] mb-4">{t('description') || 'Описание'}</h3>
+              <p className="text-gray-700 leading-relaxed">{translatedDescription}</p>
+            </div>
+          );
+        })()}
 
         {/* Контент из конструктора */}
-        {branch.content && (
-          <div className="mb-8 branch-content-container">
-            <h3 className="text-xl font-bold text-[#213659] mb-4">Дополнительная информация</h3>
-            <div className="space-y-4">
-              {(() => {
-                try {
-                  const content = typeof branch.content === 'string' ? JSON.parse(branch.content) : branch.content;
+        {(() => {
+          const translatedContent = getTranslatedField(branch, 'content', language);
+          return translatedContent && (
+            <div className="mb-8 branch-content-container">
+              <h3 className="text-xl font-bold text-[#213659] mb-4">{t('additional_information') || 'Дополнительная информация'}</h3>
+              <div className="space-y-4">
+                {(() => {
+                  try {
+                    const content = typeof translatedContent === 'string' ? JSON.parse(translatedContent) : translatedContent;
                   console.log('Branch content:', content);
                   if (Array.isArray(content)) {
                     return content.map((element: any, index: number) => {
@@ -306,7 +311,7 @@ export default function BranchDetailsPage() {
                             <div key={index} className="flex justify-center mb-4">
                               <img
                                 src={`${BASE_URL}${element.props?.src?.startsWith('/') ? '' : '/'}${element.props?.src}`}
-                                alt={element.props?.alt || 'Изображение'}
+                                alt={element.props?.alt || (t('image') || 'Изображение')}
                                 className="max-w-full h-auto rounded-lg border branch-content-image"
                                 onError={(e) => {
                                   console.error('❌ Ошибка загрузки изображения в контенте:', element.props?.src);
@@ -326,18 +331,19 @@ export default function BranchDetailsPage() {
                   return null;
                 } catch (error) {
                   console.error('Ошибка парсинга контента:', error);
-                  return <p className="text-gray-500">Ошибка загрузки контента</p>;
+                  return <p className="text-gray-500">{t('error_loading_content') || 'Ошибка загрузки контента'}</p>;
                 }
               })()}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Карта расположения */}
         <div className="mt-8 pt-8 border-t border-gray-200 branch-map-container">
           <h3 className="text-xl font-bold text-[#213659] mb-4 flex items-center gap-2">
             <Navigation className="w-5 h-5" />
-            Расположение на карте
+            {t('location_on_map') || 'Расположение на карте'}
           </h3>
           {getTranslatedField(branch, 'address', language) ? (
             <div className="branch-map-container">
@@ -353,8 +359,8 @@ export default function BranchDetailsPage() {
             <div className="bg-gray-100 rounded-lg p-4 h-96 flex items-center justify-center border-2 border-dashed border-gray-300">
               <div className="text-center">
                 <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-600 font-medium">Адрес не указан</p>
-                <p className="text-gray-500 text-sm mt-1">Для отображения карты необходимо указать адрес</p>
+                <p className="text-gray-600 font-medium">{t('address_not_specified') || 'Адрес не указан'}</p>
+                <p className="text-gray-500 text-sm mt-1">{t('address_required_for_map') || 'Для отображения карты необходимо указать адрес'}</p>
               </div>
             </div>
           )}
@@ -363,7 +369,7 @@ export default function BranchDetailsPage() {
         {/* Дополнительные фото */}
         {additionalImages.length > 0 && (
           <div className="mt-8 pt-8 border-t border-gray-200">
-            <h3 className="text-xl font-bold text-[#213659] mb-4">Дополнительные фото</h3>
+            <h3 className="text-xl font-bold text-[#213659] mb-4">{t('additional_photos') || 'Дополнительные фото'}</h3>
             <div className="relative">
               {/* Стрелка влево */}
               <button

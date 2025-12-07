@@ -7,7 +7,7 @@ import { getTranslatedField } from '../utils/translationHelpers';
 import { BASE_URL } from '@/constants';
 
 export default function BranchesCarousel() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { data: branchesResponse, isLoading, error } = useGetAllBranchesQuery();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
@@ -73,7 +73,7 @@ export default function BranchesCarousel() {
       <div className="flex-1 bg-white/90 backdrop-blur-sm rounded-2xl shadow-md flex items-center justify-center min-h-[100px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#213659] mx-auto mb-2"></div>
-          <p className="text-gray-600 text-sm">Загрузка филиалов...</p>
+          <p className="text-gray-600 text-sm">{t('loading_branches') || 'Загрузка филиалов...'}</p>
         </div>
       </div>
     );
@@ -85,9 +85,9 @@ export default function BranchesCarousel() {
         <div className="text-center">
           <div className="w-8 h-8 mx-auto mb-2 rounded bg-gray-200" />
           <p className="text-gray-600 text-sm">
-            {language === 'en' ? 'No branches available' : 
+            {t('branches_not_available') || (language === 'en' ? 'No branches available' : 
              language === 'be' ? 'Філіялы не даступныя' : 
-             'Филиалы недоступны'}
+             'Филиалы недоступны')}
           </p>
         </div>
       </div>
@@ -98,9 +98,9 @@ export default function BranchesCarousel() {
     <div className="flex-1 bg-white/90 backdrop-blur-sm rounded-2xl shadow-md p-4 min-h-[100px]">
       <div className="flex items-center justify-center mb-3">
         <h3 className="text-lg font-semibold text-gray-800 text-center">
-          {language === 'en' ? 'Our Branches' : 
+          {t('branches') || (language === 'en' ? 'Our Branches' : 
            language === 'be' ? 'Нашы філіялы' : 
-           'Наши филиалы'}
+           'Наши филиалы')}
         </h3>
       </div>
 
