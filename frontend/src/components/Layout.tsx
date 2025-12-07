@@ -6,6 +6,7 @@ import { ToastContainer } from "react-toastify";
 import CookieConsent from "./CookieConsent";
 import Footer from "./Footer";
 import { ForcePasswordChangeModal } from "./ForcePasswordChangeModal";
+import { InventAIChat } from "./InventAIChat";
 import { useSelector } from "react-redux";
 
 
@@ -67,6 +68,9 @@ export const Layout = () => {
             
             {/* Модальное окно принудительной смены пароля */}
             {mustChangePassword && <ForcePasswordChangeModal isOpen={true} />}
+            
+            {/* Invent AI Chat Widget */}
+            <InventAIChat />
         </div>
 
     );

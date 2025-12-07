@@ -3,9 +3,14 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const {UserController, AdminController, NewsController, CategoryController, RoleController, ManagementController, IncidentReportController, BranchController, VacancyController, VacancyPageContentController, HistoryPageContentController, AboutCompanyPageContentController, SecurityPolicyPageContentController, SocialWorkPageContentController, OrganizationLogoController, SocialWorkCategoryController, AboutCompanyCategoryController, AeronauticalInfoCategoryController, AppealsCategoryController, ServicesCategoryController, ReceptionSlotController, UserProfileController, AeronauticalInfoPageContentController, AppealsPageContentController, ServicesPageContentController, ServiceRequestController} = require("../controllers");
+const {UserController, AdminController, NewsController, CategoryController, RoleController, ManagementController, IncidentReportController, BranchController, VacancyController, VacancyPageContentController, HistoryPageContentController, AboutCompanyPageContentController, SecurityPolicyPageContentController, SocialWorkPageContentController, OrganizationLogoController, SocialWorkCategoryController, AboutCompanyCategoryController, AeronauticalInfoCategoryController, AppealsCategoryController, ServicesCategoryController, ReceptionSlotController, UserProfileController, AeronauticalInfoPageContentController, AppealsPageContentController, ServicesPageContentController, ServiceRequestController, StatisticsController} = require("../controllers");
 const {authenticationToken} = require("../middleware/auth");
 const checkRole = require('../middleware/checkRole');
+
+// Проверка загрузки StatisticsController
+if (!StatisticsController || typeof StatisticsController.getStatistics !== 'function') {
+    console.error('ERROR: StatisticsController is not properly loaded!');
+}
 
 // Настройка multer для загрузки файлов
 const storage = multer.diskStorage({
@@ -388,6 +393,9 @@ router.get('/service-requests/:id', authenticationToken, checkRole(['SUPER_ADMIN
 router.put('/service-requests/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServiceRequestController.updateServiceRequest);
 router.delete('/service-requests/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServiceRequestController.deleteServiceRequest);
 router.get('/service-requests-stats', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServiceRequestController.getServiceRequestStats);
+
+// Статистика - только для SUPER_ADMIN
+router.get('/statistics', authenticationToken, checkRole(['SUPER_ADMIN']), StatisticsController.getStatistics);
 
 //questionnaire routes
 router.use('/questionnaire', require('./questionnaire'));

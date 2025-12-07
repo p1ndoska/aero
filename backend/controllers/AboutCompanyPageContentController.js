@@ -161,6 +161,9 @@ const AboutCompanyPageContentController = {
             const { pageType } = req.params;
             const { title, subtitle, content, titleEn, titleBe, subtitleEn, subtitleBe, contentEn, contentBe } = req.body;
 
+            console.log('Update request for pageType:', pageType);
+            console.log('Update data:', JSON.stringify({ title, subtitle, content, titleEn, titleBe, subtitleEn, subtitleBe, contentEn, contentBe }, null, 2));
+
             // Проверяем, существует ли запись с таким pageType
             const existingContent = await prisma.aboutCompanyPageContent.findUnique({
                 where: { pageType }
@@ -168,42 +171,50 @@ const AboutCompanyPageContentController = {
 
             if (existingContent) {
                 // Обновляем существующую запись
+                // Используем явные проверки на undefined, чтобы разрешить пустые строки и пустые массивы
+                const updateData = {};
+                
+                if (title !== undefined) updateData.title = title;
+                if (titleEn !== undefined) updateData.titleEn = titleEn;
+                if (titleBe !== undefined) updateData.titleBe = titleBe;
+                if (subtitle !== undefined) updateData.subtitle = subtitle;
+                if (subtitleEn !== undefined) updateData.subtitleEn = subtitleEn;
+                if (subtitleBe !== undefined) updateData.subtitleBe = subtitleBe;
+                if (content !== undefined) updateData.content = content;
+                if (contentEn !== undefined) updateData.contentEn = contentEn;
+                if (contentBe !== undefined) updateData.contentBe = contentBe;
+                
+                console.log('Updating with data:', JSON.stringify(updateData, null, 2));
+                
                 const updatedContent = await prisma.aboutCompanyPageContent.update({
                     where: { pageType },
-                    data: {
-                        title: title || existingContent.title,
-                        titleEn: titleEn || existingContent.titleEn,
-                        titleBe: titleBe || existingContent.titleBe,
-                        subtitle: subtitle !== undefined ? subtitle : existingContent.subtitle,
-                        subtitleEn: subtitleEn !== undefined ? subtitleEn : existingContent.subtitleEn,
-                        subtitleBe: subtitleBe !== undefined ? subtitleBe : existingContent.subtitleBe,
-                        content: content !== undefined ? content : existingContent.content,
-                        contentEn: contentEn !== undefined ? contentEn : existingContent.contentEn,
-                        contentBe: contentBe !== undefined ? contentBe : existingContent.contentBe,
-                    }
+                    data: updateData
                 });
+                
+                console.log('Updated content:', JSON.stringify(updatedContent, null, 2));
                 res.json(updatedContent);
             } else {
                 // Создаем новую запись
                 const newContent = await prisma.aboutCompanyPageContent.create({
                     data: {
                         pageType,
-                        title: title || 'О предприятии',
-                        titleEn: titleEn || 'About the Company',
-                        titleBe: titleBe || 'Пра прадпрыемстве',
-                        subtitle: subtitle || '',
-                        subtitleEn: subtitleEn || '',
-                        subtitleBe: subtitleBe || '',
-                        content: content || [],
-                        contentEn: contentEn || [],
-                        contentBe: contentBe || [],
+                        title: title !== undefined ? title : 'О предприятии',
+                        titleEn: titleEn !== undefined ? titleEn : 'About the Company',
+                        titleBe: titleBe !== undefined ? titleBe : 'Пра прадпрыемстве',
+                        subtitle: subtitle !== undefined ? subtitle : '',
+                        subtitleEn: subtitleEn !== undefined ? subtitleEn : '',
+                        subtitleBe: subtitleBe !== undefined ? subtitleBe : '',
+                        content: content !== undefined ? content : [],
+                        contentEn: contentEn !== undefined ? contentEn : [],
+                        contentBe: contentBe !== undefined ? contentBe : [],
                     }
                 });
+                console.log('Created new content:', JSON.stringify(newContent, null, 2));
                 res.json(newContent);
             }
         } catch (error) {
             console.error('Error updating about company page content by pageType:', error);
-            res.status(500).json({ error: 'Internal server error' });
+            res.status(500).json({ error: 'Internal server error', details: error.message });
         }
     },
 

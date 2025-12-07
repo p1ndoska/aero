@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Edit, Trash2, Plus, Save, FolderOpen, Users, Building2, Newspaper, UserCheck, Briefcase, Building, Heart, Info, Plane, Mail, Settings, Image as ImageIcon, Calendar } from "lucide-react";
+import { Edit, Trash2, Plus, Save, FolderOpen, Users, Building2, Newspaper, UserCheck, Briefcase, Building, Heart, Info, Plane, Mail, Settings, Image as ImageIcon, Calendar, BarChart3 } from "lucide-react";
 import { getRolePermissions } from "@/utils/roleUtils";
 import { useGetRolesQuery, useCreateRoleMutation, useUpdateRoleMutation, useDeleteRoleMutation } from "@/app/services/roleApi";
 import { useGetAllUsersQuery, useUpdateUserMutation, useDeleteUserMutation, useRegisterMutation } from "@/app/services/userApi";
@@ -25,6 +25,7 @@ import ServicesCategoryManagement from "./ServicesCategoryManagement";
 import ServiceRequestManagement from "./ServiceRequestManagement";
 import HeroImageManagement from "./HeroImageManagement";
 import ReceptionBookingsCalendar from "./ReceptionBookingsCalendar";
+import StatisticsPanel from "./StatisticsPanel";
 
 // lightweight hooks wrapper, since userApi doesn't export getAllUsers and updateUser hooks in current file
 // We'll implement a tiny adapter in /components/admin/hooks/useUsersApi.ts
@@ -42,7 +43,8 @@ export default function SuperAdminDashboard() {
 
     // Определяем первую доступную вкладку
     const getFirstAvailableTab = () => {
-        if (permissions.canManageRoles) return 'roles';
+        // Статистика доступна только SUPER_ADMIN (первая вкладка по умолчанию)
+        if (permissions.canManageRoles) return 'statistics';
         if (permissions.canManageUsers) return 'users';
         if (permissions.canManageNews) return 'categories';
         if (permissions.canManageBranches) return 'branches';
@@ -58,7 +60,7 @@ export default function SuperAdminDashboard() {
         return 'roles';
     };
 
-    const [activeTab, setActiveTab] = useState<'roles' | 'users' | 'categories' | 'branches' | 'news' | 'management' | 'vacancies' | 'logos' | 'social-categories' | 'about-company-categories' | 'aeronautical-info-categories' | 'appeals-categories' | 'services-categories' | 'service-requests' | 'hero-image' | 'reception-bookings'>(getFirstAvailableTab());
+    const [activeTab, setActiveTab] = useState<'roles' | 'users' | 'categories' | 'branches' | 'news' | 'management' | 'vacancies' | 'logos' | 'social-categories' | 'about-company-categories' | 'aeronautical-info-categories' | 'appeals-categories' | 'services-categories' | 'service-requests' | 'hero-image' | 'reception-bookings' | 'statistics'>(getFirstAvailableTab());
 
     // Принудительное обновление данных при переключении на вкладку логотипов
     useEffect(() => {
@@ -82,6 +84,25 @@ export default function SuperAdminDashboard() {
         <div className="container mx-auto px-4 py-8 space-y-8">
                    {/* Навигационные кнопки в виде закругленных белых квадратов */}
                    <div className="grid grid-cols-2 md:grid-cols-7 gap-4 mb-8">
+                       {/* Статистика - только SUPER_ADMIN */}
+                       {permissions.canManageRoles && (
+                           <div 
+                               className={`bg-white rounded-xl p-6 cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl border-2 ${
+                                   activeTab === 'statistics' 
+                                       ? 'border-[#2A52BE] bg-[#E8F0FF]' 
+                                   : 'border-gray-200 hover:border-[#2A52BE]'
+                               }`}
+                               onClick={() => setActiveTab('statistics')}
+                           >
+                               <div className="text-center">
+                                   <BarChart3 className={`w-8 h-8 mx-auto mb-3 ${activeTab === 'statistics' ? 'text-[#213659]' : 'text-[#213659]'}`} />
+                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                       Статистика
+                                   </h3>
+                               </div>
+                           </div>
+                       )}
+
                        {/* Управление ролями - только SUPER_ADMIN */}
                        {permissions.canManageRoles && (
                 <div 
@@ -389,6 +410,7 @@ export default function SuperAdminDashboard() {
 
             {/* Контент вкладок */}
             <div className="bg-white rounded-xl p-6 shadow-lg">
+                {activeTab === 'statistics' && permissions.canManageRoles && <StatisticsPanel />}
                 {activeTab === 'roles' && permissions.canManageRoles && <RolesPanel />}
                 {activeTab === 'users' && permissions.canManageUsers && <UsersPanel />}
                 {activeTab === 'categories' && permissions.canManageNews && <CategoriesAdminPage />}

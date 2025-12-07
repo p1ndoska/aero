@@ -51,6 +51,6 @@ export const api = createApi({
     refetchOnMountOrArgChange: true,
     refetchOnFocus: true,
     refetchOnReconnect: true,
-           tagTypes: ['HistoryPageContent', 'News', 'Category', 'User', 'Management', 'Branch', 'Vacancy', 'SocialWorkCategory', 'AboutCompanyCategory', 'AeronauticalInfoCategory', 'AppealsCategory', 'ServicesCategory', 'SocialWorkPageContent', 'AboutCompanyPageContent', 'SecurityPolicyPageContent', 'VacancyPageContent', 'OrganizationLogo', 'ReceptionSlot', 'Role', 'Roles', 'UserProfile', 'IncidentReport', 'AeronauticalInfoPageContent', 'AppealsPageContent', 'ServicesPageContent', 'ELTDocument', 'ELTInstruction'],
+           tagTypes: ['HistoryPageContent', 'News', 'Category', 'User', 'Management', 'Branch', 'Vacancy', 'SocialWorkCategory', 'AboutCompanyCategory', 'AeronauticalInfoCategory', 'AppealsCategory', 'ServicesCategory', 'SocialWorkPageContent', 'AboutCompanyPageContent', 'SecurityPolicyPageContent', 'VacancyPageContent', 'OrganizationLogo', 'ReceptionSlot', 'Role', 'Roles', 'UserProfile', 'IncidentReport', 'AeronauticalInfoPageContent', 'AppealsPageContent', 'ServicesPageContent', 'ELTDocument', 'ELTInstruction', 'Statistics'],
     endpoints: () => ({}),
 })

@@ -7,7 +7,7 @@ import { Building2, Settings, FileText, Plane, MessageSquare, Send, Upload } fro
 import { toast } from 'sonner';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getTranslatedField } from '../utils/translationHelpers';
-import ContentConstructor from './admin/ContentConstructor';
+import MultilingualContentEditor from './admin/MultilingualContentEditor';
 import ServiceRequestForm from './ServiceRequestForm';
 import ELTRegistrationForm from './ELTRegistrationForm';
 import ELTDeregistrationForm from './ELTDeregistrationForm';
@@ -74,9 +74,21 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
   const [showELTForm, setShowELTForm] = useState(false);
   const [showELTDeregistrationForm, setShowELTDeregistrationForm] = useState(false);
-  const [editableTitle, setEditableTitle] = useState('');
-  const [editableSubtitle, setEditableSubtitle] = useState('');
-  const [editableContent, setEditableContent] = useState<any[]>([]);
+  
+  // Состояния для русского языка
+  const [editableTitleRu, setEditableTitleRu] = useState('');
+  const [editableSubtitleRu, setEditableSubtitleRu] = useState('');
+  const [editableContentRu, setEditableContentRu] = useState<any[]>([]);
+  
+  // Состояния для английского языка
+  const [editableTitleEn, setEditableTitleEn] = useState('');
+  const [editableSubtitleEn, setEditableSubtitleEn] = useState('');
+  const [editableContentEn, setEditableContentEn] = useState<any[]>([]);
+  
+  // Состояния для белорусского языка
+  const [editableTitleBe, setEditableTitleBe] = useState('');
+  const [editableSubtitleBe, setEditableSubtitleBe] = useState('');
+  const [editableContentBe, setEditableContentBe] = useState<any[]>([]);
 
   // Вызываем все хуки на верхнем уровне (правило React Hooks)
   // Используем skip для условных запросов
@@ -265,7 +277,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
     const timeoutId = setTimeout(applyStyles, 100);
     
     return () => clearTimeout(timeoutId);
-  }, [editableContent]);
+  }, [editableContentRu, editableContentEn, editableContentBe]);
 
   // Получаем документ ELT, если это страница ELT
   const isELTPage = pageType === 'services' && urlPageType === 'elt-registration-services';
@@ -411,29 +423,72 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
 
   const handleOpenContentEditor = () => {
     if (content) {
-      const contentTitle = getTranslatedField(content, 'title', language);
-      // Если заголовок дефолтный "Услуги" и есть категория, используем название категории
-      if (pageType === 'services' && contentTitle === 'Услуги' && serviceCategory) {
-        setEditableTitle(getTranslatedField(serviceCategory, 'name', language));
-      } else if (pageType === 'about' && aboutCompanyCategory) {
-        // Для "О предприятии" используем название категории
-        setEditableTitle(getTranslatedField(aboutCompanyCategory, 'name', language) || contentTitle || defaultTitle);
-      } else {
-        setEditableTitle(contentTitle || defaultTitle);
+      // Загружаем данные для всех трех языков
+      setEditableTitleRu(content.title || '');
+      setEditableSubtitleRu(content.subtitle || '');
+      setEditableContentRu(Array.isArray(content.content) ? content.content : []);
+      
+      setEditableTitleEn(content.titleEn || '');
+      setEditableSubtitleEn(content.subtitleEn || '');
+      setEditableContentEn(Array.isArray(content.contentEn) ? content.contentEn : []);
+      
+      setEditableTitleBe(content.titleBe || '');
+      setEditableSubtitleBe(content.subtitleBe || '');
+      setEditableContentBe(Array.isArray(content.contentBe) ? content.contentBe : []);
+      
+      // Если заголовки пустые, используем название категории
+      if (!content.title && !content.titleEn && !content.titleBe) {
+        if (pageType === 'services' && serviceCategory) {
+          setEditableTitleRu(serviceCategory.name || '');
+          setEditableTitleEn(serviceCategory.nameEn || '');
+          setEditableTitleBe(serviceCategory.nameBe || '');
+        } else if (pageType === 'about' && aboutCompanyCategory) {
+          setEditableTitleRu(aboutCompanyCategory.name || '');
+          setEditableTitleEn(aboutCompanyCategory.nameEn || '');
+          setEditableTitleBe(aboutCompanyCategory.nameBe || '');
+        } else {
+          setEditableTitleRu(defaultTitle);
+        }
       }
-      setEditableSubtitle(getTranslatedField(content, 'subtitle', language) || '');
-      setEditableContent(getTranslatedField(content, 'content', language) || []);
+      
+      if (!content.subtitle && !content.subtitleEn && !content.subtitleBe) {
+        if (pageType === 'services' && serviceCategory) {
+          setEditableSubtitleRu(serviceCategory.description || '');
+          setEditableSubtitleEn(serviceCategory.descriptionEn || '');
+          setEditableSubtitleBe(serviceCategory.descriptionBe || '');
+        } else if (pageType === 'about' && aboutCompanyCategory) {
+          setEditableSubtitleRu(aboutCompanyCategory.description || '');
+          setEditableSubtitleEn(aboutCompanyCategory.descriptionEn || '');
+          setEditableSubtitleBe(aboutCompanyCategory.descriptionBe || '');
+        }
+      }
     } else {
       // Если контент не создан, используем название категории
       if (pageType === 'services' && serviceCategory) {
-        setEditableTitle(getTranslatedField(serviceCategory, 'name', language));
+        setEditableTitleRu(serviceCategory.name || '');
+        setEditableTitleEn(serviceCategory.nameEn || '');
+        setEditableTitleBe(serviceCategory.nameBe || '');
+        setEditableSubtitleRu(serviceCategory.description || '');
+        setEditableSubtitleEn(serviceCategory.descriptionEn || '');
+        setEditableSubtitleBe(serviceCategory.descriptionBe || '');
       } else if (pageType === 'about' && aboutCompanyCategory) {
-        setEditableTitle(getTranslatedField(aboutCompanyCategory, 'name', language));
+        setEditableTitleRu(aboutCompanyCategory.name || '');
+        setEditableTitleEn(aboutCompanyCategory.nameEn || '');
+        setEditableTitleBe(aboutCompanyCategory.nameBe || '');
+        setEditableSubtitleRu(aboutCompanyCategory.description || '');
+        setEditableSubtitleEn(aboutCompanyCategory.descriptionEn || '');
+        setEditableSubtitleBe(aboutCompanyCategory.descriptionBe || '');
       } else {
-        setEditableTitle(defaultTitle);
+        setEditableTitleRu(defaultTitle);
+        setEditableTitleEn('');
+        setEditableTitleBe('');
       }
-      setEditableSubtitle('');
-      setEditableContent([]);
+      setEditableSubtitleRu('');
+      setEditableSubtitleEn('');
+      setEditableSubtitleBe('');
+      setEditableContentRu([]);
+      setEditableContentEn([]);
+      setEditableContentBe([]);
     }
     setIsContentEditorOpen(true);
   };
@@ -446,43 +501,37 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
     try {
       const updateData: any = {
         pageType: urlPageType,
-        title: editableTitle,
-        subtitle: editableSubtitle,
-        content: editableContent,
+        // Всегда сохраняем все три языка
+        title: editableTitleRu,
+        titleEn: editableTitleEn,
+        titleBe: editableTitleBe,
+        subtitle: editableSubtitleRu,
+        subtitleEn: editableSubtitleEn,
+        subtitleBe: editableSubtitleBe,
+        content: editableContentRu,
+        contentEn: editableContentEn,
+        contentBe: editableContentBe,
       };
-
-      // Add multilingual fields if needed
-      if (language === 'en') {
-        updateData.titleEn = editableTitle;
-        updateData.subtitleEn = editableSubtitle;
-        updateData.contentEn = editableContent;
-      } else if (language === 'be') {
-        updateData.titleBe = editableTitle;
-        updateData.subtitleBe = editableSubtitle;
-        updateData.contentBe = editableContent;
-      } else { // Default to Russian
-        updateData.title = editableTitle;
-        updateData.subtitle = editableSubtitle;
-        updateData.content = editableContent;
-      }
 
       if (typeof updatePageContent === 'function') {
         try {
           let result;
           if (pageType === 'aeronautical' || pageType === 'appeals') {
             // Для аэронавигационных страниц и обращений используем updateByPageType
+            // pageType передается в URL, остальные данные в body
             // @ts-ignore
-            result = await updatePageContent({ pageType: urlPageType || '', body: { ...updateData, title: editableTitle } });
+            result = await updatePageContent({ pageType: urlPageType || '', ...updateData });
           } else if (pageType === 'about') {
-            // Для страниц о предприятии используем updateByPageType с title
+            // Для страниц о предприятии используем updateByPageType
+            // pageType передается в URL, остальные данные в body
             // @ts-ignore
             result = await updatePageContent({ 
               pageType: urlPageType || '', 
-              body: { ...updateData, title: editableTitle } 
+              ...updateData
             });
           } else {
             // Для остальных страниц используем обычный update
-            result = await updatePageContent({ ...updateData, title: editableTitle });
+            result = await updatePageContent(updateData);
           }
           
           if (result && 'unwrap' in result && typeof (result as any).unwrap === 'function') {
@@ -492,41 +541,10 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
           const status = error?.status || error?.data?.statusCode;
         if ((pageType === 'services' || pageType === 'about' || pageType === 'aeronautical' || pageType === 'appeals') && status === 404 && typeof createPageContent === 'function') {
           // Создаём запись и не падаем с ошибкой
-          // Для "О предприятии" используем название категории, если доступно
-          let createTitle = editableTitle;
-          let createSubtitle = editableSubtitle;
-          let createTitleEn = undefined;
-          let createTitleBe = undefined;
-          let createSubtitleEn = undefined;
-          let createSubtitleBe = undefined;
-          
-          if (pageType === 'about' && aboutCompanyCategory) {
-            createTitle = getTranslatedField(aboutCompanyCategory, 'name', 'ru') || aboutCompanyCategory.name || editableTitle;
-            createTitleEn = aboutCompanyCategory.nameEn;
-            createTitleBe = aboutCompanyCategory.nameBe;
-            createSubtitle = getTranslatedField(aboutCompanyCategory, 'description', 'ru') || aboutCompanyCategory.description || editableSubtitle;
-            createSubtitleEn = aboutCompanyCategory.descriptionEn;
-            createSubtitleBe = aboutCompanyCategory.descriptionBe;
-          } else if (pageType === 'services' && serviceCategory) {
-            createTitle = getTranslatedField(serviceCategory, 'name', 'ru') || serviceCategory.name || editableTitle;
-            createTitleEn = serviceCategory.nameEn;
-            createTitleBe = serviceCategory.nameBe;
-            createSubtitle = getTranslatedField(serviceCategory, 'description', 'ru') || serviceCategory.description || editableSubtitle;
-            createSubtitleEn = serviceCategory.descriptionEn;
-            createSubtitleBe = serviceCategory.descriptionBe;
-          }
-          
+          // Используем уже загруженные данные для всех языков
           await (createPageContent as any)({ 
             pageType: urlPageType, 
-            title: createTitle,
-            titleEn: createTitleEn,
-            titleBe: createTitleBe,
-            subtitle: createSubtitle,
-            subtitleEn: createSubtitleEn,
-            subtitleBe: createSubtitleBe,
-            content: editableContent,
-            contentEn: [],
-            contentBe: []
+            ...updateData
           });
           } else {
             console.error('Error updating page content:', error);
@@ -537,8 +555,14 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
         console.warn('Update function not available for this page type');
       }
       console.log('Content saved successfully, refetching...');
-      toast.success('Контент страницы успешно обновлен');
-      await refetchPageContent();
+      console.log('Saved data:', updateData);
+      toast.success(t('content_updated_successfully'));
+      
+      // Принудительно обновляем данные
+      if (refetchPageContent && typeof refetchPageContent === 'function') {
+        await refetchPageContent();
+      }
+      
       setIsContentEditorOpen(false);
     } catch (error: any) {
       toast.error(error.data?.error || 'Ошибка при сохранении контента');
@@ -894,30 +918,34 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
       <Dialog open={isContentEditorOpen} onOpenChange={setIsContentEditorOpen}>
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-white min-w-0 dialog-content">
           <DialogHeader>
-            <DialogTitle>Управление контентом страницы</DialogTitle>
+            <DialogTitle>{t('manage_content')}</DialogTitle>
             <DialogDescription>
-              Редактируйте заголовок, подзаголовок и основной контент страницы.
+              {t('edit_page_content_description') || 'Редактируйте заголовок, подзаголовок и основной контент страницы на трех языках.'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">Заголовок страницы</label>
-              <input
-                value={editableTitle}
-                onChange={(e) => setEditableTitle(e.target.value)}
-                placeholder={defaultTitle}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Подзаголовок</label>
-              <textarea
-                value={editableSubtitle}
-                onChange={(e) => setEditableSubtitle(e.target.value)}
-                placeholder="Краткое описание..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[80px] resize-none"
-              />
-            </div>
+            <MultilingualContentEditor
+              titleRu={editableTitleRu}
+              subtitleRu={editableSubtitleRu}
+              contentRu={editableContentRu}
+              titleEn={editableTitleEn}
+              subtitleEn={editableSubtitleEn}
+              contentEn={editableContentEn}
+              titleBe={editableTitleBe}
+              subtitleBe={editableSubtitleBe}
+              contentBe={editableContentBe}
+              onTitleRuChange={setEditableTitleRu}
+              onSubtitleRuChange={setEditableSubtitleRu}
+              onContentRuChange={setEditableContentRu}
+              onTitleEnChange={setEditableTitleEn}
+              onSubtitleEnChange={setEditableSubtitleEn}
+              onContentEnChange={setEditableContentEn}
+              onTitleBeChange={setEditableTitleBe}
+              onSubtitleBeChange={setEditableSubtitleBe}
+              onContentBeChange={setEditableContentBe}
+              titlePlaceholder={defaultTitle}
+              subtitlePlaceholder={t('subtitle_placeholder') || 'Краткое описание...'}
+            />
             {/* Управление документом ELT (только для страницы ELT и админов) */}
             {isELTPage && canManageELTDocument && (
               <div className="border-t pt-6">
@@ -1120,19 +1148,12 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
                 </div>
               </div>
             )}
-            <div>
-              <label className="block text-sm font-medium mb-4">Основной контент</label>
-              <ContentConstructor
-                content={editableContent}
-                onChange={setEditableContent}
-              />
-            </div>
             <div className="flex justify-end gap-3 pt-4 border-t">
               <Button variant="outline" onClick={() => setIsContentEditorOpen(false)}>
-                Отмена
+                {t('cancel')}
               </Button>
               <Button onClick={handleSaveContent} disabled={isUpdatingContent}>
-                {isUpdatingContent ? 'Сохранение...' : 'Сохранить изменения'}
+                {isUpdatingContent ? t('saving') : t('save_changes')}
               </Button>
             </div>
           </div>
