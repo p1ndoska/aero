@@ -1,4 +1,5 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createBaseQueryWithAuth } from './baseQueryWithAuth';
 
 export interface AppealsCategory {
   id: number;
@@ -37,14 +38,7 @@ export interface UpdateCategoriesOrderRequest {
 
 export const appealsCategoryApi = createApi({
   reducerPath: 'appealsCategoryApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: 'http://localhost:8000/api',
-    prepareHeaders: (headers) => {
-      const token = localStorage.getItem('token');
-      if (token) headers.set('authorization', `Bearer ${token}`);
-      return headers;
-    },
-  }),
+  baseQuery: createBaseQueryWithAuth(),
   tagTypes: ['AppealsCategory'],
   endpoints: (builder) => ({
     getAppealsCategories: builder.query<AppealsCategory[], void>({

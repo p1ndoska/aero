@@ -27,9 +27,17 @@ export const NewsCard = ({news}:{news:NewsItem})=>{
             <div className='bg-white rounded-lg shadow-md overflow-hidden border border-[#213659] cursor-pointer hover:border-[#1a2a4a] transition-colors duration-300'>
                 {news.photo &&(
                     <img
-                        src={`${BASE_URL}/${news.photo}`}
+                        src={`${BASE_URL}${news.photo.startsWith('/') ? '' : '/'}${news.photo}`}
                         alt={translatedName}
                         className='w-full h-40 object-cover'
+                        onError={(e) => {
+                            console.error('❌ Ошибка загрузки изображения новости:', news.photo);
+                            console.error('❌ Полный URL:', `${BASE_URL}${news.photo.startsWith('/') ? '' : '/'}${news.photo}`);
+                            e.currentTarget.style.display = 'none';
+                        }}
+                        onLoad={() => {
+                            console.log('✅ Изображение новости загружено:', news.photo);
+                        }}
                     />
                 )}
 

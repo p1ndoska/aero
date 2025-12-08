@@ -10,6 +10,7 @@ import ContentConstructor from './ContentConstructor';
 import type { Branch, CreateBranchRequest } from '@/types/branch';
 import { useSelector } from 'react-redux';
 import { BASE_URL } from '@/constants';
+import { fetchWithAuth } from '@/utils/apiHelpers';
 
 type PhoneItem = { label: string; number: string };
 
@@ -655,10 +656,10 @@ export default function BranchManagement() {
       const fd = new FormData();
       fd.append('image', file);
       try {
-        const resp = await fetch(`http://localhost:8000/api/upload`, {
+        const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://localhost:8443');
+        const resp = await fetchWithAuth(`${apiUrl}/api/upload`, {
           method: 'POST',
           body: fd,
-          headers: token ? { Authorization: `Bearer ${token}` } as any : undefined,
         });
         if (resp.ok) {
           const json = await resp.json();
@@ -682,7 +683,11 @@ export default function BranchManagement() {
           console.error('Ошибка загрузки изображения:', file.name, errorMessage);
           toast.error(errorMessage);
         }
-      } catch (err) {
+      } catch (err: any) {
+        // Не показываем ошибку, если это 401 (уже выполнен logout и перенаправление)
+        if (err?.message?.includes('Unauthorized')) {
+          return urls;
+        }
         console.error('Ошибка загрузки изображения:', err);
         toast.error('Ошибка соединения при загрузке изображения');
       }

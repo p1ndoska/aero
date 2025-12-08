@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Settings, Users, Flag, Star, User, Heart, Wrench, Bird } from 'lucide-react';
+import { Settings, Users, Flag, Star, User, Heart, Wrench, Flame } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGetSocialWorkPageContentQuery, useUpdateSocialWorkPageContentMutation } from '@/app/services/socialWorkPageContentApi';
 import { useGetAllSocialWorkCategoriesQuery } from '@/app/services/socialWorkCategoryApi';
@@ -46,7 +46,7 @@ const PAGE_CONFIG = {
     defaultSubtitle: 'Мероприятия в рамках года благоустройства'
   },
   'memory': {
-    icon: Bird,
+    icon: Flame,
     title: 'Память и боль белорусской земли',
     defaultSubtitle: 'Мероприятия по сохранению исторической памяти'
   }

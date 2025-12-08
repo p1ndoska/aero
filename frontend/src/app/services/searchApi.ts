@@ -20,7 +20,7 @@ export interface SearchResponse {
 export const searchApi = createApi({
   reducerPath: 'searchApi',
   baseQuery: fetchBaseQuery({ 
-    baseUrl: 'http://localhost:8000/api/search',
+    baseUrl: `${import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://localhost:8443')}/api/search`,
   }),
   endpoints: (builder) => ({
     searchAll: builder.query<SearchResponse, { query: string; language?: string }>({

@@ -6,9 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Edit, Trash2, Plus, Save, FolderOpen, Users, Building2, Newspaper, UserCheck, Briefcase, Building, Heart, Info, Plane, Mail, Settings, Image as ImageIcon, Calendar, BarChart3 } from "lucide-react";
+import { Edit, Trash2, Plus, Save, FolderOpen, Users, Building2, Newspaper, UserCheck, Briefcase, Building, Heart, Info, Plane, Mail, Settings, Image as ImageIcon, Calendar, BarChart3, FileText } from "lucide-react";
 import { getRolePermissions } from "@/utils/roleUtils";
-import { useGetRolesQuery, useCreateRoleMutation, useUpdateRoleMutation, useDeleteRoleMutation } from "@/app/services/roleApi";
+import { useGetRolesQuery, useUpdateRoleMutation, useDeleteRoleMutation } from "@/app/services/roleApi";
 import { useGetAllUsersQuery, useUpdateUserMutation, useDeleteUserMutation, useRegisterMutation } from "@/app/services/userApi";
 //import { UserManagement } from "./UserManagement";
 import CategoriesAdminPage from "./CategoriesAdminPage";
@@ -23,6 +23,7 @@ import AeronauticalInfoCategoryManagement from "./AeronauticalInfoCategoryManage
 import AppealsCategoryManagement from "./AppealsCategoryManagement";
 import ServicesCategoryManagement from "./ServicesCategoryManagement";
 import ServiceRequestManagement from "./ServiceRequestManagement";
+import ResumeManagement from "./ResumeManagement";
 import HeroImageManagement from "./HeroImageManagement";
 import ReceptionBookingsCalendar from "./ReceptionBookingsCalendar";
 import StatisticsPanel from "./StatisticsPanel";
@@ -51,6 +52,7 @@ export default function SuperAdminDashboard() {
         if (permissions.canManageNews) return 'news';
         if (permissions.canManageManagement) return 'management';
         if (permissions.canManageVacancies) return 'vacancies';
+        if (permissions.canManageVacancies) return 'resumes';
         if (permissions.canManageLogos) return 'logos';
         if (permissions.canManageSocial) return 'social-categories';
         if (permissions.canManageAbout) return 'about-company-categories';
@@ -60,7 +62,7 @@ export default function SuperAdminDashboard() {
         return 'roles';
     };
 
-    const [activeTab, setActiveTab] = useState<'roles' | 'users' | 'categories' | 'branches' | 'news' | 'management' | 'vacancies' | 'logos' | 'social-categories' | 'about-company-categories' | 'aeronautical-info-categories' | 'appeals-categories' | 'services-categories' | 'service-requests' | 'hero-image' | 'reception-bookings' | 'statistics'>(getFirstAvailableTab());
+    const [activeTab, setActiveTab] = useState<'roles' | 'users' | 'categories' | 'branches' | 'news' | 'management' | 'vacancies' | 'resumes' | 'logos' | 'social-categories' | 'about-company-categories' | 'aeronautical-info-categories' | 'appeals-categories' | 'services-categories' | 'service-requests' | 'hero-image' | 'reception-bookings' | 'statistics'>(getFirstAvailableTab());
 
     // Принудительное обновление данных при переключении на вкладку логотипов
     useEffect(() => {
@@ -236,6 +238,25 @@ export default function SuperAdminDashboard() {
                        </div>
                        )}
 
+                       {/* Управление резюме - MEDIA_ADMIN и SUPER_ADMIN */}
+                       {permissions.canManageVacancies && (
+                       <div 
+                           className={`bg-white rounded-xl p-6 cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl border-2 ${
+                               activeTab === 'resumes' 
+                                       ? 'border-[#2A52BE] bg-[#E8F0FF]' 
+                                   : 'border-gray-200 hover:border-[#2A52BE]'
+                           }`}
+                           onClick={() => setActiveTab('resumes')}
+                       >
+                           <div className="text-center">
+                                   <FileText className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
+                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   Управление резюме
+                               </h3>
+                           </div>
+                       </div>
+                       )}
+
                        {/* Логотипы организаций - MEDIA_ADMIN и SUPER_ADMIN */}
                        {permissions.canManageLogos && (
                        <div
@@ -255,8 +276,8 @@ export default function SuperAdminDashboard() {
                        </div>
                        )}
 
-                       {/* Управление изображением верхнего блока - SUPER_ADMIN */}
-                       {permissions.canManageRoles && (
+                       {/* Управление изображением верхнего блока - SUPER_ADMIN и MEDIA_ADMIN */}
+                       {(permissions.canManageRoles || permissions.canManageHomePage) && (
                        <div
                            className={`bg-white rounded-xl p-6 cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl border-2 ${
                                activeTab === 'hero-image'
@@ -418,6 +439,7 @@ export default function SuperAdminDashboard() {
                 {activeTab === 'news' && permissions.canManageNews && <NewsManagement />}
                 {activeTab === 'management' && permissions.canManageManagement && <ManagementManagement />}
                 {activeTab === 'vacancies' && permissions.canManageVacancies && <VacancyManagement />}
+                {activeTab === 'resumes' && permissions.canManageVacancies && <ResumeManagement />}
                 {activeTab === 'logos' && permissions.canManageLogos && <OrganizationLogoManagement />}
                 {activeTab === 'social-categories' && permissions.canManageSocial && <SocialWorkCategoryManagement />}
                 {activeTab === 'about-company-categories' && permissions.canManageAbout && <AboutCompanyCategoryManagement />}
@@ -425,7 +447,7 @@ export default function SuperAdminDashboard() {
                 {activeTab === 'appeals-categories' && permissions.canManageAppeals && <AppealsCategoryManagement />}
                 {activeTab === 'services-categories' && permissions.canManageServices && <ServicesCategoryManagement />}
                 {activeTab === 'service-requests' && permissions.canManageServices && <ServiceRequestManagement />}
-                {activeTab === 'hero-image' && permissions.canManageRoles && <HeroImageManagement />}
+                {activeTab === 'hero-image' && (permissions.canManageRoles || permissions.canManageHomePage) && <HeroImageManagement />}
                 {(activeTab === 'reception-bookings' && (permissions.canManageManagement || permissions.canManageRoles)) && <ReceptionBookingsCalendar />}
             </div>
         </div>
@@ -436,26 +458,11 @@ function RolesPanel() {
     const { data: roles, isLoading, isError, error } = useGetRolesQuery(undefined, {
         refetchOnMountOrArgChange: true
     });
-    const [createRole, { isLoading: isCreating }] = useCreateRoleMutation();
     const [updateRole, { isLoading: isUpdating }] = useUpdateRoleMutation();
     const [deleteRole] = useDeleteRoleMutation();
 
-    const [newRole, setNewRole] = useState("");
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editingName, setEditingName] = useState("");
-
-
-    const add = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const name = newRole.trim().toUpperCase();
-        if (!name) return;
-        try {
-            await createRole({ name }).unwrap();
-            toast.success("Роль создана");
-            setNewRole("");
-            // Не нужно вызывать refetch, так как invalidatesTags автоматически обновит кеш
-        } catch (e: any) { toast.error(e.data?.error || "Ошибка"); }
-    };
 
     const save = async () => {
         if (!editingId) return;
@@ -483,25 +490,7 @@ function RolesPanel() {
         <div className="space-y-6">
             <div className="text-center">
                        <h2 className="text-2xl font-bold text-[#213659] mb-2">Управление ролями</h2>
-                <p className="text-gray-600">Создавайте и редактируйте роли пользователей</p>
-            </div>
-
-            <div className="bg-gray-50 rounded-lg p-6">
-                <form onSubmit={add} className="flex items-end gap-3">
-                    <div className="flex-1">
-                               <Label className="text-[#213659] font-medium">Название роли</Label>
-                               <Input
-                                   value={newRole}
-                                   onChange={(e)=>setNewRole(e.target.value)}
-                                   className="bg-white border-[#B1D1E0] focus:border-[#213659]"
-                                   placeholder="Введите название роли"
-                               />
-                    </div>
-                           <Button type="submit" className="bg-[#213659] hover:bg-[#1a2a4a] text-white" disabled={isCreating}>
-                        <Plus className="w-4 h-4 mr-2"/>
-                        {isCreating ? 'Создание...' : 'Создать'}
-                    </Button>
-                </form>
+                <p className="text-gray-600">Редактируйте роли пользователей</p>
             </div>
 
             <div className="space-y-3">

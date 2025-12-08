@@ -315,8 +315,7 @@ export default function VacancyManagement() {
                       onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
                       placeholder="Требования к кандидату"
                       rows={6}
-                    className="min-h-[150px] p-4 text-base"
-                      className="min-h-[100px] p-4 text-base"
+                      className="min-h-[150px] p-4 text-base"
                     />
                   </div>
                   <div>
@@ -327,8 +326,7 @@ export default function VacancyManagement() {
                       onChange={(e) => setFormData({ ...formData, requirementsEn: e.target.value })}
                       placeholder="Candidate requirements"
                       rows={6}
-                    className="min-h-[150px] p-4 text-base"
-                      className="min-h-[100px] p-4 text-base"
+                      className="min-h-[150px] p-4 text-base"
                     />
                   </div>
                   <div>
@@ -339,8 +337,7 @@ export default function VacancyManagement() {
                       onChange={(e) => setFormData({ ...formData, requirementsBe: e.target.value })}
                       placeholder="Патрабаванні да кандыдата"
                       rows={6}
-                    className="min-h-[150px] p-4 text-base"
-                      className="min-h-[100px] p-4 text-base"
+                      className="min-h-[150px] p-4 text-base"
                     />
                   </div>
                 </div>
@@ -353,8 +350,7 @@ export default function VacancyManagement() {
                       onChange={(e) => setFormData({ ...formData, conditions: e.target.value })}
                       placeholder="Условия работы и льготы"
                       rows={6}
-                    className="min-h-[150px] p-4 text-base"
-                      className="min-h-[100px] p-4 text-base"
+                      className="min-h-[150px] p-4 text-base"
                     />
                   </div>
                   <div>
@@ -365,8 +361,7 @@ export default function VacancyManagement() {
                       onChange={(e) => setFormData({ ...formData, conditionsEn: e.target.value })}
                       placeholder="Working conditions and benefits"
                       rows={6}
-                    className="min-h-[150px] p-4 text-base"
-                      className="min-h-[100px] p-4 text-base"
+                      className="min-h-[150px] p-4 text-base"
                     />
                   </div>
                   <div>
@@ -377,8 +372,7 @@ export default function VacancyManagement() {
                       onChange={(e) => setFormData({ ...formData, conditionsBe: e.target.value })}
                       placeholder="Умовы працы і льготы"
                       rows={6}
-                    className="min-h-[150px] p-4 text-base"
-                      className="min-h-[100px] p-4 text-base"
+                      className="min-h-[150px] p-4 text-base"
                     />
                   </div>
                 </div>
@@ -389,7 +383,7 @@ export default function VacancyManagement() {
                       id="salary"
                       value={formData.salary}
                       onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
-                      placeholder="Например: от 100 000 руб"
+                      placeholder="Например: от 1000 руб"
                       className="h-12 text-base"
                     />
                   </div>
@@ -399,7 +393,7 @@ export default function VacancyManagement() {
                       id="salaryEn"
                       value={formData.salaryEn}
                       onChange={(e) => setFormData({ ...formData, salaryEn: e.target.value })}
-                      placeholder="Example: from 100,000 rub"
+                      placeholder="Example: from 1000 rub"
                       className="h-12 text-base"
                     />
                   </div>
@@ -409,7 +403,7 @@ export default function VacancyManagement() {
                       id="salaryBe"
                       value={formData.salaryBe}
                       onChange={(e) => setFormData({ ...formData, salaryBe: e.target.value })}
-                      placeholder="Напрыклад: ад 100 000 руб"
+                      placeholder="Напрыклад: ад 1000 руб"
                       className="h-12 text-base"
                     />
                   </div>
@@ -421,7 +415,7 @@ export default function VacancyManagement() {
                       id="location"
                       value={formData.location}
                       onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      placeholder="Например: Москва"
+                      placeholder="Например: Минск"
                       className="h-12 text-base"
                     />
                   </div>
@@ -431,7 +425,7 @@ export default function VacancyManagement() {
                       id="locationEn"
                       value={formData.locationEn}
                       onChange={(e) => setFormData({ ...formData, locationEn: e.target.value })}
-                      placeholder="Example: Moscow"
+                      placeholder="Example: Minsk"
                       className="h-12 text-base"
                     />
                   </div>
@@ -441,7 +435,7 @@ export default function VacancyManagement() {
                       id="locationBe"
                       value={formData.locationBe}
                       onChange={(e) => setFormData({ ...formData, locationBe: e.target.value })}
-                      placeholder="Напрыклад: Масква"
+                      placeholder="Напрыклад: Мiнск"
                       className="h-12 text-base"
                     />
                   </div>
@@ -906,7 +900,7 @@ export default function VacancyManagement() {
                     {application.resumeUrl && (
                       <div className="mb-4">
                         <a
-                          href={`http://localhost:8000/${application.resumeUrl}`}
+                          href={`${import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://localhost:8443')}/${application.resumeUrl}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:underline text-sm"

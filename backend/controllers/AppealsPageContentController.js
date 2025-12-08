@@ -14,9 +14,76 @@ const AppealsPageContentController = {
     getAppealsPageContentByPageType: async (req, res) => {
         try {
             const { pageType } = req.params;
-            const content = await prisma.appealsPageContent.findUnique({
-                where: { pageType }
+            let content = await prisma.appealsPageContent.findUnique({
+                where: { pageType },
+                select: {
+                    id: true,
+                    pageType: true,
+                    title: true,
+                    titleEn: true,
+                    titleBe: true,
+                    subtitle: true,
+                    subtitleEn: true,
+                    subtitleBe: true,
+                    content: true,
+                    contentEn: true,
+                    contentBe: true,
+                    createdAt: true,
+                    updatedAt: true
+                }
             });
+            
+            if (!content) {
+                // Пытаемся найти категорию для получения названия
+                const category = await prisma.appealsCategory.findUnique({
+                    where: { pageType },
+                    select: {
+                        name: true,
+                        nameEn: true,
+                        nameBe: true,
+                        description: true,
+                        descriptionEn: true,
+                        descriptionBe: true
+                    }
+                });
+                
+                // Создаем дефолтный контент на основе категории, если она найдена
+                if (category) {
+                    content = await prisma.appealsPageContent.create({
+                        data: {
+                            pageType,
+                            title: category.name || 'Обращения',
+                            titleEn: category.nameEn || null,
+                            titleBe: category.nameBe || null,
+                            subtitle: category.description || null,
+                            subtitleEn: category.descriptionEn || null,
+                            subtitleBe: category.descriptionBe || null,
+                            content: [],
+                            contentEn: [],
+                            contentBe: []
+                        },
+                        select: {
+                            id: true,
+                            pageType: true,
+                            title: true,
+                            titleEn: true,
+                            titleBe: true,
+                            subtitle: true,
+                            subtitleEn: true,
+                            subtitleBe: true,
+                            content: true,
+                            contentEn: true,
+                            contentBe: true,
+                            createdAt: true,
+                            updatedAt: true
+                        }
+                    });
+                } else {
+                    // Если категории нет, возвращаем null (не 404, чтобы фронтенд мог обработать)
+                    return res.json(null);
+                }
+            }
+            
             res.json(content);
         } catch (error) {
             console.error('Error fetching appeals page content by pageType:', error);
@@ -67,19 +134,22 @@ const AppealsPageContentController = {
 
             if (existingContent) {
                 // Обновляем существующую запись
+                // Используем явные проверки на undefined, чтобы разрешить пустые строки и пустые массивы
+                const updateData = {};
+                
+                if (title !== undefined) updateData.title = title;
+                if (titleEn !== undefined) updateData.titleEn = titleEn;
+                if (titleBe !== undefined) updateData.titleBe = titleBe;
+                if (subtitle !== undefined) updateData.subtitle = subtitle;
+                if (subtitleEn !== undefined) updateData.subtitleEn = subtitleEn;
+                if (subtitleBe !== undefined) updateData.subtitleBe = subtitleBe;
+                if (content !== undefined) updateData.content = content;
+                if (contentEn !== undefined) updateData.contentEn = contentEn;
+                if (contentBe !== undefined) updateData.contentBe = contentBe;
+                
                 const updatedContent = await prisma.appealsPageContent.update({
                     where: { pageType },
-                    data: {
-                        title: title || existingContent.title,
-                        titleEn: titleEn || existingContent.titleEn,
-                        titleBe: titleBe || existingContent.titleBe,
-                        subtitle: subtitle !== undefined ? subtitle : existingContent.subtitle,
-                        subtitleEn: subtitleEn !== undefined ? subtitleEn : existingContent.subtitleEn,
-                        subtitleBe: subtitleBe !== undefined ? subtitleBe : existingContent.subtitleBe,
-                        content: content !== undefined ? content : existingContent.content,
-                        contentEn: contentEn !== undefined ? contentEn : existingContent.contentEn,
-                        contentBe: contentBe !== undefined ? contentBe : existingContent.contentBe,
-                    }
+                    data: updateData
                 });
                 res.json(updatedContent);
             } else {

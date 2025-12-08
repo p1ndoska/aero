@@ -213,92 +213,9 @@ export const NewsCompany = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            {/* Заголовок и кнопка создания */}
+            {/* Заголовок */}
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-3xl font-bold text-[#213659]">Новости компании</h1>
-                {isAdmin && (
-                    <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button className="bg-[#213659] hover:bg-[#1a2a4a]">
-                                <Plus className="w-4 h-4 mr-2" />
-                                Создать новость
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-md bg-white border-2 border-gray-200">
-                            <DialogHeader>
-                                <DialogTitle className="text-[#213659]">Создание новости</DialogTitle>
-                            </DialogHeader>
-                            <form onSubmit={handleCreateSubmit} className="space-y-4 mt-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name" className="text-[#213659]">Заголовок *</Label>
-                                    <Input
-                                        id="name"
-                                        name="name"
-                                        value={createForm.name}
-                                        onChange={handleCreateChange}
-                                        required
-                                        className="bg-white border-[#B1D1E0]"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="content" className="text-[#213659]">Содержание</Label>
-                                    <Textarea
-                                        id="content"
-                                        name="content"
-                                        value={createForm.content}
-                                        onChange={handleCreateChange}
-                                        rows={4}
-                                        className="bg-white border-[#B1D1E0]"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="categoryId" className="text-[#213659]">ID категории *</Label>
-                                    <Input
-                                        id="categoryId"
-                                        name="categoryId"
-                                        type="number"
-                                        value={createForm.categoryId}
-                                        onChange={handleCreateChange}
-                                        required
-                                        className="bg-white border-[#B1D1E0]"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="photo" className="text-[#213659]">Изображение</Label>
-                                    <div className="flex items-center gap-2">
-                                        <Input
-                                            id="photo"
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleCreatePhotoChange}
-                                            ref={createFileInputRef}
-                                            className="bg-white border-[#B1D1E0]"
-                                        />
-                                        {createPhoto && (
-                                            <Button type="button" variant="outline" size="sm" onClick={removeCreatePhoto}>
-                                                <X className="w-4 h-4" />
-                                            </Button>
-                                        )}
-                                    </div>
-                                    {createPhoto && (
-                                        <p className="text-sm text-green-600">Файл выбран: {createPhoto.name}</p>
-                                    )}
-                                </div>
-
-                                <Button
-                                    type="submit"
-                                    className="w-full bg-[#213659] hover:bg-[#1a2a4a]"
-                                    disabled={isCreating}
-                                >
-                                    {isCreating ? 'Создание...' : 'Создать'}
-                                </Button>
-                            </form>
-                        </DialogContent>
-                    </Dialog>
-                )}
             </div>
 
             {/* Диалог редактирования */}
@@ -400,9 +317,32 @@ export const NewsCompany = () => {
                             {news.photo && (
                                 <div className="relative h-48 overflow-hidden">
                                     <img
-                                        src={`${BASE_URL}/${news.photo}`}
+                                        src={(() => {
+                                            // Нормализуем путь: если начинается с 'uploads/', добавляем '/'
+                                            let photoPath = news.photo;
+                                            if (photoPath && !photoPath.startsWith('/') && !photoPath.startsWith('http')) {
+                                                photoPath = photoPath.startsWith('uploads/') ? `/${photoPath}` : `/uploads/${photoPath}`;
+                                            }
+                                            const fullUrl = `${BASE_URL}${photoPath}`;
+                                            console.log('🖼️ Loading news image:', { original: news.photo, normalized: photoPath, fullUrl });
+                                            return fullUrl;
+                                        })()}
                                         alt={translatedName}
                                         className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            console.error('❌ Ошибка загрузки изображения новости:', news.photo);
+                                            let photoPath = news.photo;
+                                            if (photoPath && !photoPath.startsWith('/') && !photoPath.startsWith('http')) {
+                                                photoPath = photoPath.startsWith('uploads/') ? `/${photoPath}` : `/uploads/${photoPath}`;
+                                            }
+                                            const imageUrl = `${BASE_URL}${photoPath}`;
+                                            console.error('❌ Полный URL:', imageUrl);
+                                            console.error('❌ BASE_URL:', BASE_URL);
+                                            e.currentTarget.style.display = 'none';
+                                        }}
+                                        onLoad={() => {
+                                            console.log('✅ Изображение новости загружено:', news.photo);
+                                        }}
                                     />
                                 </div>
                             )}

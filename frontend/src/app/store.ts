@@ -2,6 +2,7 @@ import type  {ThunkAction, Action } from "@reduxjs/toolkit"
 import { configureStore } from "@reduxjs/toolkit"
 import { api } from "./services/api"
 import { uploadApi } from "./services/uploadApi"
+import { resumeApi } from "./services/resumeApi"
 import auth from "../features/user/userSlice"
 import { listenerMiddleware } from "../../middleware/auth"
 
@@ -9,12 +10,14 @@ export const store = configureStore({
     reducer: {
         [api.reducerPath]: api.reducer,
         [uploadApi.reducerPath]: uploadApi.reducer,
+        [resumeApi.reducerPath]: resumeApi.reducer,
         auth,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware()
             .concat(api.middleware)
             .concat(uploadApi.middleware)
+            .concat(resumeApi.middleware)
             .prepend(listenerMiddleware.middleware),
 })
 

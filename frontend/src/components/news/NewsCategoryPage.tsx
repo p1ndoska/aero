@@ -218,55 +218,49 @@ export const NewsCategoryPage: React.FC<Props> = ({ title, categoryName }) => {
         <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-3xl font-bold text-[#213659]">{title}</h1>
-                {isAdmin && (
-                    <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button className="bg-[#213659] hover:bg-[#1a2a4a]">
-                                <Plus className="w-4 h-4 mr-2" />
-                                Создать новость
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-md bg-white border-2 border-gray-200">
-                            <DialogHeader>
-                                <DialogTitle className="text-[#213659]">Создание новости</DialogTitle>
-                            </DialogHeader>
-                            <form onSubmit={handleCreateSubmit} className="space-y-4 mt-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name" className="text-[#213659]">Заголовок *</Label>
-                                    <Input id="name" name="name" value={createForm.name} onChange={handleCreateChange} required className="bg-white border-[#B1D1E0]" />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="content" className="text-[#213659]">Содержание</Label>
-                                    <Textarea id="content" name="content" value={createForm.content} onChange={handleCreateChange} rows={4} className="bg-white border-[#B1D1E0]" />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="categoryId" className="text-[#213659]">ID категории * <span className="text-xs text-[#6A81A9]">(страница: {categoryName})</span></Label>
-                                    <Input id="categoryId" name="categoryId" type="number" value={createForm.categoryId} onChange={handleCreateChange} required className="bg-white border-[#B1D1E0]" />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="photo" className="text-[#213659]">Изображение</Label>
-                                    <div className="flex items-center gap-2">
-                                        <Input id="photo" type="file" accept="image/*" onChange={handleCreatePhotoChange} ref={createFileInputRef} className="bg-white border-[#B1D1E0]" />
-                                        {createPhoto && (
-                                            <Button type="button" variant="outline" size="sm" onClick={removeCreatePhoto}>
-                                                <X className="w-4 h-4" />
-                                            </Button>
-                                        )}
-                                    </div>
-                                    {createPhoto && <p className="text-sm text-green-600">Файл выбран: {createPhoto.name}</p>}
-                                </div>
-
-                                <Button type="submit" className="w-full bg-[#213659] hover:bg-[#1a2a4a]" disabled={isCreating}>
-                                    {isCreating ? "Создание..." : "Создать"}
-                                </Button>
-                            </form>
-                        </DialogContent>
-                    </Dialog>
-                )}
             </div>
+
+            {/* Диалог редактирования */}
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogContent className="sm:max-w-md bg-white border-2 border-gray-200">
+                    <DialogHeader>
+                        <DialogTitle className="text-[#213659]">Редактирование новости</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleEditSubmit} className="space-y-4 mt-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-name" className="text-[#213659]">Заголовок *</Label>
+                            <Input id="edit-name" name="name" value={editForm.name} onChange={handleEditChange} required className="bg-white border-[#B1D1E0]" />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-content" className="text-[#213659]">Содержание</Label>
+                            <Textarea id="edit-content" name="content" value={editForm.content} onChange={handleEditChange} rows={4} className="bg-white border-[#B1D1E0]" />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-categoryId" className="text-[#213659]">ID категории * <span className="text-xs text-[#6A81A9]">(страница: {categoryName})</span></Label>
+                            <Input id="edit-categoryId" name="categoryId" type="number" value={editForm.categoryId} onChange={handleEditChange} required className="bg-white border-[#B1D1E0]" />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-photo" className="text-[#213659]">Изображение</Label>
+                            <div className="flex items-center gap-2">
+                                <Input id="edit-photo" type="file" accept="image/*" onChange={handleEditPhotoChange} ref={editFileInputRef} className="bg-white border-[#B1D1E0]" />
+                                {editPhoto && (
+                                    <Button type="button" variant="outline" size="sm" onClick={removeEditPhoto}>
+                                        <X className="w-4 h-4" />
+                                    </Button>
+                                )}
+                            </div>
+                            {editPhoto && <p className="text-sm text-green-600">Файл выбран: {editPhoto.name}</p>}
+                        </div>
+
+                        <Button type="submit" className="w-full bg-[#213659] hover:bg-[#1a2a4a]" disabled={isUpdating}>
+                            {isUpdating ? "Обновление..." : "Обновить"}
+                        </Button>
+                    </form>
+                </DialogContent>
+            </Dialog>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {newsData?.map((news) => {
@@ -276,7 +270,19 @@ export const NewsCategoryPage: React.FC<Props> = ({ title, categoryName }) => {
                         <Link to={`/news/${news.id}`} className="block">
                             {news.photo && (
                                 <div className="relative h-48 overflow-hidden">
-                                    <img src={`${BASE_URL}/${news.photo}`} alt={translatedName} className="w-full h-full object-cover" />
+                                    <img 
+                                        src={`${BASE_URL}${news.photo.startsWith('/') ? '' : '/'}${news.photo}`} 
+                                        alt={translatedName} 
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            console.error('❌ Ошибка загрузки изображения новости:', news.photo);
+                                            console.error('❌ Полный URL:', `${BASE_URL}${news.photo.startsWith('/') ? '' : '/'}${news.photo}`);
+                                            e.currentTarget.style.display = 'none';
+                                        }}
+                                        onLoad={() => {
+                                            console.log('✅ Изображение новости загружено:', news.photo);
+                                        }}
+                                    />
                                 </div>
                             )}
                             <CardHeader className="pb-4">
@@ -304,7 +310,7 @@ export const NewsCategoryPage: React.FC<Props> = ({ title, categoryName }) => {
                 <div className="text-center py-12">
                     <Image className="w-16 h-16 mx-auto text-gray-400 mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">Новостей пока нет</h3>
-                    <p className="text-gray-500">Создайте первую новость, нажав на кнопку выше</p>
+                    <p className="text-gray-500">Новости будут добавлены в ближайшее время</p>
                 </div>
             )}
         </div>

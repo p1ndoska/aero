@@ -364,7 +364,7 @@ model AeronauticalInfoCategory {
 
 model AeronauticalInfoPageContent {
   id          Int       @id @default(autoincrement())
-  pageType    String    @unique // Уникальный тип страницы (например: eaip, eaip-vfr, etod)
+  pageType    String?   @unique // Уникальный тип страницы
   title       String    @default("Аэронавигационная информация")
   titleEn     String?   // Заголовок на английском
   titleBe     String?   // Заголовок на беларуском
@@ -380,7 +380,7 @@ model AeronauticalInfoPageContent {
 
 model AppealsPageContent {
   id          Int       @id @default(autoincrement())
-  pageType    String    @unique // Уникальный тип страницы
+  pageType    String?   @unique // Уникальный тип страницы
   title       String    @default("Обращения")
   titleEn     String?   // Заголовок на английском
   titleBe     String?   // Заголовок на беларуском
@@ -429,7 +429,7 @@ model ServicesCategory {
 // Контент страниц услуг
 model ServicesPageContent {
   id          Int       @id @default(autoincrement())
-  pageType    String    @unique // Связь с ServicesCategory.pageType
+  pageType    String?   @unique // Связь с ServicesCategory.pageType
   title       String    @default("Услуги")
   titleEn     String?   // Заголовок на английском
   titleBe     String?   // Заголовок на беларуском
@@ -471,6 +471,23 @@ model ServiceRequest {
   updatedAt       DateTime  @updatedAt
   
   @@index([serviceType])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Резюме, загруженные пользователями (не привязанные к конкретной вакансии)
+model Resume {
+  id          Int       @id @default(autoincrement())
+  fullName    String    // ФИО
+  email       String    // Email
+  phone       String?   // Телефон
+  fileUrl     String    // Путь к файлу резюме
+  fileName    String    // Оригинальное имя файла
+  status      String    @default("NEW") // NEW, VIEWED, CONTACTED, ARCHIVED
+  notes       String?   // Заметки администратора
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
   @@index([status])
   @@index([createdAt])
 }

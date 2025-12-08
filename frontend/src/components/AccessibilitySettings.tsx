@@ -246,7 +246,7 @@ const AccessibilitySettings: React.FC = () => {
                 closeButton?.click();
               }}
             >
-              {t('apply')}
+              {t('apply_settings')}
             </Button>
           </div>
 

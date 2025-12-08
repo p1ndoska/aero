@@ -2,6 +2,7 @@
 import { createApi, fetchBaseQuery, retry } from "@reduxjs/toolkit/query/react"
 import type { RootState } from "../store"
 import { BASE_URL } from "../../constants"
+import { logout } from "../../features/user/userSlice"
 
 const baseQuery = fetchBaseQuery({
     baseUrl: `${BASE_URL}/api`,
@@ -35,9 +36,15 @@ const baseQueryWithAuth = async (args, api, extraOptions) => {
     
     // Если получили 401, токен невалидный или истек
     if (result.error && result.error.status === 401) {
-        console.error('API: Unauthorized (401) - Token may be invalid or expired');
-        // Можно добавить логику для автоматического выхода пользователя
-        // Например: dispatch(logout()) или window.location.href = '/login'
+        console.error('API: Unauthorized (401) - Token expired or invalid. Logging out...');
+        
+        // Выполняем logout
+        api.dispatch(logout());
+        
+        // Перенаправляем на главную страницу
+        if (typeof window !== 'undefined') {
+            window.location.href = '/';
+        }
     }
     
     return result;

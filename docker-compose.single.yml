@@ -1,0 +1,89 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: aero-postgres
+    environment:
+      POSTGRES_USER: prisma
+      POSTGRES_PASSWORD: prisma
+      POSTGRES_DB: mydb
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - aero-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prisma"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # All-in-one container (Frontend + Backend + Nginx)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-https://localhost:8443}
+    container_name: aero-app
+    environment:
+      # Server Configuration
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-3000}
+      
+      # Database URL
+      # В Docker используем имя сервиса 'postgres', для локальной разработки используйте 'localhost'
+      DATABASE_URL: ${DATABASE_URL:-postgresql://prisma:prisma@postgres:5432/mydb?schema=public}
+      
+      # JWT & Security
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_SECRET: ${SECRET_KEY}
+      
+      # Frontend URL for CORS
+      FRONTEND_URL: ${FRONTEND_URL:-https://localhost:8443}
+      
+      # Email Configuration
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      
+      # Super Admin (for seeding)
+      SUPER_ADMIN_EMAIL: ${SUPER_ADMIN_EMAIL}
+      SUPER_ADMIN_PASSWORD: ${SUPER_ADMIN_PASSWORD}
+      
+      # OpenAI (if used)
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      secretKey: ${secretKey:-}
+    ports:
+      - "8080:80"
+      - "8443:443"
+      - "${BACKEND_PORT:-3000}:3000"
+    volumes:
+      - ./backend/uploads:/app/backend/uploads
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - aero-network
+
+networks:
+  aero-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+

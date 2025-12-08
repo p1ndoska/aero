@@ -104,13 +104,33 @@ const NewsDetailPage: React.FC = () => {
             {news.photo && (
               <div className="relative h-64 md:h-80 lg:h-96 overflow-hidden">
                 <img
-                  src={`${BASE_URL}/${news.photo}`}
+                  src={(() => {
+                    // Нормализуем путь: если начинается с 'uploads/', добавляем '/'
+                    let photoPath = news.photo;
+                    if (photoPath && !photoPath.startsWith('/') && !photoPath.startsWith('http')) {
+                      photoPath = photoPath.startsWith('uploads/') ? `/${photoPath}` : `/uploads/${photoPath}`;
+                    }
+                    const fullUrl = `${BASE_URL}${photoPath}`;
+                    console.log('🖼️ Loading news detail image:', { original: news.photo, normalized: photoPath, fullUrl, BASE_URL });
+                    return fullUrl;
+                  })()}
                   alt={translatedName}
                   className="w-full h-full object-cover"
                   onError={(e) => {
+                    console.error('❌ Ошибка загрузки изображения новости:', news.photo);
+                    let photoPath = news.photo;
+                    if (photoPath && !photoPath.startsWith('/') && !photoPath.startsWith('http')) {
+                      photoPath = photoPath.startsWith('uploads/') ? `/${photoPath}` : `/uploads/${photoPath}`;
+                    }
+                    const imageUrl = `${BASE_URL}${photoPath}`;
+                    console.error('❌ Полный URL:', imageUrl);
+                    console.error('❌ BASE_URL:', BASE_URL);
                     e.currentTarget.style.display = 'none';
                     const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
                     if (placeholder) placeholder.style.display = 'flex';
+                  }}
+                  onLoad={() => {
+                    console.log('✅ Изображение новости загружено:', news.photo);
                   }}
                 />
                 <div 
@@ -209,17 +229,30 @@ const NewsDetailPage: React.FC = () => {
               <div className="flex gap-4 pb-2" style={{ minWidth: 'max-content' }}>
                 {news.images.map((image, index) => {
                   const translatedName = getTranslatedField(news, 'name', language) || news.name;
+                  // Нормализуем путь: если начинается с 'uploads/', добавляем '/'
+                  let imagePath = image;
+                  if (imagePath && !imagePath.startsWith('/') && !imagePath.startsWith('http')) {
+                    imagePath = imagePath.startsWith('uploads/') ? `/${imagePath}` : `/uploads/${imagePath}`;
+                  }
+                  const imageUrl = `${BASE_URL}${imagePath}`;
                   return (
                     <img
                       key={index}
-                      src={`${BASE_URL}/${image}`}
+                      src={imageUrl}
                       alt={`${translatedName} - фото ${index + 1}`}
                       className="w-64 h-48 object-cover rounded-lg border hover:shadow-md transition-shadow cursor-pointer hover:opacity-90 flex-shrink-0"
                       onClick={() => {
-                        setSelectedImage(`${BASE_URL}/${image}`);
+                        setSelectedImage(imageUrl);
                         setSelectedImageIndex(index);
                       }}
-                      onError={(e) => (e.currentTarget.style.display = 'none')}
+                      onError={(e) => {
+                        console.error('❌ Ошибка загрузки дополнительного изображения:', image);
+                        console.error('❌ Полный URL:', imageUrl);
+                        e.currentTarget.style.display = 'none';
+                      }}
+                      onLoad={() => {
+                        console.log('✅ Дополнительное изображение загружено:', image);
+                      }}
                     />
                   );
                 })}
@@ -260,7 +293,13 @@ const NewsDetailPage: React.FC = () => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigateImage(-1, news.images.map(img => `${BASE_URL}/${img}`));
+                  navigateImage(-1, news.images.map(img => {
+                    let imagePath = img;
+                    if (imagePath && !imagePath.startsWith('/') && !imagePath.startsWith('http')) {
+                      imagePath = imagePath.startsWith('uploads/') ? `/${imagePath}` : `/uploads/${imagePath}`;
+                    }
+                    return `${BASE_URL}${imagePath}`;
+                  }));
                 }}
                 className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:bg-gray-100 transition-colors"
               >
@@ -273,7 +312,13 @@ const NewsDetailPage: React.FC = () => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigateImage(1, news.images.map(img => `${BASE_URL}/${img}`));
+                  navigateImage(1, news.images.map(img => {
+                    let imagePath = img;
+                    if (imagePath && !imagePath.startsWith('/') && !imagePath.startsWith('http')) {
+                      imagePath = imagePath.startsWith('uploads/') ? `/${imagePath}` : `/uploads/${imagePath}`;
+                    }
+                    return `${BASE_URL}${imagePath}`;
+                  }));
                 }}
                 className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:bg-gray-100 transition-colors"
               >

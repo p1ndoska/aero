@@ -11,4 +11,22 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    // Игнорировать предупреждения о дублирующихся ключах
+    rollupOptions: {
+      onwarn(warning, warn) {
+        // Игнорировать предупреждения о дублирующихся ключах в объектах
+        if (warning.code === 'PLUGIN_WARNING' || warning.message?.includes('Duplicate')) {
+          return;
+        }
+        warn(warning);
+      },
+    },
+  },
+  // Исправление для crypto.hash
+  optimizeDeps: {
+    esbuildOptions: {
+      target: 'es2022',
+    },
+  },
 })

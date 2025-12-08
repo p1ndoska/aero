@@ -1,0 +1,41 @@
+========================================
+  СОЗДАНИЕ SSL СЕРТИФИКАТОВ
+========================================
+
+ВАРИАНТ 1: Если OpenSSL установлен
+------------------------------------
+cd nginx
+.\generate-ssl.bat
+
+Или через PowerShell:
+.\generate-ssl.ps1
+
+
+ВАРИАНТ 2: Если OpenSSL НЕ установлен
+---------------------------------------
+
+Установите OpenSSL одним из способов:
+
+1. Через Chocolatey (если установлен):
+   choco install openssl
+
+2. Через Git Bash (если установлен Git):
+   cd nginx
+   bash generate-ssl.sh
+
+3. Вручную через PowerShell (если OpenSSL установлен):
+   cd nginx
+   if not exist ssl mkdir ssl
+   openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ssl\key.pem -out ssl\cert.pem -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
+
+
+ВАРИАНТ 3: Временно без SSL (только для теста)
+-----------------------------------------------
+Можно запустить проект без SSL, но nginx не будет работать.
+Остальные сервисы (backend, frontend, postgres) будут работать.
+
+Для этого временно закомментируйте nginx в docker-compose.yml
+или просто пропустите создание сертификатов.
+
+========================================
+

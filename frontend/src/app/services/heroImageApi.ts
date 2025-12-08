@@ -1,19 +1,11 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createBaseQueryWithAuth } from './baseQueryWithAuth';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export const heroImageApi = createApi({
   reducerPath: 'heroImageApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-    prepareHeaders: (headers) => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: createBaseQueryWithAuth(BASE_URL),
   tagTypes: ['HeroImage'],
   endpoints: (builder) => ({
     getCurrentHeroImage: builder.query<{

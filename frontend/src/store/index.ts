@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { api } from "../app/services/api";
 import { userProfileApi } from "../app/services/userProfileApi";
 import { uploadApi } from "../app/services/uploadApi";
+import { resumeApi } from "../app/services/resumeApi";
 import { aeronauticalInfoCategoryApi } from "../app/services/aeronauticalInfoCategoryApi";
 import { appealsCategoryApi } from "../app/services/appealsCategoryApi";
 import { servicesCategoryApi } from "../app/services/servicesCategoryApi";
@@ -14,6 +15,7 @@ export const store = configureStore({
     [api.reducerPath]: api.reducer,
     [userProfileApi.reducerPath]: userProfileApi.reducer,
     [uploadApi.reducerPath]: uploadApi.reducer,
+    [resumeApi.reducerPath]: resumeApi.reducer,
     [aeronauticalInfoCategoryApi.reducerPath]: aeronauticalInfoCategoryApi.reducer,
     [appealsCategoryApi.reducerPath]: appealsCategoryApi.reducer,
     [servicesCategoryApi.reducerPath]: servicesCategoryApi.reducer,
@@ -26,6 +28,7 @@ export const store = configureStore({
       api.middleware, 
       userProfileApi.middleware, 
       uploadApi.middleware,
+      resumeApi.middleware,
       aeronauticalInfoCategoryApi.middleware,
       appealsCategoryApi.middleware,
       servicesCategoryApi.middleware,

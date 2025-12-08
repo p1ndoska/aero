@@ -1,17 +1,9 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createBaseQueryWithAuth } from './baseQueryWithAuth';
 
 export const servicesCategoryApi = createApi({
   reducerPath: 'servicesCategoryApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: 'http://localhost:8000/api',
-    prepareHeaders: (headers) => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: createBaseQueryWithAuth(),
   tagTypes: ['ServicesCategory'],
   endpoints: (builder) => ({
     getAllServicesCategories: builder.query({

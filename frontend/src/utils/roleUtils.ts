@@ -22,6 +22,7 @@ export interface RolePermissions {
   canManageManagement: boolean;
   canManageVacancies: boolean;
   canManageLogos: boolean;
+  canManageHomePage: boolean;
 }
 
 export const getRolePermissions = (userRole: string | undefined): RolePermissions => {
@@ -47,6 +48,7 @@ export const getRolePermissions = (userRole: string | undefined): RolePermission
         canManageManagement: true,
         canManageVacancies: true,
         canManageLogos: true,
+        canManageHomePage: true,
       };
       return superAdminPermissions;
     
@@ -65,6 +67,7 @@ export const getRolePermissions = (userRole: string | undefined): RolePermission
         canManageManagement: false,
         canManageVacancies: false,
         canManageLogos: false,
+        canManageHomePage: false,
       };
       return newsAdminPermissions;
     
@@ -79,10 +82,11 @@ export const getRolePermissions = (userRole: string | undefined): RolePermission
         canManageAppeals: false,
         canManageSocial: false,
         canManageMedia: false,
-        canManageBranches: false,
-        canManageManagement: false,
-        canManageVacancies: false,
+        canManageBranches: true,
+        canManageManagement: true,
+        canManageVacancies: true,
         canManageLogos: false,
+        canManageHomePage: false,
       };
     
     case 'SERVICES_ADMIN':
@@ -100,6 +104,7 @@ export const getRolePermissions = (userRole: string | undefined): RolePermission
         canManageManagement: false,
         canManageVacancies: false,
         canManageLogos: false,
+        canManageHomePage: false,
       };
     
     case 'AIRNAV_ADMIN':
@@ -117,6 +122,7 @@ export const getRolePermissions = (userRole: string | undefined): RolePermission
         canManageManagement: false,
         canManageVacancies: false,
         canManageLogos: false,
+        canManageHomePage: false,
       };
     
     case 'APPEALS_ADMIN':
@@ -134,6 +140,7 @@ export const getRolePermissions = (userRole: string | undefined): RolePermission
         canManageManagement: false,
         canManageVacancies: false,
         canManageLogos: false,
+        canManageHomePage: false,
       };
     
     case 'SOCIAL_ADMIN':
@@ -150,7 +157,8 @@ export const getRolePermissions = (userRole: string | undefined): RolePermission
         canManageBranches: false,
         canManageManagement: false,
         canManageVacancies: false,
-        canManageLogos: false,
+        canManageLogos: true,
+        canManageHomePage: false,
       };
     
     case 'MEDIA_ADMIN':
@@ -168,6 +176,7 @@ export const getRolePermissions = (userRole: string | undefined): RolePermission
         canManageManagement: false,
         canManageVacancies: false,
         canManageLogos: false,
+        canManageHomePage: true,
       };
     
     default:
@@ -185,6 +194,7 @@ export const getRolePermissions = (userRole: string | undefined): RolePermission
         canManageManagement: false,
         canManageVacancies: false,
         canManageLogos: false,
+        canManageHomePage: false,
       };
       return defaultPermissions;
   }

@@ -15,6 +15,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { getTranslatedField } from '../utils/translationHelpers';
 import type { Vacancy } from '@/types/vacancy';
 import VacancyApplicationForm from './VacancyApplicationForm';
+import ResumeUploadForm from './ResumeUploadForm';
 import ContentConstructor from './admin/ContentConstructor';
 
 export default function VacanciesPage() {
@@ -88,6 +89,7 @@ export default function VacanciesPage() {
   const [selectedVacancy, setSelectedVacancy] = useState<Vacancy | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
+  const [isResumeUploadFormOpen, setIsResumeUploadFormOpen] = useState(false);
   const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
   
   const [editableTitle, setEditableTitle] = useState('');
@@ -328,6 +330,15 @@ export default function VacanciesPage() {
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             {pageSubtitle}
           </p>
+          <div className="mt-6">
+            <Button 
+              onClick={() => setIsResumeUploadFormOpen(true)}
+              className="bg-[#213659] hover:bg-[#1a2a4a] text-white flex items-center gap-2"
+            >
+              <FileText className="w-4 h-4" />
+              {t('send_resume')}
+            </Button>
+          </div>
         </div>
 
         {/* Дополнительный контент */}
@@ -405,11 +416,7 @@ export default function VacanciesPage() {
                         {t('details')}
                       </Button>
                       <Button onClick={() => handleApply(vacancy)} className="bg-[#213659] hover:bg-[#1a2a4a] text-white">
-                        {t('apply')}
-                      </Button>
-                      <Button onClick={() => handleSendResumeByEmail(vacancy)} variant="outline" className="flex items-center gap-2">
-                        <Mail className="w-4 h-4" />
-                        {t('send_resume')}
+                        {t('apply_to_vacancy')}
                       </Button>
                     </div>
                   </CardContent>
@@ -543,10 +550,6 @@ export default function VacanciesPage() {
                   <Button onClick={() => handleApply(selectedVacancy)} className="bg-[#213659] hover:bg-[#1a2a4a] text-white">
                     {t('apply_to_vacancy')}
                   </Button>
-                  <Button onClick={() => handleSendResumeByEmail(selectedVacancy)} variant="outline" className="flex items-center gap-2">
-                    <Mail className="w-4 h-4" />
-                    {t('send_by_email')}
-                  </Button>
                 </div>
               </div>
             </>
@@ -563,6 +566,13 @@ export default function VacanciesPage() {
           onSuccess={handleApplicationSuccess}
         />
       )}
+
+      {/* Форма загрузки резюме */}
+      <ResumeUploadForm
+        isOpen={isResumeUploadFormOpen}
+        onClose={() => setIsResumeUploadFormOpen(false)}
+        onSuccess={() => setIsResumeUploadFormOpen(false)}
+      />
 
       {/* Редактор контента страницы */}
       <Dialog open={isContentEditorOpen} onOpenChange={setIsContentEditorOpen}>

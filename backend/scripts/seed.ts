@@ -10,7 +10,7 @@ const roles = [
   // About
   'ABOUT_ADMIN',
   // Activity
-  'ACTIVITY_ADMIN',
+  'SERVICES_ADMIN',
   // Air Navigation
   'AIRNAV_ADMIN',
   // Appeals

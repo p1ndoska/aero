@@ -64,18 +64,11 @@ export interface UserStats {
   profileCompleteness: number;
 }
 
+import { createBaseQueryWithAuth } from './baseQueryWithAuth';
+
 export const userProfileApi = createApi({
   reducerPath: 'userProfileApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${BASE_URL}/api`,
-    prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as RootState).auth.token || localStorage.getItem("token");
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: createBaseQueryWithAuth(),
   tagTypes: ['UserProfile'],
   endpoints: (builder) => ({
     // Получить профиль пользователя

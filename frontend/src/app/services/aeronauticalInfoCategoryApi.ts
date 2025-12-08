@@ -1,4 +1,5 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createBaseQueryWithAuth } from './baseQueryWithAuth';
 
 export interface AeronauticalInfoCategory {
   id: number;
@@ -37,16 +38,7 @@ export interface UpdateCategoriesOrderRequest {
 
 export const aeronauticalInfoCategoryApi = createApi({
   reducerPath: 'aeronauticalInfoCategoryApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: 'http://localhost:8000/api',
-    prepareHeaders: (headers) => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: createBaseQueryWithAuth(),
   tagTypes: ['AeronauticalInfoCategory'],
   endpoints: (builder) => ({
     getAeronauticalInfoCategories: builder.query<AeronauticalInfoCategory[], void>({

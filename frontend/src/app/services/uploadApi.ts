@@ -1,19 +1,10 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createBaseQueryWithAuth } from './baseQueryWithAuth';
+import { BASE_URL } from '../../constants';
 
 export const uploadApi = createApi({
   reducerPath: 'uploadApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${BASE_URL}/api`,
-    prepareHeaders: (headers) => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: createBaseQueryWithAuth(),
   endpoints: (builder) => ({
     uploadImage: builder.mutation<{ url: string }, FormData>({
       query: (formData) => ({

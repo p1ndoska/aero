@@ -3,6 +3,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const router = express.Router();
+const {authenticationToken} = require('../middleware/auth');
+const checkRole = require('../middleware/checkRole');
 
 // Настройка multer для загрузки изображений
 const storage = multer.diskStorage({
@@ -61,7 +63,7 @@ router.get('/current', (req, res) => {
 });
 
 // Загрузить новое изображение
-router.post('/upload', upload.single('image'), (req, res) => {
+router.post('/upload', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), upload.single('image'), (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ 
@@ -85,7 +87,7 @@ router.post('/upload', upload.single('image'), (req, res) => {
 });
 
 // Удалить текущее изображение
-router.delete('/remove', (req, res) => {
+router.delete('/remove', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), (req, res) => {
   try {
     const imagePath = path.join(__dirname, '../uploads/hero/hero-bg.jpg');
     

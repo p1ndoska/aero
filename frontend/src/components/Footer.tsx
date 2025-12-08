@@ -15,15 +15,15 @@ const Footer: React.FC = () => {
           <div className="space-y-2 text-sm">
             <div className="flex items-center">
               <FaPhone className="mr-2" size={14} />
-              <span>+375 (17) 123-45-67</span>
+              <span>+375 (17) 215-40-52</span>
             </div>
             <div className="flex items-center">
               <FaPhone className="mr-2" size={14} />
-              <span>+375 (17) 987-65-43</span>
+              <span>+375 (17) 213-41-63 (факс)</span>
             </div>
             <div className="flex items-center">
               <FaEnvelope className="mr-2" size={14} />
-              <span>info@belaeronavigation.by</span>
+              <span>office@ban.by</span>
             </div>
             <div className="flex items-center">
               <FaMapMarkerAlt className="mr-2" size={14} />

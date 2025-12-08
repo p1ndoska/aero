@@ -1,0 +1,39 @@
+# Build stage
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build the application with environment variables
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+RUN npm run build
+
+# Production stage - только статика, без nginx
+FROM alpine:latest
+
+# Install only what's needed
+RUN apk add --no-cache bash
+
+# Create directory for static files
+RUN mkdir -p /app/dist
+
+# Copy built files from builder
+COPY --from=builder /app/dist /app/dist
+
+# Expose port (не используется, но для совместимости)
+EXPOSE 80
+
+# Simple command to keep container running
+# Файлы будут доступны через volume mount в nginx
+# При запуске контейнера файлы будут скопированы в volume через docker-compose command
+CMD ["sh", "-c", "if [ -d /shared/dist ]; then cp -r /app/dist/* /shared/dist/; fi && tail -f /dev/null"]
+

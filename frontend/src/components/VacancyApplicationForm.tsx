@@ -35,6 +35,95 @@ export default function VacancyApplicationForm({
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Функция форматирования телефона в формате +375 (XX) XXX-XX-XX
+  const formatPhoneNumber = (value: string): string => {
+    // Удаляем все символы, кроме цифр и +
+    let cleaned = value.replace(/[^\d+]/g, '');
+    
+    // Если пользователь удаляет символы, разрешаем это
+    if (cleaned.length < 4) {
+      // Если меньше 4 символов, возвращаем то, что есть (может быть +375 или часть)
+      if (cleaned.startsWith('+')) {
+        return cleaned;
+      }
+      if (cleaned.startsWith('375')) {
+        return '+' + cleaned;
+      }
+      return cleaned ? '+' + cleaned : '';
+    }
+    
+    // Если начинается не с +375, исправляем
+    if (!cleaned.startsWith('+375')) {
+      if (cleaned.startsWith('375')) {
+        cleaned = '+' + cleaned;
+      } else if (cleaned.startsWith('+')) {
+        // Если начинается с +, но не с +375, заменяем на +375
+        const digits = cleaned.substring(1);
+        if (digits.startsWith('375')) {
+          cleaned = '+' + digits;
+        } else {
+          cleaned = '+375' + digits;
+        }
+      } else {
+        // Если не начинается с +, добавляем +375
+        cleaned = '+375' + cleaned;
+      }
+    }
+    
+    // Ограничиваем длину (максимум 13 символов: +375 + 9 цифр)
+    if (cleaned.length > 13) {
+      cleaned = cleaned.substring(0, 13);
+    }
+    
+    // Извлекаем только цифры после +375 (максимум 9)
+    const digits = cleaned.substring(4);
+    
+    // Форматируем: +375 (XX) XXX-XX-XX
+    let formatted = '+375';
+    
+    if (digits.length > 0) {
+      const code = digits.substring(0, 2); // Код оператора (2 цифры)
+      formatted += ` (${code}`;
+      
+      if (digits.length > 2) {
+        const part1 = digits.substring(2, 5); // Первая часть (3 цифры)
+        formatted += `) ${part1}`;
+        
+        if (digits.length > 5) {
+          const part2 = digits.substring(5, 7); // Вторая часть (2 цифры)
+          formatted += `-${part2}`;
+          
+          if (digits.length > 7) {
+            const part3 = digits.substring(7, 9); // Третья часть (2 цифры)
+            formatted += `-${part3}`;
+          }
+        }
+      } else {
+        formatted += ')';
+      }
+    }
+    
+    return formatted;
+  };
+
+  // Функция валидации телефона в формате +375 (XX) XXX-XX-XX
+  const validatePhoneNumber = (phone: string): boolean => {
+    // Удаляем все символы форматирования и проверяем формат
+    const cleaned = phone.replace(/[^\d+]/g, '');
+    // Должно быть: +375 + 9 цифр = 13 символов
+    const phoneRegex = /^\+375\d{9}$/;
+    return phoneRegex.test(cleaned);
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setFormData({ ...formData, phone: formatted });
+    // Очищаем ошибку при вводе
+    if (errors.phone) {
+      setErrors({ ...errors, phone: '' });
+    }
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -50,8 +139,8 @@ export default function VacancyApplicationForm({
 
     if (!formData.phone.trim()) {
       newErrors.phone = 'Введите номер телефона';
-    } else if (!/^\+?[\d\s\-()]+$/.test(formData.phone)) {
-      newErrors.phone = 'Введите корректный номер телефона';
+    } else if (!validatePhoneNumber(formData.phone)) {
+      newErrors.phone = 'Введите номер в формате +375 (XX) XXX-XX-XX';
     }
 
     setErrors(newErrors);
@@ -185,10 +274,12 @@ export default function VacancyApplicationForm({
               </Label>
               <Input
                 id="phone"
+                type="tel"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="+7 (999) 123-45-67"
+                onChange={handlePhoneChange}
+                placeholder="+375 (XX) XXX-XX-XX"
                 className={errors.phone ? 'border-red-500' : ''}
+                maxLength={19} // +375 (XX) XXX-XX-XX = 19 символов
               />
               {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
             </div>

@@ -300,7 +300,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
   const [uploadELTInstruction, { isLoading: isUploadingInstruction }] = useUploadELTInstructionMutation();
   const [deleteELTInstruction] = useDeleteELTInstructionMutation();
   
-  const canManageELTDocument = isAuthenticated && (roleName === 'SUPER_ADMIN' || roleName === 'ACTIVITY_ADMIN');
+  const canManageELTDocument = isAuthenticated && (roleName === 'SUPER_ADMIN' || roleName === 'SERVICES_ADMIN');
 
   // Приводим pageContent к общему типу
   // Если pageContentQuery был пропущен (skip: true), pageContent будет undefined
@@ -310,7 +310,14 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
   // Если запрос был пропущен (skip: true), pageContentQuery может быть undefined
   // RTK Query всегда возвращает объект, даже когда skip: true
   if (pageContentQuery && 'isError' in pageContentQuery && pageContentQuery.isError && !pageContentQuery.isLoading) {
-    console.error('Error loading page content:', pageContentQuery.error);
+    console.error('Error loading page content:', {
+      error: pageContentQuery.error,
+      errorData: pageContentQuery.error?.data,
+      errorStatus: pageContentQuery.error?.status,
+      errorMessage: pageContentQuery.error?.data?.error || pageContentQuery.error?.message,
+      pageType,
+      urlPageType
+    });
   }
   
   // Находим категорию услуги по pageType для получения названия
@@ -419,7 +426,11 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
         language
       });
     }
-  }, [pageType, urlPageType, aboutCompanyCategories, aboutCompanyCategory, content, pageTitle, language, aboutCompanyCategoriesQuery]);
+    // Отладочное логирование (раскомментируйте при необходимости)
+    // if (pageType === 'aeronautical' || pageType === 'appeals') {
+    //   console.log('DynamicPage debug:', { pageType, urlPageType, hasContent: !!content });
+    // }
+  }, [pageType, urlPageType, aboutCompanyCategories, aboutCompanyCategory, content, pageTitle, language, aboutCompanyCategoriesQuery, pageContentQuery]);
 
   const handleOpenContentEditor = () => {
     if (content) {
@@ -520,7 +531,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
             // Для аэронавигационных страниц и обращений используем updateByPageType
             // pageType передается в URL, остальные данные в body
             // @ts-ignore
-            result = await updatePageContent({ pageType: urlPageType || '', ...updateData });
+            result = await updatePageContent({ pageType: urlPageType || '', body: updateData });
           } else if (pageType === 'about') {
             // Для страниц о предприятии используем updateByPageType
             // pageType передается в URL, остальные данные в body
@@ -554,8 +565,6 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
       } else {
         console.warn('Update function not available for this page type');
       }
-      console.log('Content saved successfully, refetching...');
-      console.log('Saved data:', updateData);
       toast.success(t('content_updated_successfully'));
       
       // Принудительно обновляем данные
@@ -851,14 +860,21 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
           </div>
 
           {/* Дополнительный контент */}
-          {content?.content && Array.isArray(content.content) && content.content.length > 0 && (
-            <div className="w-full mb-12">
-              <div className="py-8">
-                {(getTranslatedField(content, 'content', language) || []).map((element: any) => {
+          {(() => {
+            const translatedContent = getTranslatedField(content, 'content', language);
+            const hasContent = translatedContent && Array.isArray(translatedContent) && translatedContent.length > 0;
+            // Отладочное логирование (раскомментируйте при необходимости)
+            // if (pageType === 'aeronautical' || pageType === 'appeals') {
+            //   console.log('Content rendering check:', { pageType, urlPageType, hasContent, language });
+            // }
+            return hasContent ? (
+              <div className="w-full mb-12">
+                <div className="py-8">
+                  {translatedContent.map((element: any, index: number) => {
                   // Проверяем, является ли блок приватным и авторизован ли пользователь
                   if (element.isPrivate && !isAuthenticated) {
                     return (
-                      <div key={element.id} className="mb-4 p-6 bg-amber-50 border border-amber-200 rounded-lg">
+                      <div key={element.id || `private-${index}`} className="mb-4 p-6 bg-amber-50 border border-amber-200 rounded-lg">
                         <div className="flex items-center gap-3 text-amber-800">
                           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
@@ -880,17 +896,21 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
                   }
                   
                   return (
-                    <div key={element.id}>
+                    <div key={element.id || `content-${index}`}>
                       {renderContentElement(element)}
                     </div>
                   );
                 })}
               </div>
             </div>
-          )}
+            ) : null;
+          })()}
 
           {/* Заглушка контента, если нет динамического контента */}
-          {(!content?.content || content.content.length === 0) && (
+          {(() => {
+            const translatedContent = getTranslatedField(content, 'content', language);
+            const hasContent = translatedContent && Array.isArray(translatedContent) && translatedContent.length > 0;
+            return !hasContent ? (
             <div className="w-full">
               <div className="bg-blue-50 py-12 text-center rounded-lg">
                 <IconComponent className="w-16 h-16 mx-auto mb-4 text-gray-400" />
@@ -910,7 +930,8 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
                 )}
               </div>
             </div>
-          )}
+            ) : null;
+          })()}
         </div>
       </div>
 

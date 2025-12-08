@@ -63,7 +63,8 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/service-requests', {
+      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://localhost:8443');
+      const response = await fetch(`${apiUrl}/api/service-requests`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

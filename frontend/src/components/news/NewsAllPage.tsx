@@ -510,7 +510,20 @@ export const NewsAllPage: React.FC = () => {
                         <Link to={`/news/${news.id}`} className="block">
                             {news.photo && (
                                 <div className="relative h-48 overflow-hidden">
-                                    <img src={`${BASE_URL}/${news.photo}`} alt={translatedName} className="w-full h-full object-cover" />
+                                    <img 
+                                        src={`${BASE_URL}${news.photo.startsWith('/') ? news.photo : '/' + news.photo}`} 
+                                        alt={translatedName} 
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            console.error('❌ Ошибка загрузки изображения новости:', news.photo);
+                                            const imageUrl = `${BASE_URL}${news.photo.startsWith('/') ? news.photo : '/' + news.photo}`;
+                                            console.error('❌ Полный URL:', imageUrl);
+                                            e.currentTarget.style.display = 'none';
+                                        }}
+                                        onLoad={() => {
+                                            console.log('✅ Изображение новости загружено:', news.photo);
+                                        }}
+                                    />
                                 </div>
                             )}
                             <CardHeader className="pb-4">

@@ -13,14 +13,27 @@ const checkRole = (requiredRoles) => {
             const decoded = jwt.verify(token, process.env.SECRET_KEY);
             const userRole = decoded.role;
 
-            if (!requiredRoles.includes(userRole)) {
-                return res.status(403).json({ error: 'Доступ запрещен' });
+            // Нормализуем роль к верхнему регистру для сравнения
+            const normalizedUserRole = userRole ? userRole.toString().toUpperCase() : '';
+            const normalizedRequiredRoles = requiredRoles.map(role => role.toString().toUpperCase());
+
+            console.log('checkRole - User role:', normalizedUserRole);
+            console.log('checkRole - Required roles:', normalizedRequiredRoles);
+            console.log('checkRole - Match:', normalizedRequiredRoles.includes(normalizedUserRole));
+
+            if (!normalizedRequiredRoles.includes(normalizedUserRole)) {
+                return res.status(403).json({ 
+                    error: 'Доступ запрещен',
+                    userRole: normalizedUserRole,
+                    requiredRoles: normalizedRequiredRoles
+                });
             }
 
             req.user = decoded;
             next();
         } catch (err) {
-            return res.status(403).json({ error: 'Недействителен токен' });
+            console.error('checkRole error:', err);
+            return res.status(403).json({ error: 'Недействителен токен', details: err.message });
         }
     }
 }

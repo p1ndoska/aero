@@ -40,13 +40,13 @@ export default function Footer() {
               <div className="flex items-center gap-2">
                 <FaPhone className="flex-shrink-0" />
                 <a href="tel:+375171234567" className="hover:text-white transition-colors">
-                  +375 (17) 123-45-67
+                  +375 (17) 215-40-52
                 </a>
               </div>
               <div className="flex items-center gap-2">
                 <FaEnvelope className="flex-shrink-0" />
                 <a href="mailto:info@belaeronavigation.by" className="hover:text-white transition-colors">
-                  info@belaeronavigation.by
+                  office@ban.by
                 </a>
               </div>
             </div>

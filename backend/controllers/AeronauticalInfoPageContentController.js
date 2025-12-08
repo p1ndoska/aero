@@ -14,13 +14,134 @@ const AeronauticalInfoPageContentController = {
     getAeronauticalInfoPageContentByPageType: async (req, res) => {
         try {
             const { pageType } = req.params;
-            const content = await prisma.aeronauticalInfoPageContent.findUnique({
-                where: { pageType }
+            let content = await prisma.aeronauticalInfoPageContent.findUnique({
+                where: { pageType },
+                select: {
+                    id: true,
+                    pageType: true,
+                    title: true,
+                    titleEn: true,
+                    titleBe: true,
+                    subtitle: true,
+                    subtitleEn: true,
+                    subtitleBe: true,
+                    content: true,
+                    contentEn: true,
+                    contentBe: true,
+                    createdAt: true,
+                    updatedAt: true
+                }
             });
+            
+            if (!content) {
+                // Пытаемся найти категорию для получения названия
+                const category = await prisma.aeronauticalInfoCategory.findUnique({
+                    where: { pageType },
+                    select: {
+                        name: true,
+                        nameEn: true,
+                        nameBe: true,
+                        description: true,
+                        descriptionEn: true,
+                        descriptionBe: true
+                    }
+                });
+                
+                // Создаем дефолтный контент на основе категории, если она найдена
+                if (category) {
+                    content = await prisma.aeronauticalInfoPageContent.create({
+                        data: {
+                            pageType,
+                            title: category.name || 'Аэронавигационная информация',
+                            titleEn: category.nameEn || null,
+                            titleBe: category.nameBe || null,
+                            subtitle: category.description || null,
+                            subtitleEn: category.descriptionEn || null,
+                            subtitleBe: category.descriptionBe || null,
+                            content: [],
+                            contentEn: [],
+                            contentBe: []
+                        },
+                        select: {
+                            id: true,
+                            pageType: true,
+                            title: true,
+                            titleEn: true,
+                            titleBe: true,
+                            subtitle: true,
+                            subtitleEn: true,
+                            subtitleBe: true,
+                            content: true,
+                            contentEn: true,
+                            contentBe: true,
+                            createdAt: true,
+                            updatedAt: true
+                        }
+                    });
+                } else {
+                    // Если категории нет, создаем контент с дефолтными значениями
+                    try {
+                        content = await prisma.aeronauticalInfoPageContent.create({
+                            data: {
+                                pageType,
+                                title: 'Аэронавигационная информация',
+                                titleEn: 'Aeronautical Information',
+                                titleBe: 'Аэранавігацыйная інфармацыя',
+                                subtitle: null,
+                                subtitleEn: null,
+                                subtitleBe: null,
+                                content: [],
+                                contentEn: [],
+                                contentBe: []
+                            },
+                            select: {
+                                id: true,
+                                pageType: true,
+                                title: true,
+                                titleEn: true,
+                                titleBe: true,
+                                subtitle: true,
+                                subtitleEn: true,
+                                subtitleBe: true,
+                                content: true,
+                                contentEn: true,
+                                contentBe: true,
+                                createdAt: true,
+                                updatedAt: true
+                            }
+                        });
+                    } catch (createError) {
+                        // Если не удалось создать (например, из-за уникального ограничения), пытаемся получить еще раз
+                        content = await prisma.aeronauticalInfoPageContent.findUnique({
+                            where: { pageType },
+                            select: {
+                                id: true,
+                                pageType: true,
+                                title: true,
+                                titleEn: true,
+                                titleBe: true,
+                                subtitle: true,
+                                subtitleEn: true,
+                                subtitleBe: true,
+                                content: true,
+                                contentEn: true,
+                                contentBe: true,
+                                createdAt: true,
+                                updatedAt: true
+                            }
+                        });
+                        if (!content) {
+                            return res.status(500).json({ error: 'Could not create or find content', details: createError.message });
+                        }
+                    }
+                }
+            }
+            
             res.json(content);
         } catch (error) {
             console.error('Error fetching aeronautical info page content by pageType:', error);
-            res.status(500).json({ error: 'Internal server error' });
+            console.error('Error stack:', error.stack);
+            res.status(500).json({ error: 'Internal server error', details: error.message });
         }
     },
 
@@ -67,20 +188,24 @@ const AeronauticalInfoPageContentController = {
 
             if (existingContent) {
                 // Обновляем существующую запись
+                // Используем явные проверки на undefined, чтобы разрешить пустые строки и пустые массивы
+                const updateData = {};
+                
+                if (title !== undefined) updateData.title = title;
+                if (titleEn !== undefined) updateData.titleEn = titleEn;
+                if (titleBe !== undefined) updateData.titleBe = titleBe;
+                if (subtitle !== undefined) updateData.subtitle = subtitle;
+                if (subtitleEn !== undefined) updateData.subtitleEn = subtitleEn;
+                if (subtitleBe !== undefined) updateData.subtitleBe = subtitleBe;
+                if (content !== undefined) updateData.content = content;
+                if (contentEn !== undefined) updateData.contentEn = contentEn;
+                if (contentBe !== undefined) updateData.contentBe = contentBe;
+                
                 const updatedContent = await prisma.aeronauticalInfoPageContent.update({
                     where: { pageType },
-                    data: {
-                        title: title || existingContent.title,
-                        titleEn: titleEn || existingContent.titleEn,
-                        titleBe: titleBe || existingContent.titleBe,
-                        subtitle: subtitle !== undefined ? subtitle : existingContent.subtitle,
-                        subtitleEn: subtitleEn !== undefined ? subtitleEn : existingContent.subtitleEn,
-                        subtitleBe: subtitleBe !== undefined ? subtitleBe : existingContent.subtitleBe,
-                        content: content !== undefined ? content : existingContent.content,
-                        contentEn: contentEn !== undefined ? contentEn : existingContent.contentEn,
-                        contentBe: contentBe !== undefined ? contentBe : existingContent.contentBe,
-                    }
+                    data: updateData
                 });
+                
                 res.json(updatedContent);
             } else {
                 // Создаем новую запись

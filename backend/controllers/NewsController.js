@@ -12,7 +12,12 @@ const NewsController = {
 
         // Основное фото
         if(req.files && req.files.photo && req.files.photo[0]){
-            filePath = req.files.photo[0].path;
+            // Multer возвращает путь типа 'uploads/photo-123.png' (относительный)
+            // Нужно преобразовать в '/uploads/photo-123.png' для использования в URL
+            const rawPath = req.files.photo[0].path.replace(/\\/g, '/');
+            // Если путь начинается с 'uploads/', заменяем на '/uploads/'
+            filePath = rawPath.startsWith('uploads/') ? `/${rawPath}` : (rawPath.startsWith('/') ? rawPath : `/uploads/${rawPath}`);
+            console.log('Photo path normalized:', { raw: req.files.photo[0].path, normalized: filePath });
         }
 
         // Дополнительные изображения
@@ -20,10 +25,16 @@ const NewsController = {
             try {
                 // Проверяем, является ли images массивом
                 if (Array.isArray(req.files.images)) {
-                    additionalImages = req.files.images.map(file => file.path);
+                    additionalImages = req.files.images.map(file => {
+                        const rawPath = file.path.replace(/\\/g, '/');
+                        // Если путь начинается с 'uploads/', заменяем на '/uploads/'
+                        return rawPath.startsWith('uploads/') ? `/${rawPath}` : (rawPath.startsWith('/') ? rawPath : `/uploads/${rawPath}`);
+                    });
                 } else {
                     // Если это не массив, создаем массив из одного элемента
-                    additionalImages = [req.files.images.path];
+                    const rawPath = req.files.images.path.replace(/\\/g, '/');
+                    const normalizedPath = rawPath.startsWith('uploads/') ? `/${rawPath}` : (rawPath.startsWith('/') ? rawPath : `/uploads/${rawPath}`);
+                    additionalImages = [normalizedPath];
                 }
                 console.log('Additional images processed:', additionalImages);
             } catch (error) {
@@ -134,7 +145,11 @@ const NewsController = {
 
             // Обрабатываем основное фото
             if (req.files && req.files.photo && req.files.photo[0]) {
-                updateData.photo = req.files.photo[0].path;
+                // Multer возвращает путь типа 'uploads/photo-123.png' (относительный)
+                // Нужно преобразовать в '/uploads/photo-123.png' для использования в URL
+                const rawPath = req.files.photo[0].path.replace(/\\/g, '/');
+                updateData.photo = rawPath.startsWith('uploads/') ? `/${rawPath}` : (rawPath.startsWith('/') ? rawPath : `/uploads/${rawPath}`);
+                console.log('Update photo path normalized:', { raw: req.files.photo[0].path, normalized: updateData.photo });
             } else if (req.body.photo !== undefined) {
                 // Если photo передано как текст (например, URL)
                 updateData.photo = req.body.photo || null;
@@ -143,8 +158,13 @@ const NewsController = {
             // Обрабатываем дополнительные изображения
             let additionalImages = [];
             if (req.files && req.files.images) {
-                additionalImages = req.files.images.map(file => file.path);
+                additionalImages = req.files.images.map(file => {
+                    const rawPath = file.path.replace(/\\/g, '/');
+                    // Если путь начинается с 'uploads/', заменяем на '/uploads/'
+                    return rawPath.startsWith('uploads/') ? `/${rawPath}` : (rawPath.startsWith('/') ? rawPath : `/uploads/${rawPath}`);
+                });
                 updateData.images = additionalImages; // Добавляем дополнительные изображения
+                console.log('Update additional images processed:', additionalImages);
             }
 
             // Обновляем новость

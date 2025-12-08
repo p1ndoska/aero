@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const {UserController, AdminController, NewsController, CategoryController, RoleController, ManagementController, IncidentReportController, BranchController, VacancyController, VacancyPageContentController, HistoryPageContentController, AboutCompanyPageContentController, SecurityPolicyPageContentController, SocialWorkPageContentController, OrganizationLogoController, SocialWorkCategoryController, AboutCompanyCategoryController, AeronauticalInfoCategoryController, AppealsCategoryController, ServicesCategoryController, ReceptionSlotController, UserProfileController, AeronauticalInfoPageContentController, AppealsPageContentController, ServicesPageContentController, ServiceRequestController, StatisticsController} = require("../controllers");
+const {UserController, AdminController, NewsController, CategoryController, RoleController, ManagementController, IncidentReportController, BranchController, VacancyController, VacancyPageContentController, HistoryPageContentController, AboutCompanyPageContentController, SecurityPolicyPageContentController, SocialWorkPageContentController, OrganizationLogoController, SocialWorkCategoryController, AboutCompanyCategoryController, AeronauticalInfoCategoryController, AppealsCategoryController, ServicesCategoryController, ReceptionSlotController, UserProfileController, AeronauticalInfoPageContentController, AppealsPageContentController, ServicesPageContentController, ServiceRequestController, StatisticsController, ResumeController} = require("../controllers");
 const {authenticationToken} = require("../middleware/auth");
 const checkRole = require('../middleware/checkRole');
 
@@ -38,12 +38,28 @@ const documentFileFilter = (req, file, cb) => {
     const allowedMimeTypes = [
         'application/pdf',
         'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain'
     ];
-    if (allowedMimeTypes.includes(file.mimetype)) {
+    if (allowedMimeTypes.includes(file.mimetype) || file.originalname.match(/\.(pdf|doc|docx|txt)$/i)) {
         cb(null, true);
     } else {
-        cb(new Error('Разрешены только PDF и DOC/DOCX файлы!'), false);
+        cb(new Error('Разрешены только PDF, DOC, DOCX и TXT файлы!'), false);
+    }
+};
+
+// Фильтр для текстовых документов (резюме)
+const textDocumentFileFilter = (req, file, cb) => {
+    const allowedMimeTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain'
+    ];
+    if (allowedMimeTypes.includes(file.mimetype) || file.originalname.match(/\.(pdf|doc|docx|txt)$/i)) {
+        cb(null, true);
+    } else {
+        cb(new Error('Разрешены только PDF, DOC, DOCX и TXT файлы!'), false);
     }
 };
 
@@ -75,6 +91,19 @@ const uploadAnyFile = multer({
     limits: {
         fileSize: 20 * 1024 * 1024 // Ограничение размера файла до 20MB для любых файлов
     }
+});
+
+const uploadResumeFile = multer({
+    storage: storage,
+    fileFilter: textDocumentFileFilter,
+    limits: {
+        fileSize: 10 * 1024 * 1024 // Ограничение размера файла до 10MB для резюме
+    }
+});
+
+// Health check endpoint (для Docker healthcheck)
+router.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Загрузка изображений
@@ -249,10 +278,10 @@ router.get('/social-work-pages', SocialWorkPageContentController.getAllSocialWor
 //organization logos routes
 router.get('/organization-logos', OrganizationLogoController.getAllOrganizationLogos);
 router.get('/organization-logos/:id', OrganizationLogoController.getOrganizationLogo);
-router.post('/organization-logos', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), OrganizationLogoController.createOrganizationLogo);
-router.put('/organization-logos/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), OrganizationLogoController.updateOrganizationLogo);
-router.delete('/organization-logos/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), OrganizationLogoController.deleteOrganizationLogo);
-router.put('/organization-logos/order', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), OrganizationLogoController.updateLogosOrder);
+router.post('/organization-logos', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN', 'SOCIAL_ADMIN']), OrganizationLogoController.createOrganizationLogo);
+router.put('/organization-logos/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN', 'SOCIAL_ADMIN']), OrganizationLogoController.updateOrganizationLogo);
+router.delete('/organization-logos/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN', 'SOCIAL_ADMIN']), OrganizationLogoController.deleteOrganizationLogo);
+router.put('/organization-logos/order', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN', 'SOCIAL_ADMIN']), OrganizationLogoController.updateLogosOrder);
 
 //social work categories routes
 router.get('/social-work-categories', SocialWorkCategoryController.getAllSocialWorkCategories);
@@ -351,7 +380,7 @@ const uploadELTDocument = multer({
   }
 });
 
-router.post('/elt-document/upload', authenticationToken, checkRole(['SUPER_ADMIN', 'ACTIVITY_ADMIN']), (req, res, next) => {
+router.post('/elt-document/upload', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), (req, res, next) => {
   uploadELTDocument.single('document')(req, res, (err) => {
     if (err) {
       if (err instanceof multer.MulterError) {
@@ -366,10 +395,33 @@ router.post('/elt-document/upload', authenticationToken, checkRole(['SUPER_ADMIN
   });
 }, ELTDocumentController.uploadDocument);
 router.get('/elt-document', ELTDocumentController.getDocument);
-router.delete('/elt-document', authenticationToken, checkRole(['SUPER_ADMIN', 'ACTIVITY_ADMIN']), ELTDocumentController.deleteDocument);
+
+// Резюме (публичный endpoint для загрузки)
+router.post('/resume/upload', (req, res, next) => {
+  uploadResumeFile.single('resume')(req, res, (err) => {
+    if (err) {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(413).json({ error: 'Файл слишком большой. Максимальный размер: 10MB' });
+        }
+        return res.status(400).json({ error: 'Ошибка загрузки файла: ' + err.message });
+      }
+      return res.status(400).json({ error: err.message || 'Ошибка загрузки файла' });
+    }
+    next();
+  });
+}, ResumeController.uploadResume);
+
+// Резюме (админские endpoints)
+router.get('/resumes', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), ResumeController.getAllResumes);
+router.get('/resumes/stats', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), ResumeController.getResumeStats);
+router.get('/resumes/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), ResumeController.getResumeById);
+router.put('/resumes/:id/status', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), ResumeController.updateResumeStatus);
+router.delete('/resumes/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), ResumeController.deleteResume);
+router.delete('/elt-document', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ELTDocumentController.deleteDocument);
 
 // ELT instruction routes
-router.post('/elt-instruction/upload', authenticationToken, checkRole(['SUPER_ADMIN', 'ACTIVITY_ADMIN']), (req, res, next) => {
+router.post('/elt-instruction/upload', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), (req, res, next) => {
   uploadELTDocument.single('instruction')(req, res, (err) => {
     if (err) {
       if (err instanceof multer.MulterError) {
@@ -384,7 +436,7 @@ router.post('/elt-instruction/upload', authenticationToken, checkRole(['SUPER_AD
   });
 }, ELTDocumentController.uploadInstruction);
 router.get('/elt-instruction', ELTDocumentController.getInstruction);
-router.delete('/elt-instruction', authenticationToken, checkRole(['SUPER_ADMIN', 'ACTIVITY_ADMIN']), ELTDocumentController.deleteInstruction);
+router.delete('/elt-instruction', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ELTDocumentController.deleteInstruction);
 
 //service requests routes
 router.post('/service-requests', ServiceRequestController.createServiceRequest);

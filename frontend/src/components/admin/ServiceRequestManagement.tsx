@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetAllServicesCategoriesQuery } from '@/app/services/servicesCategoryApi';
 import { getTranslatedField } from '@/utils/translationHelpers';
+import { fetchWithAuth } from '@/utils/apiHelpers';
 
 interface ServiceRequest {
   id: number;
@@ -133,7 +134,6 @@ const ServiceRequestManagement: React.FC = () => {
 
   const fetchServiceRequests = async () => {
     try {
-      const token = localStorage.getItem('token');
       const queryParams = new URLSearchParams({
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
@@ -142,9 +142,9 @@ const ServiceRequestManagement: React.FC = () => {
         ...(filters.serviceType && filters.serviceType !== 'all' && { serviceType: filters.serviceType })
       });
 
-      const response = await fetch(`http://localhost:8000/api/service-requests?${queryParams}`, {
+      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://localhost:8443');
+      const response = await fetchWithAuth(`${apiUrl}/api/service-requests?${queryParams}`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -156,7 +156,11 @@ const ServiceRequestManagement: React.FC = () => {
       const data = await response.json();
       setServiceRequests(data.serviceRequests);
       setPagination(data.pagination);
-    } catch (error) {
+    } catch (error: any) {
+      // Не показываем ошибку, если это 401 (уже выполнен logout и перенаправление)
+      if (error?.message?.includes('Unauthorized')) {
+        return;
+      }
       console.error('Error fetching service requests:', error);
       toast.error('Ошибка при загрузке заявок');
     } finally {
@@ -166,10 +170,9 @@ const ServiceRequestManagement: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/service-requests-stats', {
+      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://localhost:8443');
+      const response = await fetchWithAuth(`${apiUrl}/api/service-requests-stats`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -180,18 +183,21 @@ const ServiceRequestManagement: React.FC = () => {
 
       const data = await response.json();
       setStats(data);
-    } catch (error) {
+    } catch (error: any) {
+      // Не показываем ошибку, если это 401 (уже выполнен logout и перенаправление)
+      if (error?.message?.includes('Unauthorized')) {
+        return;
+      }
       console.error('Error fetching stats:', error);
     }
   };
 
   const updateServiceRequest = async (id: number, updateData: Partial<ServiceRequest>) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/service-requests/${id}`, {
+      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://localhost:8443');
+      const response = await fetchWithAuth(`${apiUrl}/api/service-requests/${id}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(updateData)
@@ -204,7 +210,11 @@ const ServiceRequestManagement: React.FC = () => {
       toast.success('Заявка успешно обновлена');
       fetchServiceRequests();
       fetchStats();
-    } catch (error) {
+    } catch (error: any) {
+      // Не показываем ошибку, если это 401 (уже выполнен logout и перенаправление)
+      if (error?.message?.includes('Unauthorized')) {
+        return;
+      }
       console.error('Error updating service request:', error);
       toast.error('Ошибка при обновлении заявки');
     }
@@ -216,11 +226,10 @@ const ServiceRequestManagement: React.FC = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/service-requests/${id}`, {
+      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://localhost:8443');
+      const response = await fetchWithAuth(`${apiUrl}/api/service-requests/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -232,7 +241,11 @@ const ServiceRequestManagement: React.FC = () => {
       toast.success('Заявка успешно удалена');
       fetchServiceRequests();
       fetchStats();
-    } catch (error) {
+    } catch (error: any) {
+      // Не показываем ошибку, если это 401 (уже выполнен logout и перенаправление)
+      if (error?.message?.includes('Unauthorized')) {
+        return;
+      }
       console.error('Error deleting service request:', error);
       toast.error('Ошибка при удалении заявки');
     }
