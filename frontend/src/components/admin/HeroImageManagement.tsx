@@ -46,14 +46,35 @@ const HeroImageManagement: React.FC = () => {
       const formData = new FormData();
       formData.append('image', selectedFile);
 
-      await uploadImage(formData).unwrap();
+      const result = await uploadImage(formData).unwrap();
+      console.log('Результат загрузки:', result);
       toast.success('Изображение успешно загружено');
       setSelectedFile(null);
       setPreviewUrl(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-      refetch();
+      
+      // Ждем, чтобы файл точно сохранился на сервере
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Принудительно обновляем кэш несколько раз для надежности
+      await refetch();
+      setTimeout(() => {
+        refetch();
+      }, 300);
+      setTimeout(() => {
+        refetch();
+      }, 1000);
+      
+      // Отправляем событие для обновления всех компонентов, использующих hero image
+      // Делаем это с задержкой, чтобы данные успели обновиться
+      setTimeout(() => {
+        console.log('Отправка события heroImageUpdated');
+        window.dispatchEvent(new CustomEvent('heroImageUpdated', { 
+          detail: { timestamp: Date.now() } 
+        }));
+      }, 600);
     } catch (error: any) {
       toast.error(error?.data?.error || 'Ошибка при загрузке изображения');
     }
@@ -111,9 +132,16 @@ const HeroImageManagement: React.FC = () => {
             {currentImage?.hasImage ? (
               <div className="relative">
                 <img
-                  src={`${BASE_URL}${currentImage.imageUrl}`}
+                  src={`${BASE_URL}${currentImage.imageUrl?.startsWith('/') ? '' : '/'}${currentImage.imageUrl}?t=${Date.now()}`}
                   alt="Текущее изображение"
                   className="w-full max-w-md h-48 object-cover rounded-lg border"
+                  onError={(e) => {
+                    console.error('Ошибка загрузки hero image:', currentImage.imageUrl);
+                    console.error('Полный URL:', `${BASE_URL}${currentImage.imageUrl?.startsWith('/') ? '' : '/'}${currentImage.imageUrl}`);
+                  }}
+                  onLoad={() => {
+                    console.log('Hero image загружено:', currentImage.imageUrl);
+                  }}
                 />
                 <Button
                   variant="destructive"

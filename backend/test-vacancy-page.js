@@ -7,9 +7,9 @@ console.log('Метод getPageContent:', typeof VacancyPageContentController.ge
 console.log('Метод updatePageContent:', typeof VacancyPageContentController.updatePageContent);
 
 if (typeof VacancyPageContentController.getPageContent === 'function') {
-    console.log('✅ Контроллер корректен!');
+    console.log(' Контроллер корректен!');
 } else {
-    console.log('❌ Проблема с контроллером!');
+    console.log(' Проблема с контроллером!');
 }
 
 // Проверка экспорта в index.js

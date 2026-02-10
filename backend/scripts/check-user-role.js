@@ -52,7 +52,7 @@ async function checkUserRole() {
       console.log('\n⚠️  Найдены пользователи с ролью ACTIVITY_ADMIN (нужно обновить):');
       console.log(JSON.stringify(activityAdminUsers, null, 2));
     } else {
-      console.log('\n✅ Пользователей с ролью ACTIVITY_ADMIN не найдено');
+      console.log('\n Пользователей с ролью ACTIVITY_ADMIN не найдено');
     }
 
   } catch (error) {
@@ -63,4 +63,5 @@ async function checkUserRole() {
 }
 
 checkUserRole();
+
 

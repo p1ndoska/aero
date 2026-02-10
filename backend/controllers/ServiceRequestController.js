@@ -65,10 +65,10 @@ const ServiceRequestController = {
                 // Подтверждение заявителю
                 const confirmationResult = await emailService.sendServiceRequestConfirmation(serviceRequest);
                 if (confirmationResult.success) {
-                    console.log('✅ Service request confirmation email sent successfully!');
+                    console.log(' Service request confirmation email sent successfully!');
                     console.log('Message ID:', confirmationResult.messageId);
                 } else {
-                    console.error('❌ Failed to send service request confirmation email');
+                    console.error(' Failed to send service request confirmation email');
                     console.error('Error:', confirmationResult.error);
                     if (confirmationResult.details) {
                         console.error('Details:', confirmationResult.details);
@@ -78,17 +78,17 @@ const ServiceRequestController = {
                 // Уведомление администратору
                 const notificationResult = await emailService.sendServiceRequestNotification(serviceRequest);
                 if (notificationResult.success) {
-                    console.log('✅ Service request admin notification sent successfully!');
+                    console.log(' Service request admin notification sent successfully!');
                     console.log('Message ID:', notificationResult.messageId);
                 } else {
-                    console.error('❌ Failed to send service request admin notification');
+                    console.error(' Failed to send service request admin notification');
                     console.error('Error:', notificationResult.error);
                     if (notificationResult.details) {
                         console.error('Details:', notificationResult.details);
                     }
                 }
             } catch (emailError) {
-                console.error('❌ Email sending failed:', emailError);
+                console.error(' Email sending failed:', emailError);
                 console.error('Error message:', emailError.message);
                 // Не прерываем процесс, если email не отправился
             }

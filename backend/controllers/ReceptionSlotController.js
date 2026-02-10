@@ -97,16 +97,6 @@ const ReceptionSlotController = {
         const { slotId } = req.params;
         const { email, notes, fullName } = req.body;
 
-        console.log('=== Book Slot Request ===');
-        console.log('Slot ID:', slotId);
-        console.log('Request body:', JSON.stringify(req.body, null, 2));
-        console.log('Email:', email, 'Type:', typeof email);
-        console.log('FullName:', fullName, 'Type:', typeof fullName);
-        console.log('Notes:', notes, 'Type:', typeof notes);
-        console.log('Email exists:', !!email);
-        console.log('FullName exists:', !!fullName);
-        console.log('Email trimmed:', email ? email.trim() : 'null');
-        console.log('FullName trimmed:', fullName ? fullName.trim() : 'null');
 
         if (!email || !fullName) {
             const missingFields = [];
@@ -212,10 +202,7 @@ const ReceptionSlotController = {
                     offices: slot.management.offices
                 };
 
-                console.log('=== Attempting to send booking confirmation email ===');
-                console.log('To:', email);
-                console.log('FullName:', fullName);
-                console.log('Manager:', managerData.name);
+
 
                 // Отправка подтверждения пользователю
                 const emailResult = await emailService.sendBookingConfirmation(
@@ -225,10 +212,10 @@ const ReceptionSlotController = {
                 );
 
                 if (emailResult.success) {
-                    console.log('✅ Booking confirmation email sent successfully!');
+                    console.log(' Booking confirmation email sent successfully!');
                     console.log('Message ID:', emailResult.messageId);
                 } else {
-                    console.error('❌ Failed to send booking confirmation email');
+                    console.error(' Failed to send booking confirmation email');
                     console.error('Error:', emailResult.error);
                     if (emailResult.details) {
                         console.error('Details:', emailResult.details);
@@ -243,12 +230,12 @@ const ReceptionSlotController = {
                 );
 
                 if (adminNotificationResult.success) {
-                    console.log('✅ Admin notification email sent successfully:', adminNotificationResult.messageId);
+                    console.log(' Admin notification email sent successfully:', adminNotificationResult.messageId);
                 } else {
-                    console.error('❌ Failed to send admin notification email:', adminNotificationResult.error);
+                    console.error(' Failed to send admin notification email:', adminNotificationResult.error);
                 }
             } catch (emailError) {
-                console.error('❌ Email sending failed:', emailError);
+                console.error(' Email sending failed:', emailError);
                 // Не прерываем процесс бронирования, если email не отправился
                 // Пользователь все равно получит успешный ответ о бронировании
             }

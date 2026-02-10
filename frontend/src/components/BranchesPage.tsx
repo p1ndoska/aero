@@ -67,17 +67,17 @@ export default function BranchesPage() {
                   {mainImage ? (
                     <img
                       src={`${BASE_URL}${mainImage.startsWith('/') ? '' : '/'}${mainImage}`}
-                      alt={branch.name}
+                      alt={getTranslatedField(branch, 'name', language)}
                       className="w-full h-48 md:h-56 rounded-xl object-cover object-center mb-4 border-2 border-[#213659]"
                       onError={(e) => {
-                        console.error('❌ Ошибка загрузки изображения филиала:', mainImage);
-                        console.error('❌ Полный URL:', `${BASE_URL}${mainImage.startsWith('/') ? '' : '/'}${mainImage}`);
+                        console.error(' Ошибка загрузки изображения филиала:', mainImage);
+                        console.error(' Полный URL:', `${BASE_URL}${mainImage.startsWith('/') ? '' : '/'}${mainImage}`);
                         e.currentTarget.style.display = 'none';
                         const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
                         if (placeholder) placeholder.style.display = 'flex';
                       }}
                       onLoad={() => {
-                        console.log('✅ Изображение филиала загружено:', mainImage);
+                        console.log(' Изображение филиала загружено:', mainImage);
                       }}
                     />
                   ) : null}

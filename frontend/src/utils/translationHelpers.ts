@@ -6,17 +6,30 @@
  * @returns переведенное значение или значение по умолчанию
  */
 export function getTranslatedField(obj: any, field: string, language: string): any {
-  if (!obj) return null;
+  if (!obj) return '';
+  
+  const baseValue = obj[field];
+  
+  // Проверяем, является ли значение пустым (для строк, массивов, объектов)
+  const isEmpty = (value: any): boolean => {
+    if (value == null) return true;
+    if (typeof value === 'string' && value.trim() === '') return true;
+    if (Array.isArray(value) && value.length === 0) return true;
+    if (typeof value === 'object' && Object.keys(value).length === 0) return true;
+    return false;
+  };
   
   switch (language) {
     case 'en':
       // Если есть перевод на английском, используем его, иначе базовое значение
-      return obj[`${field}En`] != null && obj[`${field}En`] !== '' ? obj[`${field}En`] : obj[field];
+      const enValue = obj[`${field}En`];
+      return (!isEmpty(enValue)) ? enValue : (baseValue != null ? baseValue : '');
     case 'be':
       // Если есть перевод на белорусском, используем его, иначе базовое значение
-      return obj[`${field}Be`] != null && obj[`${field}Be`] !== '' ? obj[`${field}Be`] : obj[field];
+      const beValue = obj[`${field}Be`];
+      return (!isEmpty(beValue)) ? beValue : (baseValue != null ? baseValue : '');
     default: // 'ru' или по умолчанию
-      return obj[field];
+      return baseValue != null ? baseValue : '';
   }
 }
 

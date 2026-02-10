@@ -55,10 +55,10 @@ const AnalyticsDemo: React.FC = () => {
       
       <div className="space-y-2 mb-4">
         <p>
-          <strong>Аналитика:</strong> {canUseAnalytics() ? '✅ Включена' : '❌ Отключена'}
+          <strong>Аналитика:</strong> {canUseAnalytics() ? ' Включена' : ' Отключена'}
         </p>
         <p>
-          <strong>Маркетинг:</strong> {canUseMarketing() ? '✅ Включен' : '❌ Отключен'}
+          <strong>Маркетинг:</strong> {canUseMarketing() ? ' Включен' : ' Отключен'}
         </p>
       </div>
 
@@ -77,6 +77,7 @@ const AnalyticsDemo: React.FC = () => {
 };
 
 export default AnalyticsDemo;
+
 
 
 

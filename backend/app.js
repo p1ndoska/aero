@@ -40,7 +40,7 @@ app.use(cors({
   origin: function (origin, callback) {
     // Разрешаем запросы без origin (например, Postman, curl, мобильные приложения)
     if (!origin) {
-      console.log('✅ CORS: Запрос без origin разрешен');
+      console.log(' CORS: Запрос без origin разрешен');
       return callback(null, true);
     }
     
@@ -50,19 +50,19 @@ app.use(cors({
     
     // В режиме разработки разрешаем все localhost origins (приоритет!)
     if (isDevelopment && origin.includes('localhost')) {
-      console.log(`✅ CORS: Localhost origin разрешен (dev mode): ${origin}`);
+      console.log(` CORS: Localhost origin разрешен (dev mode): ${origin}`);
       // ВАЖНО: Возвращаем сам origin, а не true, чтобы заголовок был правильным
       return callback(null, origin);
     }
     
     // Проверяем, есть ли origin в списке разрешенных
     if (allowedOrigins.includes(origin)) {
-      console.log(`✅ CORS: Origin разрешен из списка: ${origin}`);
+      console.log(` CORS: Origin разрешен из списка: ${origin}`);
       // ВАЖНО: Возвращаем сам origin, а не true
       return callback(null, origin);
     } else {
       // Логируем отклоненные запросы
-      console.log(`❌ CORS: Запрос отклонен от origin: ${origin}`);
+      console.log(` CORS: Запрос отклонен от origin: ${origin}`);
       console.log(`   Разрешенные origins: ${allowedOrigins.join(', ')}`);
       callback(new Error('Not allowed by CORS'));
     }
@@ -96,14 +96,19 @@ if (!fs.existsSync(uploadsPath)) {
     const files = fs.readdirSync(uploadsPath);
     console.log('📁 Files in uploads directory:', files.slice(0, 10), files.length > 10 ? `... (${files.length} total)` : '');
   } catch (err) {
-    console.error('❌ Error reading uploads directory:', err.message);
+    console.error(' Error reading uploads directory:', err.message);
   }
 }
 app.use('/uploads', express.static(uploadsPath, {
   etag: true,
   lastModified: true,
+  maxAge: 0, // Отключаем кэширование для uploads
   setHeaders: (res, filePath) => {
     console.log('📤 Serving static file:', filePath);
+    // Добавляем заголовки для предотвращения кэширования
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
   }
 }));
 console.log('📁 Static files (uploads) served from:', uploadsPath);
@@ -111,7 +116,7 @@ console.log('📁 __dirname:', __dirname);
 
 // Инициализация базы данных при запуске
 initializeDatabase().catch(error => {
-  console.error('❌ Ошибка при инициализации базы данных:', error);
+  console.error(' Ошибка при инициализации базы данных:', error);
 });
 
 app.use('/api', require('./routes'));

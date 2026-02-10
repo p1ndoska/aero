@@ -70,7 +70,7 @@ export const Layout = () => {
             {mustChangePassword && <ForcePasswordChangeModal isOpen={true} />}
             
             {/* Invent AI Chat Widget */}
-            <InventAIChat />
+            {/* <InventAIChat />*/}
         </div>
 
     );

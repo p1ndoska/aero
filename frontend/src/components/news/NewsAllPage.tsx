@@ -515,13 +515,13 @@ export const NewsAllPage: React.FC = () => {
                                         alt={translatedName} 
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
-                                            console.error('❌ Ошибка загрузки изображения новости:', news.photo);
+                                            console.error(' Ошибка загрузки изображения новости:', news.photo);
                                             const imageUrl = `${BASE_URL}${news.photo.startsWith('/') ? news.photo : '/' + news.photo}`;
-                                            console.error('❌ Полный URL:', imageUrl);
+                                            console.error(' Полный URL:', imageUrl);
                                             e.currentTarget.style.display = 'none';
                                         }}
                                         onLoad={() => {
-                                            console.log('✅ Изображение новости загружено:', news.photo);
+                                            console.log(' Изображение новости загружено:', news.photo);
                                         }}
                                     />
                                 </div>
@@ -676,7 +676,7 @@ export const NewsAllPage: React.FC = () => {
                                                 alt="Текущее фото" 
                                                 className="w-32 h-32 object-cover rounded border"
                                                 onError={(e) => {
-                                                    console.error('❌ Ошибка загрузки изображения новости:', selectedNews.photo);
+                                                    console.error(' Ошибка загрузки изображения новости:', selectedNews.photo);
                                                     e.currentTarget.style.display = 'none';
                                                 }}
                                             />

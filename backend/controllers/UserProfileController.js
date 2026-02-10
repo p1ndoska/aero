@@ -515,6 +515,10 @@ const UserProfileController = {
                 select: { password: true }
             });
 
+            if (!user) {
+                return res.status(404).json({ error: 'Пользователь не найден' });
+            }
+
             // Проверяем пароль
             const isPasswordValid = await bcrypt.compare(password, user.password);
             if (!isPasswordValid) {
@@ -529,7 +533,7 @@ const UserProfileController = {
             return res.status(200).json({ message: 'Аккаунт успешно удален' });
         } catch (error) {
             console.error('deleteAccount error', error);
-            return res.status(500).json({ error: 'Internal server error' });
+            return res.status(500).json({ error: 'Internal server error', details: error.message });
         }
     }
 };

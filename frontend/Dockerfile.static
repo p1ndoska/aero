@@ -7,7 +7,10 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+# В Docker используем npm install, а не npm ci, потому что package-lock.json
+# может быть не полностью синхронизирован с package.json (особенно для dev-зависимостей тестов).
+# --legacy-peer-deps отключает строгую проверку peerDependencies.
+RUN npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .

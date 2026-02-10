@@ -72,6 +72,20 @@ router.post('/upload', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADM
       });
     }
 
+    const imagePath = path.join(__dirname, '../uploads/hero/hero-bg.jpg');
+    
+    // Проверяем, что файл действительно сохранился
+    if (!fs.existsSync(imagePath)) {
+      console.error('Файл не найден после загрузки:', imagePath);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Файл не был сохранен на сервере' 
+      });
+    }
+
+    console.log('Hero image успешно загружено:', imagePath);
+    console.log('Размер файла:', fs.statSync(imagePath).size, 'байт');
+
     res.json({ 
       success: true, 
       message: 'Изображение успешно загружено',

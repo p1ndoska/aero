@@ -145,7 +145,7 @@ export const NewsCategoryPage: React.FC<Props> = ({ title, categoryName }) => {
             }
 
             await updateNews({ id: editForm.id, formData }).unwrap();
-            toast.success("Новость успешно обновлена! ✅");
+            toast.success("Новость успешно обновлена! ");
             setIsEditDialogOpen(false);
             setSelectedNews(null);
             setEditPhoto(null);
@@ -275,12 +275,12 @@ export const NewsCategoryPage: React.FC<Props> = ({ title, categoryName }) => {
                                         alt={translatedName} 
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
-                                            console.error('❌ Ошибка загрузки изображения новости:', news.photo);
-                                            console.error('❌ Полный URL:', `${BASE_URL}${news.photo.startsWith('/') ? '' : '/'}${news.photo}`);
+                                            console.error(' Ошибка загрузки изображения новости:', news.photo);
+                                            console.error(' Полный URL:', `${BASE_URL}${news.photo.startsWith('/') ? '' : '/'}${news.photo}`);
                                             e.currentTarget.style.display = 'none';
                                         }}
                                         onLoad={() => {
-                                            console.log('✅ Изображение новости загружено:', news.photo);
+                                            console.log(' Изображение новости загружено:', news.photo);
                                         }}
                                     />
                                 </div>

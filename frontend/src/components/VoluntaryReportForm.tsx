@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,7 +25,24 @@ export default function VoluntaryReportForm() {
     consequences: ''
   });
 
+  const [captchaCode, setCaptchaCode] = useState('');
+  const [antispamCode, setAntispamCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Генерация капчи при монтировании компонента
+  useEffect(() => {
+    generateNewCaptcha();
+  }, []);
+
+  const generateNewCaptcha = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < 7; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setCaptchaCode(result);
+    setAntispamCode(''); // Очищаем поле ввода при генерации новой капчи
+  };
 
   const handleInputChange = (field: keyof VoluntaryReportData, value: string) => {
     setFormData(prev => ({
@@ -42,6 +59,13 @@ export default function VoluntaryReportForm() {
         !formData.eventDescription || !formData.compilationDate || !formData.compilationTime || 
         !formData.recurrenceProbability || !formData.consequences) {
       toast.error(t('fill_all_required_fields'));
+      return;
+    }
+
+    // Проверка капчи
+    if (!antispamCode || antispamCode !== captchaCode) {
+      toast.error(t('invalid_security_code') || 'Неверный код безопасности');
+      generateNewCaptcha(); // Генерируем новую капчу при ошибке
       return;
     }
 
@@ -248,6 +272,41 @@ export default function VoluntaryReportForm() {
                     <SelectItem value="неизвестно">{t('unknown')}</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+
+            {/* Капча */}
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="antispamCode" className="text-sm font-medium">
+                  {t('enter_antispam_code') || 'Введите код безопасности'}: *
+                </Label>
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    id="antispamCode"
+                    value={antispamCode}
+                    onChange={(e) => setAntispamCode(e.target.value)}
+                    placeholder={t('enter_code') || 'Введите код'}
+                    required
+                    className="flex-1"
+                  />
+                  <div className="flex items-center justify-center w-24 h-10 bg-gray-100 border border-gray-300 rounded text-sm font-mono font-bold">
+                    {captchaCode}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={generateNewCaptcha}
+                    className="px-3"
+                    title={t('refresh') || 'Обновить'}
+                  >
+                    🔄
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {t('enter_code_from_image') || 'Введите код, показанный на изображении'}
+                </p>
               </div>
             </div>
 

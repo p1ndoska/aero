@@ -106,23 +106,24 @@ const BranchController = {
             const newBranch = await prisma.branch.create({
                 data: {
                     name,
-                    nameEn: nameEn || null,
-                    nameBe: nameBe || null,
+                    nameEn: nameEn !== undefined ? nameEn : null,
+                    nameBe: nameBe !== undefined ? nameBe : null,
                     address,
-                    addressEn: addressEn || null,
-                    addressBe: addressBe || null,
+                    addressEn: addressEn !== undefined ? addressEn : null,
+                    addressBe: addressBe !== undefined ? addressBe : null,
                     phone,
                     email,
-                    description: description || null,
-                    descriptionEn: descriptionEn || null,
-                    descriptionBe: descriptionBe || null,
-                    workHours: workHours || null,
-                    services: services || null,
-                    coordinates: coordinates || null,
-                    images: images || [],
-                    content: content || null,
-                    contentEn: contentEn || null,
-                    contentBe: contentBe || null
+                    description: description !== undefined ? description : null,
+                    descriptionEn: descriptionEn !== undefined ? descriptionEn : null,
+                    descriptionBe: descriptionBe !== undefined ? descriptionBe : null,
+                    workHours: workHours !== undefined ? workHours : null,
+                    services: services !== undefined ? services : null,
+                    coordinates: coordinates !== undefined ? coordinates : null,
+                    images: images !== undefined ? images : [],
+                    // Для контента: если передана строка (JSON), парсим её; если null или undefined, сохраняем null
+                    content: content !== undefined ? (typeof content === 'string' ? JSON.parse(content) : content) : null,
+                    contentEn: contentEn !== undefined ? (typeof contentEn === 'string' ? JSON.parse(contentEn) : contentEn) : null,
+                    contentBe: contentBe !== undefined ? (typeof contentBe === 'string' ? JSON.parse(contentBe) : contentBe) : null
                 }
             });
 
@@ -165,14 +166,14 @@ const BranchController = {
             const updatedBranch = await prisma.branch.update({
                 where: { id: branchId },
                 data: {
-                    name: name || existingBranch.name,
+                    name: name !== undefined ? name : existingBranch.name,
                     nameEn: nameEn !== undefined ? nameEn : existingBranch.nameEn,
                     nameBe: nameBe !== undefined ? nameBe : existingBranch.nameBe,
-                    address: address || existingBranch.address,
+                    address: address !== undefined ? address : existingBranch.address,
                     addressEn: addressEn !== undefined ? addressEn : existingBranch.addressEn,
                     addressBe: addressBe !== undefined ? addressBe : existingBranch.addressBe,
-                    phone: phone || existingBranch.phone,
-                    email: email || existingBranch.email,
+                    phone: phone !== undefined ? phone : existingBranch.phone,
+                    email: email !== undefined ? email : existingBranch.email,
                     description: description !== undefined ? description : existingBranch.description,
                     descriptionEn: descriptionEn !== undefined ? descriptionEn : existingBranch.descriptionEn,
                     descriptionBe: descriptionBe !== undefined ? descriptionBe : existingBranch.descriptionBe,
@@ -180,9 +181,10 @@ const BranchController = {
                     services: services !== undefined ? services : existingBranch.services,
                     coordinates: coordinates !== undefined ? coordinates : existingBranch.coordinates,
                     images: images !== undefined ? images : existingBranch.images,
-                    content: content !== undefined ? content : existingBranch.content,
-                    contentEn: contentEn !== undefined ? contentEn : existingBranch.contentEn,
-                    contentBe: contentBe !== undefined ? contentBe : existingBranch.contentBe
+                    // Для контента: если передана строка (JSON), парсим её; если null, сохраняем null; если undefined, оставляем старое значение
+                    content: content !== undefined ? (typeof content === 'string' ? JSON.parse(content) : content) : existingBranch.content,
+                    contentEn: contentEn !== undefined ? (typeof contentEn === 'string' ? JSON.parse(contentEn) : contentEn) : existingBranch.contentEn,
+                    contentBe: contentBe !== undefined ? (typeof contentBe === 'string' ? JSON.parse(contentBe) : contentBe) : existingBranch.contentBe
                 }
             });
 

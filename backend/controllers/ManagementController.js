@@ -63,7 +63,14 @@ const ManagementController = {
 
     // Создать нового руководителя
     createManager: async (req, res) => {
-        const { name, position, phone, offices, receptionSchedule, receptionScheduleEn, receptionScheduleBe, images } = req.body;
+        const { 
+            name, nameEn, nameBe,
+            position, positionEn, positionBe,
+            phone, 
+            offices, officesEn, officesBe,
+            receptionSchedule, receptionScheduleEn, receptionScheduleBe, 
+            images 
+        } = req.body;
 
         if (!name || !position || !phone || !receptionSchedule) {
             return res.status(400).json({ error: 'Название, должность, телефон и расписание приема обязательны' });
@@ -73,9 +80,15 @@ const ManagementController = {
             const newManager = await prisma.management.create({
                 data: {
                     name,
+                    nameEn: nameEn || null,
+                    nameBe: nameBe || null,
                     position,
+                    positionEn: positionEn || null,
+                    positionBe: positionBe || null,
                     phone,
                     offices: offices || null,
+                    officesEn: officesEn || null,
+                    officesBe: officesBe || null,
                     receptionSchedule,
                     receptionScheduleEn: receptionScheduleEn || null,
                     receptionScheduleBe: receptionScheduleBe || null,
@@ -97,7 +110,14 @@ const ManagementController = {
     updateManager: async (req, res) => {
         const { id } = req.params;
         const managerId = parseInt(id, 10);
-        const { name, position, phone, offices, receptionSchedule, receptionScheduleEn, receptionScheduleBe, images } = req.body;
+        const { 
+            name, nameEn, nameBe,
+            position, positionEn, positionBe,
+            phone, 
+            offices, officesEn, officesBe,
+            receptionSchedule, receptionScheduleEn, receptionScheduleBe, 
+            images 
+        } = req.body;
 
         if (isNaN(managerId)) {
             return res.status(400).json({ error: 'Неверный формат ID' });
@@ -115,11 +135,17 @@ const ManagementController = {
             const updatedManager = await prisma.management.update({
                 where: { id: managerId },
                 data: {
-                    name: name || existingManager.name,
-                    position: position || existingManager.position,
-                    phone: phone || existingManager.phone,
+                    name: name !== undefined ? name : existingManager.name,
+                    nameEn: nameEn !== undefined ? nameEn : existingManager.nameEn,
+                    nameBe: nameBe !== undefined ? nameBe : existingManager.nameBe,
+                    position: position !== undefined ? position : existingManager.position,
+                    positionEn: positionEn !== undefined ? positionEn : existingManager.positionEn,
+                    positionBe: positionBe !== undefined ? positionBe : existingManager.positionBe,
+                    phone: phone !== undefined ? phone : existingManager.phone,
                     offices: offices !== undefined ? offices : existingManager.offices,
-                    receptionSchedule: receptionSchedule || existingManager.receptionSchedule,
+                    officesEn: officesEn !== undefined ? officesEn : existingManager.officesEn,
+                    officesBe: officesBe !== undefined ? officesBe : existingManager.officesBe,
+                    receptionSchedule: receptionSchedule !== undefined ? receptionSchedule : existingManager.receptionSchedule,
                     receptionScheduleEn: receptionScheduleEn !== undefined ? receptionScheduleEn : existingManager.receptionScheduleEn,
                     receptionScheduleBe: receptionScheduleBe !== undefined ? receptionScheduleBe : existingManager.receptionScheduleBe,
                     images: images !== undefined ? images : existingManager.images

@@ -1,9 +1,10 @@
 //@ts-nocheck
 import React, { useState } from 'react';
-import { useGetProfileQuery, useUpdateProfileMutation, useChangePasswordMutation, useDeleteAccountMutation } from '../app/services/userProfileApi';
+import { useGetProfileQuery, useUpdateProfileMutation, useChangePasswordMutation } from '../app/services/userProfileApi';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Navigate } from 'react-router-dom';
+import { logout } from '../features/user/userSlice';
 import { BASE_URL } from '../constants';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -23,7 +24,6 @@ import {
   Building, 
   FileText, 
   Lock, 
-  Trash2,
   Settings,
   Edit,
   Save,
@@ -37,7 +37,6 @@ export default function UserProfile() {
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
-  const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
 
   const { data: profile, isLoading: profileLoading, error: profileError, refetch: refetchProfile } = useGetProfileQuery();
   
@@ -50,7 +49,6 @@ export default function UserProfile() {
   }, [profileLoading, profileError, profile]);
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
   const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
-  const [deleteAccount, { isLoading: isDeletingAccount }] = useDeleteAccountMutation();
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -69,10 +67,6 @@ export default function UserProfile() {
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
-  });
-
-  const [deleteData, setDeleteData] = useState({
-    password: ''
   });
 
   // Инициализация формы при загрузке профиля
@@ -218,16 +212,7 @@ export default function UserProfile() {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    try {
-      await deleteAccount({ password: deleteData.password }).unwrap();
-      toast.success(t('account_deleted_successfully'));
-      // Перенаправление на главную страницу
-      window.location.href = '/';
-    } catch (error: any) {
-      toast.error(error.data?.error || t('error_deleting_account'));
-    }
-  };
+  const dispatch = useDispatch();
 
   if (profileLoading) {
     return (
@@ -663,52 +648,7 @@ export default function UserProfile() {
                       </Dialog>
                     </div>
 
-                    <div className="border-t pt-4">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h3 className="font-medium text-red-600">{t('delete_account')}</h3>
-                          <p className="text-sm text-gray-600">{t('delete_account_irreversible')}</p>
-                        </div>
-                        <Dialog open={isDeleteAccountOpen} onOpenChange={setIsDeleteAccountOpen}>
-                          <DialogTrigger asChild>
-                            <Button variant="destructive">
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              {t('delete_account')}
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>{t('delete_account_title')}</DialogTitle>
-                              <DialogDescription>
-                                {t('delete_account_description')}
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              <p className="text-red-600">
-                                {t('delete_account_warning_text')}
-                              </p>
-                              <div>
-                                <label className="block text-sm font-medium mb-2">{t('confirm_password_delete')}</label>
-                                <Input
-                                  type="password"
-                                  value={deleteData.password}
-                                  onChange={(e) => setDeleteData(prev => ({ ...prev, password: e.target.value }))}
-                                  placeholder={t('enter_password_confirmation')}
-                                />
-                              </div>
-                              <div className="flex gap-2">
-                                <Button variant="destructive" onClick={handleDeleteAccount} disabled={isDeletingAccount}>
-                                  {isDeletingAccount ? t('deleting') : t('delete_account')}
-                                </Button>
-                                <Button variant="outline" onClick={() => setIsDeleteAccountOpen(false)}>
-                                  {t('cancel')}
-                                </Button>
-                              </div>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    </div>
+                    {/* Блок удаления аккаунта был убран по требованию заказчика */}
                   </CardContent>
                 </Card>
               </TabsContent>

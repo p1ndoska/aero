@@ -144,7 +144,7 @@ export default function BranchDetailsPage() {
   const additionalImages = branch.images?.slice(1) || [];
   const allImages = branch.images || [];
   const services = (branch.services as any) || {};
-  const phones: Array<{ label?: string; number?: string }> = Array.isArray(services.phones) ? services.phones : [];
+  const phones: Array<{ label?: string; labelEn?: string; labelBe?: string; number?: string }> = Array.isArray(services.phones) ? services.phones : [];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -176,11 +176,11 @@ export default function BranchDetailsPage() {
                 setSelectedImageIndex(0);
               }}
               onError={(e) => {
-                console.error('❌ Ошибка загрузки основного изображения филиала:', mainImage);
+                console.error(' Ошибка загрузки основного изображения филиала:', mainImage);
                 e.currentTarget.style.display = 'none';
               }}
               onLoad={() => {
-                console.log('✅ Основное изображение филиала загружено:', mainImage);
+                console.log(' Основное изображение филиала загружено:', mainImage);
               }}
             />
           </div>
@@ -208,13 +208,25 @@ export default function BranchDetailsPage() {
                 <span className="text-gray-700 font-medium">{t('contact_phones') || 'Контактные телефоны:'}</span>
               </div>
               <div className="pl-8 space-y-1">
-                {phones.map((p, idx) => (
-                  <div key={idx} className="text-gray-700">
-                    {p.label ? (
-                      <span className="font-medium">{p.label}:</span>
-                    ) : null} {p.number}
-                  </div>
-                ))}
+                {phones.map((p, idx) => {
+                  // Получаем переведенную подпись телефона
+                  let phoneLabel = '';
+                  if (language === 'en' && p.labelEn) {
+                    phoneLabel = p.labelEn;
+                  } else if (language === 'be' && p.labelBe) {
+                    phoneLabel = p.labelBe;
+                  } else {
+                    phoneLabel = p.label || '';
+                  }
+                  
+                  return (
+                    <div key={idx} className="text-gray-700">
+                      {phoneLabel ? (
+                        <span className="font-medium">{phoneLabel}:</span>
+                      ) : null} {p.number}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -239,8 +251,29 @@ export default function BranchDetailsPage() {
 
         {/* Контент из конструктора */}
         {(() => {
-          const translatedContent = getTranslatedField(branch, 'content', language);
-          return translatedContent && (
+          // Получаем контент для текущего языка
+          let translatedContent;
+          if (language === 'en') {
+            translatedContent = branch.contentEn != null && 
+              (Array.isArray(branch.contentEn) ? branch.contentEn.length > 0 : true) 
+              ? branch.contentEn 
+              : branch.content;
+          } else if (language === 'be') {
+            translatedContent = branch.contentBe != null && 
+              (Array.isArray(branch.contentBe) ? branch.contentBe.length > 0 : true) 
+              ? branch.contentBe 
+              : branch.content;
+          } else {
+            translatedContent = branch.content;
+          }
+          
+          // Проверяем, что контент не пустой
+          const hasContent = translatedContent != null && 
+            (Array.isArray(translatedContent) ? translatedContent.length > 0 : 
+             typeof translatedContent === 'string' ? translatedContent.trim() !== '' : 
+             Object.keys(translatedContent || {}).length > 0);
+          
+          return hasContent && (
             <div className="mb-8 branch-content-container">
               <h3 className="text-xl font-bold text-[#213659] mb-4">{t('additional_information') || 'Дополнительная информация'}</h3>
               <div className="space-y-4">
@@ -314,13 +347,112 @@ export default function BranchDetailsPage() {
                                 alt={element.props?.alt || (t('image') || 'Изображение')}
                                 className="max-w-full h-auto rounded-lg border branch-content-image"
                                 onError={(e) => {
-                                  console.error('❌ Ошибка загрузки изображения в контенте:', element.props?.src);
+                                  console.error(' Ошибка загрузки изображения в контенте:', element.props?.src);
                                   e.currentTarget.style.display = 'none';
                                 }}
                                 onLoad={() => {
-                                  console.log('✅ Изображение в контенте загружено:', element.props?.src);
+                                  console.log(' Изображение в контенте загружено:', element.props?.src);
                                 }}
                               />
+                            </div>
+                          );
+                        case 'list':
+                          const items = element.props?.items || [];
+                          const listType = element.props?.listType || 'unordered'; // 'ordered' или 'unordered'
+                          if (listType === 'ordered') {
+                            return (
+                              <ol 
+                                key={index} 
+                                className={`list-decimal list-inside mb-4 space-y-2 force-text-${element.props?.textAlign || 'left'}`}
+                                style={{ textAlign: element.props?.textAlign || 'left' }}
+                                data-align={element.props?.textAlign || 'left'}
+                              >
+                                {items.map((item: string, idx: number) => (
+                                  <li key={idx} className="text-gray-700">
+                                    {item}
+                                  </li>
+                                ))}
+                              </ol>
+                            );
+                          } else {
+                            return (
+                              <ul 
+                                key={index} 
+                                className={`list-disc list-inside mb-4 space-y-2 force-text-${element.props?.textAlign || 'left'}`}
+                                style={{ textAlign: element.props?.textAlign || 'left' }}
+                                data-align={element.props?.textAlign || 'left'}
+                              >
+                                {items.map((item: string, idx: number) => (
+                                  <li key={idx} className="text-gray-700">
+                                    {item}
+                                  </li>
+                                ))}
+                              </ul>
+                            );
+                          }
+                        case 'table':
+                          const headers = element.props?.headers || [];
+                          const rows = element.props?.rows || [];
+                          return (
+                            <div key={index} className="mb-6 overflow-x-auto">
+                              <table className="min-w-full border border-gray-300 bg-white">
+                                {headers.length > 0 && (
+                                  <thead>
+                                    <tr>
+                                      {headers.map((header: string, idx: number) => (
+                                        <th key={idx} className="border border-gray-300 px-4 py-2 bg-gray-100 text-left font-medium">
+                                          {header || `Колонка ${idx + 1}`}
+                                        </th>
+                                      ))}
+                                    </tr>
+                                  </thead>
+                                )}
+                                <tbody>
+                                  {rows.map((row: any, rowIdx: number) => (
+                                    <tr key={row.id || rowIdx}>
+                                      {row.cells.map((cell: string, cellIdx: number) => (
+                                        <td key={cellIdx} className="border border-gray-300 px-4 py-2">
+                                          {cell}
+                                        </td>
+                                      ))}
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          );
+                        case 'file':
+                          if (!element.props?.fileUrl) return null;
+                          const formatFileSize = (bytes: number) => {
+                            if (bytes === 0) return '0 Bytes';
+                            const k = 1024;
+                            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                            const i = Math.floor(Math.log(bytes) / Math.log(k));
+                            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                          };
+                          return (
+                            <div key={index} className="mb-4 flex items-center gap-3 p-4 border border-gray-300 rounded-lg bg-gray-50">
+                              <div className="flex-shrink-0">
+                                <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900 break-words">
+                                  {element.props.fileName || 'Неизвестный файл'}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {element.props.fileSize ? formatFileSize(element.props.fileSize) : ''}
+                                </p>
+                              </div>
+                              <a
+                                href={`${BASE_URL}${element.props.fileUrl.startsWith('/') ? '' : '/'}${element.props.fileUrl}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[#2A52BE] hover:underline text-sm font-medium"
+                              >
+                                {t('download') || 'Скачать'}
+                              </a>
                             </div>
                           );
                         default:
@@ -405,11 +537,11 @@ export default function BranchDetailsPage() {
                         setSelectedImageIndex(index + 1); // +1 because main image is at index 0
                       }}
                       onError={(e) => {
-                        console.error('❌ Ошибка загрузки дополнительного изображения филиала:', image);
+                        console.error(' Ошибка загрузки дополнительного изображения филиала:', image);
                         e.currentTarget.style.display = 'none';
                       }}
                       onLoad={() => {
-                        console.log('✅ Дополнительное изображение филиала загружено:', image);
+                        console.log(' Дополнительное изображение филиала загружено:', image);
                       }}
                     />
                   ))}

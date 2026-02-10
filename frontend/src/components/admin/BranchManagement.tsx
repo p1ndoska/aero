@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Edit, Trash2, X, Building2, Upload, FolderOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGetAllBranchesQuery, useCreateBranchMutation, useUpdateBranchMutation, useDeleteBranchMutation } from '@/app/services/branchApi';
@@ -12,7 +13,12 @@ import { useSelector } from 'react-redux';
 import { BASE_URL } from '@/constants';
 import { fetchWithAuth } from '@/utils/apiHelpers';
 
-type PhoneItem = { label: string; number: string };
+type PhoneItem = { 
+  label: string; 
+  labelEn?: string; 
+  labelBe?: string; 
+  number: string; 
+};
 
 export default function BranchManagement() {
   const { token } = useSelector((state: any) => state.auth);
@@ -75,7 +81,7 @@ export default function BranchManagement() {
       contentEn: [],
       contentBe: []
     });
-    setPhones([{ label: '', number: '' }]);
+    setPhones([{ label: '', labelEn: '', labelBe: '', number: '' }]);
     setSelectedImages([]);
     setPreviewImages([]);
     setMainImageIndex(0);
@@ -85,7 +91,12 @@ export default function BranchManagement() {
   const handleCreate = async () => {
     // Валидация телефонов: хотя бы одна запись с номером
     const normalizedPhones = phones
-      .map(p => ({ label: p.label?.trim() || '', number: p.number?.trim() || '' }))
+      .map(p => ({ 
+        label: p.label?.trim() || '', 
+        labelEn: p.labelEn?.trim() || '', 
+        labelBe: p.labelBe?.trim() || '', 
+        number: p.number?.trim() || '' 
+      }))
       .filter(p => p.number.length > 0);
     if (normalizedPhones.length === 0) {
       toast.error('Добавьте хотя бы один контактный телефон');
@@ -105,11 +116,12 @@ export default function BranchManagement() {
         uploadedImages.unshift(mainImg);
       }
       // Преобразуем content в JSON строку для отправки
+      // Всегда отправляем контент, даже если массив пустой
       const dataToSend = {
         ...formData,
-        content: formData.content && formData.content.length > 0 ? JSON.stringify(formData.content) : null,
-        contentEn: formData.contentEn && formData.contentEn.length > 0 ? JSON.stringify(formData.contentEn) : null,
-        contentBe: formData.contentBe && formData.contentBe.length > 0 ? JSON.stringify(formData.contentBe) : null,
+        content: formData.content ? JSON.stringify(formData.content) : JSON.stringify([]),
+        contentEn: formData.contentEn ? JSON.stringify(formData.contentEn) : JSON.stringify([]),
+        contentBe: formData.contentBe ? JSON.stringify(formData.contentBe) : JSON.stringify([]),
         images: uploadedImages,
         // Сохраняем телефоны в JSON поле services, чтобы не менять backend-схему
         services: { phones: normalizedPhones }
@@ -129,20 +141,21 @@ export default function BranchManagement() {
   const handleEdit = (branch: Branch) => {
     setEditingBranch(branch);
     
-    // Парсим content из JSON строки
-    let parsedContent = [];
-    try {
-      if (branch.content) {
-        if (typeof branch.content === 'string') {
-          parsedContent = JSON.parse(branch.content);
-        } else {
-          parsedContent = branch.content;
+    // Парсим content из JSON строки для всех языков
+    const parseContent = (content: any): any[] => {
+      if (!content) return [];
+      try {
+        if (typeof content === 'string') {
+          return JSON.parse(content);
+        } else if (Array.isArray(content)) {
+          return content;
         }
+        return [];
+      } catch (error) {
+        console.error('Ошибка парсинга content:', error);
+        return [];
       }
-    } catch (error) {
-      console.error('Ошибка парсинга content:', error);
-      parsedContent = [];
-    }
+    };
     
     setFormData({
       name: branch.name,
@@ -160,22 +173,27 @@ export default function BranchManagement() {
       services: branch.services,
       coordinates: branch.coordinates || { latitude: '', longitude: '' },
       images: branch.images,
-      content: parsedContent || [],
-      contentEn: branch.contentEn || [],
-      contentBe: branch.contentBe || []
+      content: parseContent(branch.content),
+      contentEn: parseContent(branch.contentEn),
+      contentBe: parseContent(branch.contentBe)
     });
     // Инициализируем список телефонов из services.phones, если есть
     try {
       const svc = branch.services as any;
       if (svc && Array.isArray(svc.phones)) {
         setPhones(
-          svc.phones.map((p: any) => ({ label: String(p.label || ''), number: String(p.number || '') }))
+          svc.phones.map((p: any) => ({ 
+            label: String(p.label || ''), 
+            labelEn: String(p.labelEn || ''), 
+            labelBe: String(p.labelBe || ''), 
+            number: String(p.number || '') 
+          }))
         );
       } else {
-        setPhones([{ label: '', number: '' }]);
+        setPhones([{ label: '', labelEn: '', labelBe: '', number: '' }]);
       }
     } catch {
-      setPhones([{ label: '', number: '' }]);
+      setPhones([{ label: '', labelEn: '', labelBe: '', number: '' }]);
     }
     setSelectedImages([]);
     setPreviewImages([]);
@@ -189,7 +207,12 @@ export default function BranchManagement() {
 
     try {
       const normalizedPhones = phones
-        .map(p => ({ label: p.label?.trim() || '', number: p.number?.trim() || '' }))
+        .map(p => ({ 
+          label: p.label?.trim() || '', 
+          labelEn: p.labelEn?.trim() || '', 
+          labelBe: p.labelBe?.trim() || '', 
+          number: p.number?.trim() || '' 
+        }))
         .filter(p => p.number.length > 0);
       if (normalizedPhones.length === 0) {
         toast.error('Добавьте хотя бы один контактный телефон');
@@ -207,11 +230,12 @@ export default function BranchManagement() {
         uploadedImages.unshift(mainImg);
       }
       // Преобразуем content в JSON строку для отправки
+      // Всегда отправляем контент, даже если массив пустой
       const dataToSend = {
         ...formData,
-        content: formData.content && formData.content.length > 0 ? JSON.stringify(formData.content) : null,
-        contentEn: formData.contentEn && formData.contentEn.length > 0 ? JSON.stringify(formData.contentEn) : null,
-        contentBe: formData.contentBe && formData.contentBe.length > 0 ? JSON.stringify(formData.contentBe) : null,
+        content: formData.content ? JSON.stringify(formData.content) : JSON.stringify([]),
+        contentEn: formData.contentEn ? JSON.stringify(formData.contentEn) : JSON.stringify([]),
+        contentBe: formData.contentBe ? JSON.stringify(formData.contentBe) : JSON.stringify([]),
         services: { phones: normalizedPhones },
         images: [...(formData.images || []), ...uploadedImages]
       } as any;
@@ -445,59 +469,91 @@ export default function BranchManagement() {
           </div>
         </div>
 
-      {/* Контактные телефоны (динамический список) */}
+      {/* Контактные телефоны (динамический список с многоязычными подписями) */}
       <div>
         <Label className="mb-2 block">Контактные телефоны</Label>
-        <div className="space-y-3">
-          {phones.map((phoneItem, index) => (
-            <div key={index} className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end">
-              <Input
-                placeholder="Подпись (например, Начальник филиала)"
-                value={phoneItem.label}
-                onChange={(e) => {
-                  const updated = [...phones];
-                  updated[index].label = e.target.value;
-                  setPhones(updated);
-                }}
-                className="md:col-span-2"
-              />
-              <Input
-                placeholder="Телефон"
-                value={phoneItem.number}
-                onChange={(e) => {
-                  const updated = [...phones];
-                  updated[index].number = e.target.value;
-                  setPhones(updated);
-                }}
-                className="md:col-span-2"
-              />
-              <div className="flex gap-2 justify-end md:col-span-2">
-                {index === phones.length - 1 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-10"
-                    onClick={() => setPhones((prev) => {
-                      const arr = [...prev];
-                      arr.push({ label: '', number: '' });
-                      return arr;
-                    })}
-                  >
-                    Добавить
-                  </Button>
-                )}
-                {phones.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    className="h-10"
-                    onClick={() => setPhones((prev) => prev.filter((_, i) => i !== index))}
-                  >
-                    Удалить
-                  </Button>
-                )}
+        <div className="space-y-4">
+          {phones.map((phoneItem, phoneIndex) => (
+            <div key={phoneIndex} className="border rounded-lg p-4 space-y-3 bg-gray-50">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div>
+                  <Label className="text-xs text-gray-600 mb-1 block">Подпись (RU)</Label>
+                  <Input
+                    placeholder="Например, Начальник филиала"
+                    value={phoneItem.label || ''}
+                    onChange={(e) => {
+                      const updated = [...phones];
+                      updated[phoneIndex].label = e.target.value;
+                      setPhones(updated);
+                    }}
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-600 mb-1 block">Подпись (EN)</Label>
+                  <Input
+                    placeholder="For example, Branch Manager"
+                    value={phoneItem.labelEn || ''}
+                    onChange={(e) => {
+                      const updated = [...phones];
+                      updated[phoneIndex].labelEn = e.target.value;
+                      setPhones(updated);
+                    }}
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-600 mb-1 block">Подпись (BE)</Label>
+                  <Input
+                    placeholder="Напрыклад, Начальнік філіяла"
+                    value={phoneItem.labelBe || ''}
+                    onChange={(e) => {
+                      const updated = [...phones];
+                      updated[phoneIndex].labelBe = e.target.value;
+                      setPhones(updated);
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end">
+                <div className="md:col-span-2">
+                  <Label className="text-xs text-gray-600 mb-1 block">Номер телефона</Label>
+                  <Input
+                    placeholder="+375 (XX) XXX-XX-XX"
+                    value={phoneItem.number || ''}
+                    onChange={(e) => {
+                      const updated = [...phones];
+                      updated[phoneIndex].number = e.target.value;
+                      setPhones(updated);
+                    }}
+                  />
+                </div>
+                <div className="flex gap-2 justify-end md:col-span-2">
+                  {phoneIndex === phones.length - 1 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-10"
+                      onClick={() => setPhones((prev) => {
+                        const arr = [...prev];
+                        arr.push({ label: '', labelEn: '', labelBe: '', number: '' });
+                        return arr;
+                      })}
+                    >
+                      Добавить
+                    </Button>
+                  )}
+                  {phones.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="h-10"
+                      onClick={() => setPhones((prev) => prev.filter((_, i) => i !== phoneIndex))}
+                    >
+                      Удалить
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -560,7 +616,7 @@ export default function BranchManagement() {
                       alt={`img-${i}`} 
                       className="w-24 h-24 object-cover rounded border cursor-pointer"
                       onError={(e) => {
-                        console.error('❌ Ошибка загрузки изображения:', url);
+                        console.error(' Ошибка загрузки изображения:', url);
                         e.currentTarget.style.display = 'none';
                       }}
                     />
@@ -608,12 +664,34 @@ export default function BranchManagement() {
         )}
       </div>
 
-      <div>
+      {/* Конструктор контента для всех языков с вкладками */}
+      <div className="space-y-4">
         <Label>Конструктор контента</Label>
-        <ContentConstructor
-          content={formData.content || []}
-          onChange={(content) => setFormData({ ...formData, content })}
-        />
+        <Tabs defaultValue="ru" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="ru">Русский</TabsTrigger>
+            <TabsTrigger value="en">English</TabsTrigger>
+            <TabsTrigger value="be">Беларуская</TabsTrigger>
+          </TabsList>
+          <TabsContent value="ru" className="space-y-4 mt-4">
+            <ContentConstructor
+              content={formData.content || []}
+              onChange={(content) => setFormData({ ...formData, content })}
+            />
+          </TabsContent>
+          <TabsContent value="en" className="space-y-4 mt-4">
+            <ContentConstructor
+              content={formData.contentEn || []}
+              onChange={(contentEn) => setFormData({ ...formData, contentEn })}
+            />
+          </TabsContent>
+          <TabsContent value="be" className="space-y-4 mt-4">
+            <ContentConstructor
+              content={formData.contentBe || []}
+              onChange={(contentBe) => setFormData({ ...formData, contentBe })}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
       </div>
   );
@@ -865,11 +943,11 @@ export default function BranchManagement() {
                           alt={`Изображение ${index + 1}`}
                           className="w-16 h-16 object-cover rounded border"
                           onError={(e) => {
-                            console.error('❌ Ошибка загрузки изображения филиала:', image);
+                            console.error(' Ошибка загрузки изображения филиала:', image);
                             e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect width="64" height="64" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-size="10"%3EОшибка%3C/text%3E%3C/svg%3E';
                           }}
                           onLoad={() => {
-                            console.log('✅ Изображение филиала загружено:', image);
+                            console.log(' Изображение филиала загружено:', image);
                           }}
                         />
                       ))}

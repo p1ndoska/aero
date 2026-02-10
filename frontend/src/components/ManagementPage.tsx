@@ -164,14 +164,14 @@ export default function ManagementPage() {
                       alt={manager.name}
                       className="w-56 h-80 md:w-64 md:h-96 lg:w-80 lg:h-[28rem] rounded-xl object-cover object-center mx-auto mb-4 border-4 border-[#213659]"
                       onError={(e) => {
-                        console.error('❌ Ошибка загрузки изображения для', manager.name, ':', manager.images[0]);
+                        console.error(' Ошибка загрузки изображения для', manager.name, ':', manager.images[0]);
                         e.currentTarget.style.display = 'none';
                         // Показываем заглушку при ошибке
                         const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
                         if (placeholder) placeholder.style.display = 'flex';
                       }}
                       onLoad={() => {
-                        console.log('✅ Изображение загружено для', manager.name, ':', manager.images[0]);
+                        console.log(' Изображение загружено для', manager.name, ':', manager.images[0]);
                       }}
                     />
                   ) : null}
@@ -181,10 +181,10 @@ export default function ManagementPage() {
                     </div>
                   )}
                   <h3 className="text-xl font-bold text-[#213659] mb-1">
-                    {getTranslatedField(manager, 'name', language) || manager.name}
+                    {getTranslatedField(manager, 'name', language)}
                   </h3>
                   <p className="text-[#6A81A9] font-medium">
-                    {getTranslatedField(manager, 'position', language) || manager.position}
+                    {getTranslatedField(manager, 'position', language)}
                   </p>
                 </div>
 
@@ -249,11 +249,11 @@ export default function ManagementPage() {
                           alt={`${manager.name} - фото ${index + 2}`}
                           className="w-16 h-16 object-cover rounded border"
                           onError={(e) => {
-                            console.error('❌ Ошибка загрузки дополнительного изображения для', manager.name, ':', image);
+                            console.error(' Ошибка загрузки дополнительного изображения для', manager.name, ':', image);
                             e.currentTarget.style.display = 'none';
                           }}
                           onLoad={() => {
-                            console.log('✅ Дополнительное изображение загружено для', manager.name, ':', image);
+                            console.log(' Дополнительное изображение загружено для', manager.name, ':', image);
                           }}
                         />
                       ))}

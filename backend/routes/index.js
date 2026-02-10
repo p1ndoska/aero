@@ -461,4 +461,7 @@ router.use('/elt-registration', require('./eltRegistration'));
 //ELT deregistration routes
 router.use('/elt-deregistration', require('./eltDeregistration'));
 
+// Search routes
+router.use('/search', require('./search'));
+
 module.exports = router;

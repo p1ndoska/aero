@@ -125,6 +125,17 @@ export default function OrganizationLogoManagement() {
   };
 
   const handleCreateLogo = async () => {
+    // Валидация обязательных полей
+    if (!formData.name || formData.name.trim() === '') {
+      toast.error('Название организации (Русский) обязательно для заполнения');
+      return;
+    }
+    
+    if (!formData.logoUrl || formData.logoUrl.trim() === '') {
+      toast.error('Логотип организации обязателен для загрузки');
+      return;
+    }
+    
     try {
       await createLogo(formData).unwrap();
       toast.success('Логотип организации успешно создан');
@@ -138,6 +149,12 @@ export default function OrganizationLogoManagement() {
 
   const handleUpdateLogo = async () => {
     if (!editingLogo) return;
+    
+    // Валидация обязательных полей
+    if (!formData.name || formData.name.trim() === '') {
+      toast.error('Название организации (Русский) обязательно для заполнения');
+      return;
+    }
     
     try {
       await updateLogo({ id: editingLogo.id, body: formData }).unwrap();

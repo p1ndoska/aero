@@ -48,7 +48,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
   if (pageType === 'appeals' && (urlPageType === 'consumer-questionnaire' || urlPageType === 'customer-questionnaire')) {
     return <ConsumerQuestionnaireForm />;
   }
-
+  
   const { isAuthenticated, user } = useSelector((state: any) => state.auth);
   const roleValue = user?.role;
   const roleName = (typeof roleValue === 'string' ? roleValue : roleValue?.name) ?? '';
@@ -324,7 +324,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
   const serviceCategory = pageType === 'services' && urlPageType
     ? (servicesCategories as any[]).find((cat: any) => cat.pageType === urlPageType)
     : null;
-
+  
   // Находим категорию "О предприятии" по pageType для получения названия
   // Используем useMemo для мемоизации, чтобы пересчитывать при изменении категорий или urlPageType
   const aboutCompanyCategory = useMemo(() => {
@@ -457,7 +457,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
           setEditableTitleRu(aboutCompanyCategory.name || '');
           setEditableTitleEn(aboutCompanyCategory.nameEn || '');
           setEditableTitleBe(aboutCompanyCategory.nameBe || '');
-        } else {
+      } else {
           setEditableTitleRu(defaultTitle);
         }
       }
@@ -569,7 +569,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
       
       // Принудительно обновляем данные
       if (refetchPageContent && typeof refetchPageContent === 'function') {
-        await refetchPageContent();
+      await refetchPageContent();
       }
       
       setIsContentEditorOpen(false);
@@ -705,7 +705,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
                 }
               }
               return (
-                <li key={idx} className="text-gray-700 break-words">{item}</li>
+              <li key={idx} className="text-gray-700 break-words">{item}</li>
               );
             })}
           </ul>
@@ -868,8 +868,8 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
             //   console.log('Content rendering check:', { pageType, urlPageType, hasContent, language });
             // }
             return hasContent ? (
-              <div className="w-full mb-12">
-                <div className="py-8">
+            <div className="w-full mb-12">
+              <div className="py-8">
                   {translatedContent.map((element: any, index: number) => {
                   // Проверяем, является ли блок приватным и авторизован ли пользователь
                   if (element.isPrivate && !isAuthenticated) {
@@ -976,7 +976,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <div className="flex items-center gap-3">
                         <FileText className="w-5 h-5 text-gray-600" />
-                        <div>
+            <div>
                           <p className="text-sm font-medium text-gray-900">{eltDocument.documentName}</p>
                           <a
                             href={`${BASE_URL}${eltDocument.documentUrl}`}
@@ -1008,7 +1008,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
                     <p className="text-sm text-gray-500 mb-2">Документ не загружен</p>
                   )}
                   <div>
-                    <input
+              <input
                       type="file"
                       accept=".pdf,.doc,.docx"
                       onChange={async (e) => {
@@ -1064,7 +1064,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
                       {isUploadingDocument ? 'Загрузка...' : eltDocument?.documentUrl ? 'Заменить документ' : 'Загрузить документ'}
                     </label>
                     <p className="text-xs text-gray-500 mt-2">Разрешены файлы PDF, DOC, DOCX (макс. 20MB)</p>
-                  </div>
+            </div>
                 </div>
               </div>
             )}
@@ -1077,7 +1077,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <div className="flex items-center gap-3">
                         <FileText className="w-5 h-5 text-gray-600" />
-                        <div>
+            <div>
                           <p className="text-sm font-medium text-gray-900">{eltInstruction.instructionName}</p>
                           <a
                             href={`${BASE_URL}${eltInstruction.instructionUrl}`}
@@ -1087,7 +1087,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
                           >
                             Открыть документ
                           </a>
-                        </div>
+            </div>
                       </div>
                       <Button
                         variant="destructive"
@@ -1108,7 +1108,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
                   ) : (
                     <p className="text-sm text-gray-500 mb-2">Документ инструкции не загружен</p>
                   )}
-                  <div>
+            <div>
                     <input
                       type="file"
                       accept=".pdf,.doc,.docx"
@@ -1165,7 +1165,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
                       {isUploadingInstruction ? 'Загрузка...' : eltInstruction?.instructionUrl ? 'Заменить документ инструкции' : 'Загрузить документ инструкции'}
                     </label>
                     <p className="text-xs text-gray-500 mt-2">Разрешены файлы PDF, DOC, DOCX (макс. 20MB)</p>
-                  </div>
+            </div>
                 </div>
               </div>
             )}

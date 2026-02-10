@@ -30,7 +30,7 @@ async function ensureDatabase() {
   console.log(`   Пользователь: ${user}`);
   
   if (database === 'prisma') {
-    console.error('❌ ОШИБКА: DATABASE_URL указывает на базу данных "prisma"!');
+    console.error(' ОШИБКА: DATABASE_URL указывает на базу данных "prisma"!');
     console.error('   Должно быть "mydb"');
     console.error('   Проверьте переменную окружения DATABASE_URL');
     throw new Error('Неправильное имя базы данных в DATABASE_URL');
@@ -56,9 +56,9 @@ async function ensureDatabase() {
     if (!result || result.length === 0) {
       console.log(`\n📦 База данных "${database}" не найдена, создаем...`);
       await adminPrisma.$executeRawUnsafe(`CREATE DATABASE "${database}"`);
-      console.log(`✅ База данных "${database}" успешно создана`);
+      console.log(` База данных "${database}" успешно создана`);
     } else {
-      console.log(`✅ База данных "${database}" уже существует`);
+      console.log(` База данных "${database}" уже существует`);
     }
     
     await adminPrisma.$disconnect();
@@ -69,7 +69,7 @@ async function ensureDatabase() {
     try {
       const prisma = new PrismaClient();
       await prisma.$connect();
-      console.log('✅ Подключение к базе данных успешно');
+      console.log(' Подключение к базе данных успешно');
       await prisma.$disconnect();
     } catch (connectError) {
       if (connectError.code === 'P1003' || connectError.message.includes('does not exist')) {
@@ -84,9 +84,9 @@ async function ensureDatabase() {
           });
           await createPrisma.$executeRawUnsafe(`CREATE DATABASE "${database}"`);
           await createPrisma.$disconnect();
-          console.log(`✅ База данных "${database}" успешно создана`);
+          console.log(` База данных "${database}" успешно создана`);
         } catch (createError) {
-          console.error('❌ Ошибка при создании базы данных:', createError.message);
+          console.error(' Ошибка при создании базы данных:', createError.message);
           throw createError;
         }
       } else {
@@ -95,7 +95,7 @@ async function ensureDatabase() {
     }
   }
 
-  console.log('\n✅ База данных готова к работе');
+  console.log('\n База данных готова к работе');
 }
 
 module.exports = { ensureDatabase };

@@ -87,7 +87,7 @@ function onListening() {
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
-  console.log('✅ Server is listening on ' + bind);
+  console.log(' Server is listening on ' + bind);
   console.log('🌐 Backend API available at: http://localhost:' + addr.port);
   console.log('🔗 Health check: http://localhost:' + addr.port + '/api/health');
 }

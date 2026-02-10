@@ -26,4 +26,4 @@ EXPOSE 3000
 
 # Run migrations, initialize database, and start server
 # Используем скрипт для правильной последовательности выполнения
-CMD ["sh", "-c", "echo '🚀 Запуск backend...' && node scripts/ensure-database.js && echo '✅ БД проверена/создана' && npx prisma migrate deploy && echo '✅ Миграции применены' && node scripts/initialize-db.js && echo '✅ БД инициализирована' && echo '🚀 Запуск сервера...' && node ./bin/www"]
+CMD ["sh", "-c", "echo '🚀 Запуск backend...' && node scripts/ensure-database.js && echo ' БД проверена/создана' && npx prisma migrate deploy && echo ' Миграции применены' && node scripts/initialize-db.js && echo ' БД инициализирована' && echo '🚀 Запуск сервера...' && node ./bin/www"]

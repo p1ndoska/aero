@@ -35,14 +35,14 @@ class EmailService {
         // Проверка подключения
         this.transporter.verify((error, success) => {
             if (error) {
-                console.error('❌ Email service connection error:', error.message);
-                console.error('❌ Error code:', error.code);
-                console.error('❌ Error command:', error.command);
+                console.error(' Email service connection error:', error.message);
+                console.error(' Error code:', error.code);
+                console.error(' Error command:', error.command);
                 if (error.response) {
-                    console.error('❌ SMTP response:', error.response);
+                    console.error(' SMTP response:', error.response);
                 }
             } else {
-                console.log('✅ Email service ready and verified');
+                console.log(' Email service ready and verified');
             }
         });
     }
@@ -67,7 +67,7 @@ class EmailService {
         try {
             // Проверяем, что transporter инициализирован
             if (!this.transporter) {
-                console.error('❌ Email transporter is not initialized!');
+                console.error(' Email transporter is not initialized!');
                 return { success: false, error: 'Email transporter is not initialized' };
             }
 
@@ -77,7 +77,7 @@ class EmailService {
 
             // Проверяем обязательные данные
             if (!email || !fullName) {
-                console.error('❌ Missing required data for email:', { email: !!email, fullName: !!fullName });
+                console.error(' Missing required data for email:', { email: !!email, fullName: !!fullName });
                 return { success: false, error: 'Missing required data: email and fullName are required' };
             }
 
@@ -248,13 +248,13 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             console.log('Subject:', mailOptions.subject);
             
             const result = await this.transporter.sendMail(mailOptions);
-            console.log('✅ Email sent successfully!');
+            console.log(' Email sent successfully!');
             console.log('Message ID:', result.messageId);
             console.log('Response:', result.response);
             return { success: true, messageId: result.messageId };
 
         } catch (error) {
-            console.error('❌ Email sending error:', error);
+            console.error(' Email sending error:', error);
             console.error('Error message:', error.message);
             console.error('Error code:', error.code);
             if (error.response) {
@@ -342,13 +342,13 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             };
 
             const result = await this.transporter.sendMail(mailOptions);
-            console.log('✅ Admin notification sent successfully!');
+            console.log(' Admin notification sent successfully!');
             console.log('Message ID:', result.messageId);
             console.log('Response:', result.response);
             return { success: true, messageId: result.messageId };
 
         } catch (error) {
-            console.error('❌ Admin notification error:', error);
+            console.error(' Admin notification error:', error);
             console.error('Error message:', error.message);
             console.error('Error code:', error.code);
             if (error.response) {
@@ -432,13 +432,13 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             };
             
             const result = await this.transporter.sendMail(mailOptions);
-            console.log('✅ Service request notification sent successfully!');
+            console.log(' Service request notification sent successfully!');
             console.log('Message ID:', result.messageId);
             console.log('Response:', result.response);
             return { success: true, messageId: result.messageId };
             
         } catch (error) {
-            console.error('❌ Service request notification error:', error);
+            console.error(' Service request notification error:', error);
             console.error('Error message:', error.message);
             console.error('Error code:', error.code);
             if (error.response) {
@@ -453,13 +453,13 @@ ${notes ? `- Цель визита: ${notes}` : ''}
         try {
             // Проверяем, что transporter инициализирован
             if (!this.transporter) {
-                console.error('❌ Email transporter is not initialized!');
+                console.error(' Email transporter is not initialized!');
                 return { success: false, error: 'Email transporter is not initialized' };
             }
 
             // Проверяем обязательные данные
             if (!serviceRequest.email || !serviceRequest.fullName) {
-                console.error('❌ Missing required data for email:', { 
+                console.error(' Missing required data for email:', { 
                     email: !!serviceRequest.email, 
                     fullName: !!serviceRequest.fullName 
                 });
@@ -525,13 +525,13 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             };
             
             const result = await this.transporter.sendMail(mailOptions);
-            console.log('✅ Service request confirmation sent successfully!');
+            console.log(' Service request confirmation sent successfully!');
             console.log('Message ID:', result.messageId);
             console.log('Response:', result.response);
             return { success: true, messageId: result.messageId };
             
         } catch (error) {
-            console.error('❌ Service request confirmation error:', error);
+            console.error(' Service request confirmation error:', error);
             console.error('Error message:', error.message);
             console.error('Error code:', error.code);
             if (error.response) {
@@ -554,7 +554,7 @@ ${notes ? `- Цель визита: ${notes}` : ''}
         try {
             // Проверяем, что transporter инициализирован
             if (!this.transporter) {
-                console.error('❌ Email transporter is not initialized!');
+                console.error(' Email transporter is not initialized!');
                 return { success: false, error: 'Email transporter is not initialized' };
             }
 
@@ -759,13 +759,13 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             };
 
             const result = await this.transporter.sendMail(mailOptions);
-            console.log('✅ ELT registration email sent successfully!');
+            console.log(' ELT registration email sent successfully!');
             console.log('Message ID:', result.messageId);
             console.log('Response:', result.response);
             return { success: true, messageId: result.messageId };
 
         } catch (error) {
-            console.error('❌ ELT registration email error:', error);
+            console.error(' ELT registration email error:', error);
             console.error('Error message:', error.message);
             console.error('Error code:', error.code);
             if (error.response) {
@@ -785,7 +785,7 @@ ${notes ? `- Цель визита: ${notes}` : ''}
         try {
             // Проверяем, что transporter инициализирован
             if (!this.transporter) {
-                console.error('❌ Email transporter is not initialized!');
+                console.error(' Email transporter is not initialized!');
                 return { success: false, error: 'Email transporter is not initialized' };
             }
 
@@ -1002,13 +1002,13 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             };
 
             const result = await this.transporter.sendMail(mailOptions);
-            console.log('✅ ELT deregistration email sent successfully!');
+            console.log(' ELT deregistration email sent successfully!');
             console.log('Message ID:', result.messageId);
             console.log('Response:', result.response);
             return { success: true, messageId: result.messageId };
 
         } catch (error) {
-            console.error('❌ ELT deregistration email error:', error);
+            console.error(' ELT deregistration email error:', error);
             console.error('Error message:', error.message);
             console.error('Error code:', error.code);
             if (error.response) {

@@ -475,7 +475,7 @@ const translations = {
     // Личный кабинет
     'profile': 'Личный кабинет',
     'personal_info': 'Личная информация',
-    'account_settings': 'Настройки аккаунта',
+    'account_settings': 'Данные аккаунта',
     'security': 'Безопасность',
     'profile_completeness': 'Заполненность профиля',
     'registration_date': 'Регистрация',

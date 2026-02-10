@@ -36,18 +36,7 @@ export default function LogoUpload({
             className="hidden"
             id={uploadId}
             disabled={isUploading}
-            required={required}
           />
-          {/* Скрытое поле для валидации */}
-          {required && (
-            <input
-              type="text"
-              value={logoUrl || ''}
-              onChange={() => {}}
-              className="hidden"
-              required
-            />
-          )}
           <label
             htmlFor={uploadId}
             className="cursor-pointer flex flex-col items-center"

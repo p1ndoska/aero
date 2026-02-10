@@ -531,12 +531,12 @@ const ServiceRequestManagement: React.FC = () => {
 
       {/* Диалог просмотра заявки */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
+          <DialogHeader className="bg-white">
             <DialogTitle>Заявка #{selectedRequest?.id}</DialogTitle>
           </DialogHeader>
           {selectedRequest && (
-            <div className="space-y-6">
+            <div className="space-y-6 bg-white">
               {/* Контактная информация */}
               <div>
                 <h3 className="text-lg font-semibold mb-3">Контактная информация</h3>

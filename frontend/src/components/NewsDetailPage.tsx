@@ -117,20 +117,20 @@ const NewsDetailPage: React.FC = () => {
                   alt={translatedName}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    console.error('❌ Ошибка загрузки изображения новости:', news.photo);
+                    console.error(' Ошибка загрузки изображения новости:', news.photo);
                     let photoPath = news.photo;
                     if (photoPath && !photoPath.startsWith('/') && !photoPath.startsWith('http')) {
                       photoPath = photoPath.startsWith('uploads/') ? `/${photoPath}` : `/uploads/${photoPath}`;
                     }
                     const imageUrl = `${BASE_URL}${photoPath}`;
-                    console.error('❌ Полный URL:', imageUrl);
-                    console.error('❌ BASE_URL:', BASE_URL);
+                    console.error(' Полный URL:', imageUrl);
+                    console.error(' BASE_URL:', BASE_URL);
                     e.currentTarget.style.display = 'none';
                     const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
                     if (placeholder) placeholder.style.display = 'flex';
                   }}
                   onLoad={() => {
-                    console.log('✅ Изображение новости загружено:', news.photo);
+                    console.log(' Изображение новости загружено:', news.photo);
                   }}
                 />
                 <div 
@@ -246,12 +246,12 @@ const NewsDetailPage: React.FC = () => {
                         setSelectedImageIndex(index);
                       }}
                       onError={(e) => {
-                        console.error('❌ Ошибка загрузки дополнительного изображения:', image);
-                        console.error('❌ Полный URL:', imageUrl);
+                        console.error(' Ошибка загрузки дополнительного изображения:', image);
+                        console.error(' Полный URL:', imageUrl);
                         e.currentTarget.style.display = 'none';
                       }}
                       onLoad={() => {
-                        console.log('✅ Дополнительное изображение загружено:', image);
+                        console.log(' Дополнительное изображение загружено:', image);
                       }}
                     />
                   );

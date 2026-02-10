@@ -556,6 +556,10 @@ function UsersPanel() {
     const [newUser, setNewUser] = useState({ firstName: "", lastName: "", email: "", password: "", role: "" });
     const [searchTerm, setSearchTerm] = useState("");
     const [roleFilter, setRoleFilter] = useState("");
+    const [createdDateFrom, setCreatedDateFrom] = useState("");
+    const [createdDateTo, setCreatedDateTo] = useState("");
+    const [lastLoginDateFrom, setLastLoginDateFrom] = useState("");
+    const [lastLoginDateTo, setLastLoginDateTo] = useState("");
 
 
     const save = async (id: number) => {
@@ -626,7 +630,59 @@ function UsersPanel() {
                              (user.firstName && user.firstName.toLowerCase().includes(searchTerm.toLowerCase())) ||
                              (user.lastName && user.lastName.toLowerCase().includes(searchTerm.toLowerCase()));
         const matchesRole = !roleFilter || user.role?.name === roleFilter;
-        return matchesSearch && matchesRole;
+        
+        // Фильтр по дате создания
+        let matchesCreatedDate = true;
+        if (createdDateFrom || createdDateTo) {
+            const userCreatedDate = user.createdAt ? new Date(user.createdAt) : null;
+            if (userCreatedDate) {
+                if (createdDateFrom) {
+                    const fromDate = new Date(createdDateFrom);
+                    fromDate.setHours(0, 0, 0, 0);
+                    if (userCreatedDate < fromDate) {
+                        matchesCreatedDate = false;
+                    }
+                }
+                if (createdDateTo) {
+                    const toDate = new Date(createdDateTo);
+                    toDate.setHours(23, 59, 59, 999);
+                    if (userCreatedDate > toDate) {
+                        matchesCreatedDate = false;
+                    }
+                }
+            } else {
+                matchesCreatedDate = false;
+            }
+        }
+        
+        // Фильтр по дате последнего входа
+        let matchesLastLogin = true;
+        if (lastLoginDateFrom || lastLoginDateTo) {
+            const userLastLogin = user.lastLoginAt ? new Date(user.lastLoginAt) : null;
+            if (userLastLogin) {
+                if (lastLoginDateFrom) {
+                    const fromDate = new Date(lastLoginDateFrom);
+                    fromDate.setHours(0, 0, 0, 0);
+                    if (userLastLogin < fromDate) {
+                        matchesLastLogin = false;
+                    }
+                }
+                if (lastLoginDateTo) {
+                    const toDate = new Date(lastLoginDateTo);
+                    toDate.setHours(23, 59, 59, 999);
+                    if (userLastLogin > toDate) {
+                        matchesLastLogin = false;
+                    }
+                }
+            } else {
+                // Если фильтр установлен, но у пользователя нет даты входа, исключаем его
+                if (lastLoginDateFrom || lastLoginDateTo) {
+                    matchesLastLogin = false;
+                }
+            }
+        }
+        
+        return matchesSearch && matchesRole && matchesCreatedDate && matchesLastLogin;
     }) || [];
 
     // Получение уникальных ролей для фильтра
@@ -677,44 +733,129 @@ function UsersPanel() {
                 </form>
 
                 {/* Поиск и фильтрация */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border border-gray-200 rounded-lg bg-white">
-                    <div>
-                        <Label htmlFor="search" className="text-sm font-medium text-[#213659] mb-2 block">Поиск по email или имени</Label>
-                        <Input
-                            id="search"
-                            placeholder="Введите email или имя..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full"
-                        />
+                <div className="space-y-4 p-4 border border-gray-200 rounded-lg bg-white">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <Label htmlFor="search" className="text-sm font-medium text-[#213659] mb-2 block">Поиск по email или имени</Label>
+                            <Input
+                                id="search"
+                                placeholder="Введите email или имя..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full"
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="roleFilter" className="text-sm font-medium text-[#213659] mb-2 block">Фильтр по роли</Label>
+                            <div className="flex gap-2">
+                                <Select value={roleFilter || undefined} onValueChange={setRoleFilter}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Все роли" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white text-[#213659] border border-[#B1D1E0]">
+                                        {availableRoles.map((role) => (
+                                            <SelectItem key={role} value={role} className="focus:bg-[#EFF6FF] focus:text-[#213659]">{role}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {roleFilter && (
+                                    <Button 
+                                        type="button" 
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={() => setRoleFilter("")}
+                                        className="px-3"
+                                    >
+                                        Очистить
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <Label htmlFor="roleFilter" className="text-sm font-medium text-[#213659] mb-2 block">Фильтр по роли</Label>
-                        <div className="flex gap-2">
-                            <Select value={roleFilter || undefined} onValueChange={setRoleFilter}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Все роли" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-white text-[#213659] border border-[#B1D1E0]">
-                                    {availableRoles.map((role) => (
-                                        <SelectItem key={role} value={role} className="focus:bg-[#EFF6FF] focus:text-[#213659]">{role}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {roleFilter && (
+                    
+                    {/* Фильтры по датам */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+                        <div>
+                            <Label className="text-sm font-medium text-[#213659] mb-2 block">Фильтр по дате создания</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <Label htmlFor="createdFrom" className="text-xs text-gray-600 mb-1 block">От</Label>
+                                    <Input
+                                        id="createdFrom"
+                                        type="date"
+                                        value={createdDateFrom}
+                                        onChange={(e) => setCreatedDateFrom(e.target.value)}
+                                        className="w-full"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="createdTo" className="text-xs text-gray-600 mb-1 block">До</Label>
+                                    <Input
+                                        id="createdTo"
+                                        type="date"
+                                        value={createdDateTo}
+                                        onChange={(e) => setCreatedDateTo(e.target.value)}
+                                        className="w-full"
+                                    />
+                                </div>
+                            </div>
+                            {(createdDateFrom || createdDateTo) && (
                                 <Button 
                                     type="button" 
                                     variant="outline" 
                                     size="sm"
-                                    onClick={() => setRoleFilter("")}
-                                    className="px-3"
+                                    onClick={() => {
+                                        setCreatedDateFrom("");
+                                        setCreatedDateTo("");
+                                    }}
+                                    className="mt-2 w-full"
                                 >
-                                    Очистить
+                                    Очистить фильтр по дате создания
+                                </Button>
+                            )}
+                        </div>
+                        
+                        <div>
+                            <Label className="text-sm font-medium text-[#213659] mb-2 block">Фильтр по дате последнего входа</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <Label htmlFor="lastLoginFrom" className="text-xs text-gray-600 mb-1 block">От</Label>
+                                    <Input
+                                        id="lastLoginFrom"
+                                        type="date"
+                                        value={lastLoginDateFrom}
+                                        onChange={(e) => setLastLoginDateFrom(e.target.value)}
+                                        className="w-full"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="lastLoginTo" className="text-xs text-gray-600 mb-1 block">До</Label>
+                                    <Input
+                                        id="lastLoginTo"
+                                        type="date"
+                                        value={lastLoginDateTo}
+                                        onChange={(e) => setLastLoginDateTo(e.target.value)}
+                                        className="w-full"
+                                    />
+                                </div>
+                            </div>
+                            {(lastLoginDateFrom || lastLoginDateTo) && (
+                                <Button 
+                                    type="button" 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => {
+                                        setLastLoginDateFrom("");
+                                        setLastLoginDateTo("");
+                                    }}
+                                    className="mt-2 w-full"
+                                >
+                                    Очистить фильтр по дате входа
                                 </Button>
                             )}
                         </div>
                     </div>
-            </div>
+                </div>
 
             <div className="space-y-3">
                        <h3 className="text-lg font-semibold text-[#213659]">
@@ -734,9 +875,29 @@ function UsersPanel() {
                     <div key={u.id} className="flex items-center gap-3 border border-gray-200 p-4 bg-white rounded-lg hover:shadow-md transition-shadow">
                         <div className="flex-1">
                                <div className="text-[#213659] font-medium">{u.email}</div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 mb-1">
                                 {u.firstName && u.lastName && `${u.firstName} ${u.lastName} • `}
                                 Текущая роль: {u.role?.name || 'Не назначена'}
+                            </div>
+                            <div className="text-xs text-gray-400 space-y-0.5">
+                                <div>
+                                    Дата создания: {u.createdAt ? new Date(u.createdAt).toLocaleString('ru-RU', { 
+                                        year: 'numeric', 
+                                        month: '2-digit', 
+                                        day: '2-digit',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    }) : 'Не указана'}
+                                </div>
+                                <div>
+                                    Последний вход: {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString('ru-RU', { 
+                                        year: 'numeric', 
+                                        month: '2-digit', 
+                                        day: '2-digit',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    }) : 'Никогда'}
+                                </div>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">

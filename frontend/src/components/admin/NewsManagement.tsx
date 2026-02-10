@@ -302,11 +302,11 @@ export default function NewsManagement() {
               alt="Текущее фото" 
               className="w-32 h-32 object-cover rounded border"
               onError={(e) => {
-                console.error('❌ Ошибка загрузки изображения новости:', editingNews.photo);
+                console.error(' Ошибка загрузки изображения новости:', editingNews.photo);
                 e.currentTarget.style.display = 'none';
               }}
               onLoad={() => {
-                console.log('✅ Изображение новости загружено:', editingNews.photo);
+                console.log(' Изображение новости загружено:', editingNews.photo);
               }}
             />
           </div>
@@ -487,11 +487,11 @@ export default function NewsManagement() {
                         alt={newsItem.name}
                         className="w-32 h-32 object-cover rounded border"
                         onError={(e) => {
-                          console.error('❌ Ошибка загрузки изображения новости:', newsItem.photo);
+                          console.error(' Ошибка загрузки изображения новости:', newsItem.photo);
                           e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="128"%3E%3Crect width="128" height="128" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-size="12"%3EОшибка загрузки%3C/text%3E%3C/svg%3E';
                         }}
                         onLoad={() => {
-                          console.log('✅ Изображение новости загружено:', newsItem.photo);
+                          console.log(' Изображение новости загружено:', newsItem.photo);
                         }}
                       />
                     </div>

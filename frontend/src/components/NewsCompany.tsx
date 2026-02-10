@@ -140,7 +140,7 @@ export const NewsCompany = () => {
             }
 
             await updateNews({ id: editForm.id, formData }).unwrap();
-            toast.success('Новость успешно обновлена! ✅');
+            toast.success('Новость успешно обновлена! ');
             setIsEditDialogOpen(false);
             setSelectedNews(null);
             setEditPhoto(null);
@@ -330,18 +330,18 @@ export const NewsCompany = () => {
                                         alt={translatedName}
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
-                                            console.error('❌ Ошибка загрузки изображения новости:', news.photo);
+                                            console.error(' Ошибка загрузки изображения новости:', news.photo);
                                             let photoPath = news.photo;
                                             if (photoPath && !photoPath.startsWith('/') && !photoPath.startsWith('http')) {
                                                 photoPath = photoPath.startsWith('uploads/') ? `/${photoPath}` : `/uploads/${photoPath}`;
                                             }
                                             const imageUrl = `${BASE_URL}${photoPath}`;
-                                            console.error('❌ Полный URL:', imageUrl);
-                                            console.error('❌ BASE_URL:', BASE_URL);
+                                            console.error(' Полный URL:', imageUrl);
+                                            console.error(' BASE_URL:', BASE_URL);
                                             e.currentTarget.style.display = 'none';
                                         }}
                                         onLoad={() => {
-                                            console.log('✅ Изображение новости загружено:', news.photo);
+                                            console.log(' Изображение новости загружено:', news.photo);
                                         }}
                                     />
                                 </div>

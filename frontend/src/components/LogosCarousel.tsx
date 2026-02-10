@@ -32,7 +32,7 @@ const LogosCarousel: React.FC<LogosCarouselProps> = ({ logos, loading }) => {
     
     setIsScrolling(true);
     const container = scrollContainerRef.current;
-    const logoWidth = 120; // Примерная ширина логотипа с отступами
+    const logoWidth = 140; // Примерная ширина логотипа с отступами (увеличено)
     const scrollLeft = index * logoWidth;
     
     container.scrollTo({
@@ -101,13 +101,13 @@ const LogosCarousel: React.FC<LogosCarouselProps> = ({ logos, loading }) => {
         style={{ scrollBehavior: 'smooth' }}
       >
         {logos.map((logo) => (
-          <div key={logo.id} className="flex-shrink-0 flex flex-col items-center min-w-[100px]">
+          <div key={logo.id} className="flex-shrink-0 flex flex-col items-center min-w-[120px]">
             {logo.internalPath && logo.internalPath !== "" ? (
               <Link
                 to={logo.internalPath}
                 className="flex flex-col items-center hover:opacity-80 transition-opacity w-full"
               >
-                <div className="w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 flex items-center justify-center bg-white rounded-lg border border-gray-200 shadow-sm mb-2 p-2">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 flex items-center justify-center bg-white rounded-lg border border-gray-200 shadow-sm mb-1 p-1.5">
                   <img
                     src={logo.logoUrl}
                     alt={getTranslatedField(logo, 'name', language)}
@@ -117,13 +117,13 @@ const LogosCarousel: React.FC<LogosCarouselProps> = ({ logos, loading }) => {
                     }}
                   />
                 </div>
-                <span className="text-xs text-gray-600 text-center break-words leading-tight">
+                <span className="text-xs text-gray-600 text-center break-words leading-tight mt-0.5">
                   {getTranslatedField(logo, 'name', language)}
                 </span>
               </Link>
             ) : (
               <div className="flex flex-col items-center w-full">
-                <div className="w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 flex items-center justify-center bg-white rounded-lg border border-gray-200 shadow-sm mb-2 p-2">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 flex items-center justify-center bg-white rounded-lg border border-gray-200 shadow-sm mb-1 p-1.5">
                   <img
                     src={logo.logoUrl}
                     alt={getTranslatedField(logo, 'name', language)}
@@ -133,7 +133,7 @@ const LogosCarousel: React.FC<LogosCarouselProps> = ({ logos, loading }) => {
                     }}
                   />
                 </div>
-                <span className="text-xs text-gray-600 text-center break-words leading-tight">
+                <span className="text-xs text-gray-600 text-center break-words leading-tight mt-0.5">
                   {getTranslatedField(logo, 'name', language)}
                 </span>
               </div>

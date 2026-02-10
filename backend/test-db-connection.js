@@ -13,7 +13,7 @@ async function testConnection() {
   const databaseUrl = process.env.DATABASE_URL;
   
   if (!databaseUrl) {
-    console.error('❌ ОШИБКА: DATABASE_URL не установлен!');
+    console.error(' ОШИБКА: DATABASE_URL не установлен!');
     console.error('\nСоздайте файл backend/.env со следующим содержимым:');
     console.error('DATABASE_URL="postgresql://prisma:prisma@localhost:5432/mydb?schema=public"');
     process.exit(1);
@@ -25,7 +25,7 @@ async function testConnection() {
   // Парсим URL
   const urlMatch = databaseUrl.match(/postgresql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/([^?]+)/);
   if (!urlMatch) {
-    console.error('❌ ОШИБКА: Неверный формат DATABASE_URL!');
+    console.error(' ОШИБКА: Неверный формат DATABASE_URL!');
     console.error('   Ожидается: postgresql://user:password@host:port/database?schema=public');
     process.exit(1);
   }
@@ -54,15 +54,15 @@ async function testConnection() {
   try {
     // Подключаемся к БД
     await prisma.$connect();
-    console.log('✅ Подключение к базе данных успешно!\n');
+    console.log(' Подключение к базе данных успешно!\n');
     
     // Проверяем, что БД существует и доступна
     try {
       const result = await prisma.$queryRaw`SELECT version()`;
-      console.log('✅ База данных доступна');
+      console.log(' База данных доступна');
       console.log(`   PostgreSQL версия: ${result[0].version.split(' ')[0]} ${result[0].version.split(' ')[1]}\n`);
     } catch (error) {
-      console.error('❌ Ошибка при выполнении запроса:', error.message);
+      console.error(' Ошибка при выполнении запроса:', error.message);
     }
     
     // Проверяем наличие таблиц
@@ -75,7 +75,7 @@ async function testConnection() {
       `;
       
       if (tables.length > 0) {
-        console.log(`✅ Найдено таблиц: ${tables.length}`);
+        console.log(` Найдено таблиц: ${tables.length}`);
         console.log('   Первые 5 таблиц:');
         tables.slice(0, 5).forEach(table => {
           console.log(`   - ${table.table_name}`);
@@ -91,11 +91,11 @@ async function testConnection() {
       console.warn('⚠️  Не удалось получить список таблиц:', error.message);
     }
     
-    console.log('\n✅ Все проверки пройдены успешно!');
+    console.log('\n Все проверки пройдены успешно!');
     console.log('   Локальный сервер должен работать корректно.\n');
     
   } catch (error) {
-    console.error('\n❌ ОШИБКА подключения к базе данных!\n');
+    console.error('\n ОШИБКА подключения к базе данных!\n');
     console.error('Детали ошибки:');
     console.error(`   Код: ${error.code || 'N/A'}`);
     console.error(`   Сообщение: ${error.message}\n`);

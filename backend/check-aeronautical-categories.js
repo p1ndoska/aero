@@ -16,7 +16,7 @@ async function checkAeronauticalCategories() {
     });
     
   } catch (error) {
-    console.error('❌ Error checking categories:', error);
+    console.error(' Error checking categories:', error);
   } finally {
     await prisma.$disconnect();
   }

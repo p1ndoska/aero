@@ -286,7 +286,8 @@ const UserController = {
     getAllUsers: async(req, res) => {
         try {
             const users = await prisma.user.findMany({
-                include: { role: true }
+                include: { role: true },
+                orderBy: { createdAt: 'desc' }
             });
             return res.status(200).json({users});
         }catch(error){

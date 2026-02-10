@@ -24,9 +24,9 @@ async function updateActivityAdminToServicesAdmin() {
         await prisma.role.create({
           data: { name: 'SERVICES_ADMIN' }
         })
-        console.log('✅ Роль SERVICES_ADMIN создана')
+        console.log(' Роль SERVICES_ADMIN создана')
       } else {
-        console.log('✅ Роль SERVICES_ADMIN уже существует')
+        console.log(' Роль SERVICES_ADMIN уже существует')
       }
       
       await prisma.$disconnect()
@@ -43,9 +43,9 @@ async function updateActivityAdminToServicesAdmin() {
       servicesAdminRole = await prisma.role.create({
         data: { name: 'SERVICES_ADMIN' }
       })
-      console.log('✅ Роль SERVICES_ADMIN создана')
+      console.log(' Роль SERVICES_ADMIN создана')
     } else {
-      console.log('✅ Роль SERVICES_ADMIN уже существует')
+      console.log(' Роль SERVICES_ADMIN уже существует')
     }
 
     // 3. Находим всех пользователей с ролью ACTIVITY_ADMIN
@@ -64,9 +64,9 @@ async function updateActivityAdminToServicesAdmin() {
           where: { id: user.id },
           data: { roleId: servicesAdminRole.id }
         })
-        console.log(`  ✅ Пользователь ${user.email} (${user.firstName} ${user.lastName}) обновлен`)
+        console.log(`   Пользователь ${user.email} (${user.firstName} ${user.lastName}) обновлен`)
       }
-      console.log(`✅ Все пользователи обновлены на роль SERVICES_ADMIN`)
+      console.log(` Все пользователи обновлены на роль SERVICES_ADMIN`)
     }
 
     // 5. Удаляем роль ACTIVITY_ADMIN
@@ -74,16 +74,16 @@ async function updateActivityAdminToServicesAdmin() {
     await prisma.role.delete({
       where: { id: activityAdminRole.id }
     })
-    console.log('✅ Роль ACTIVITY_ADMIN удалена')
+    console.log(' Роль ACTIVITY_ADMIN удалена')
 
-    console.log('\n✅ Обновление завершено успешно!')
+    console.log('\n Обновление завершено успешно!')
     console.log(`📊 Статистика:`)
     console.log(`   - Обновлено пользователей: ${usersWithActivityAdmin.length}`)
     console.log(`   - Роль ACTIVITY_ADMIN удалена`)
     console.log(`   - Роль SERVICES_ADMIN активна`)
 
   } catch (error) {
-    console.error('❌ Ошибка при обновлении:', error)
+    console.error(' Ошибка при обновлении:', error)
     throw error
   } finally {
     await prisma.$disconnect()
@@ -92,7 +92,8 @@ async function updateActivityAdminToServicesAdmin() {
 
 updateActivityAdminToServicesAdmin()
   .catch((error) => {
-    console.error('❌ Критическая ошибка:', error)
+    console.error(' Критическая ошибка:', error)
     process.exit(1)
   })
+
 

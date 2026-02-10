@@ -4,6 +4,7 @@ import { NewsList } from './components/NewsList';
 import { useLanguage } from './contexts/LanguageContext';
 import { useGetAllOrganizationLogosQuery } from './app/services/organizationLogoApi';
 import { useGetCurrentHeroImageQuery } from './app/services/heroImageApi';
+import { useEffect, useState } from 'react';
 import { useForceStyles } from './hooks/useForceStyles';
 import BranchesCarousel from './components/BranchesCarousel';
 import LogosCarousel from './components/LogosCarousel';
@@ -13,7 +14,44 @@ const App = () => {
     const { news, loading, error } = useNews();
     const { t, language } = useLanguage();
     const { data: organizationLogos, isLoading: logosLoading } = useGetAllOrganizationLogosQuery();
-    const { data: heroImage } = useGetCurrentHeroImageQuery();
+    const { data: heroImage, refetch: refetchHeroImage } = useGetCurrentHeroImageQuery(undefined, {
+        // Принудительно обновляем запрос при монтировании
+        refetchOnMountOrArgChange: true,
+        // Обновляем каждые 30 секунд (на случай, если изображение изменилось)
+        pollingInterval: 30000,
+    });
+    const [imageKey, setImageKey] = useState(0);
+    const [imageTimestamp, setImageTimestamp] = useState(Date.now());
+    
+    // Принудительно обновляем изображение при изменении heroImage
+    useEffect(() => {
+        if (heroImage?.hasImage && heroImage.imageUrl) {
+            const newTimestamp = Date.now();
+            setImageKey(prev => prev + 1);
+            setImageTimestamp(newTimestamp);
+            console.log('Hero image обновлен в App.tsx:', heroImage.imageUrl);
+            console.log('Новый timestamp:', newTimestamp);
+        }
+    }, [heroImage?.imageUrl, heroImage?.hasImage]);
+    
+    // Слушаем события обновления изображения (для синхронизации между компонентами)
+    useEffect(() => {
+        const handleImageUpdate = () => {
+            console.log('Событие обновления hero image получено');
+            // Принудительно обновляем timestamp и key при получении события
+            setImageTimestamp(Date.now());
+            setImageKey(prev => prev + 1);
+            // Также обновляем данные из API
+            setTimeout(() => {
+                refetchHeroImage();
+            }, 100);
+        };
+        
+        window.addEventListener('heroImageUpdated', handleImageUpdate);
+        return () => {
+            window.removeEventListener('heroImageUpdated', handleImageUpdate);
+        };
+    }, [refetchHeroImage]);
     
     // Глобальное применение стилей на всех страницах
     useForceStyles();
@@ -34,9 +72,25 @@ const App = () => {
                 >
                     {/* Фоновое изображение */}
                     {heroImage?.hasImage && heroImage.imageUrl ? (
-                        <div 
-                            className="absolute inset-0 bg-cover bg-center opacity-20"
-                            style={{ backgroundImage: `url('${BASE_URL}${heroImage.imageUrl}')` }}
+                        <img
+                            key={`hero-img-${imageKey}-${imageTimestamp}`}
+                            src={`${BASE_URL}${heroImage.imageUrl.startsWith('/') ? '' : '/'}${heroImage.imageUrl}?t=${imageTimestamp}&v=${imageKey}`}
+                            alt="Hero background"
+                            className="absolute inset-0 w-full h-full object-cover opacity-20"
+                            style={{ 
+                                imageRendering: 'auto',
+                            }}
+                            onError={(e) => {
+                                console.error('Ошибка загрузки hero image в App.tsx:', heroImage.imageUrl);
+                                console.error('Полный URL:', `${BASE_URL}${heroImage.imageUrl.startsWith('/') ? '' : '/'}${heroImage.imageUrl}?t=${imageTimestamp}&v=${imageKey}`);
+                            }}
+                            onLoad={(e) => {
+                                console.log('Hero image загружено в App.tsx:', heroImage.imageUrl);
+                                console.log('Timestamp:', imageTimestamp, 'Key:', imageKey);
+                            }}
+                            onLoadStart={() => {
+                                console.log('Начало загрузки hero image');
+                            }}
                         />
                     ) : (
                         <div 
@@ -45,9 +99,26 @@ const App = () => {
                         />
                     )}
                     
-                    {/* Контент поверх изображения */}
+                    {/* Контент поверх изображения - карта или hero image */}
                     <div className="relative z-10 flex items-center justify-center h-full p-6 bg-white">
-                        <img src='/Group5.png'/>
+                        {heroImage?.hasImage && heroImage.imageUrl ? (
+                            <img 
+                                key={`hero-map-${imageKey}-${imageTimestamp}`}
+                                src={`${BASE_URL}${heroImage.imageUrl.startsWith('/') ? '' : '/'}${heroImage.imageUrl}?t=${imageTimestamp}&v=${imageKey}`}
+                                alt="Map"
+                                className="max-w-full max-h-full object-contain"
+                                onError={(e) => {
+                                    console.error('Ошибка загрузки hero image (карта) в App.tsx:', heroImage.imageUrl);
+                                    // Fallback на старую карту при ошибке
+                                    e.currentTarget.src = '/Group5.png';
+                                }}
+                                onLoad={() => {
+                                    console.log('Hero image (карта) загружено в App.tsx:', heroImage.imageUrl);
+                                }}
+                            />
+                        ) : (
+                            <img src='/Group5.png' alt="Map" className="max-w-full max-h-full object-contain"/>
+                        )}
                     </div>
                 </motion.div>
 

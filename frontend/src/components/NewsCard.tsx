@@ -31,12 +31,12 @@ export const NewsCard = ({news}:{news:NewsItem})=>{
                         alt={translatedName}
                         className='w-full h-40 object-cover'
                         onError={(e) => {
-                            console.error('❌ Ошибка загрузки изображения новости:', news.photo);
-                            console.error('❌ Полный URL:', `${BASE_URL}${news.photo.startsWith('/') ? '' : '/'}${news.photo}`);
+                            console.error(' Ошибка загрузки изображения новости:', news.photo);
+                            console.error(' Полный URL:', `${BASE_URL}${news.photo.startsWith('/') ? '' : '/'}${news.photo}`);
                             e.currentTarget.style.display = 'none';
                         }}
                         onLoad={() => {
-                            console.log('✅ Изображение новости загружено:', news.photo);
+                            console.log(' Изображение новости загружено:', news.photo);
                         }}
                     />
                 )}

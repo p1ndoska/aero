@@ -21,6 +21,7 @@ import { logout } from "../features/user/userSlice";
 import { useGetCategoriesQuery } from "@/app/services/categoryApi";
 import FloatingLanguageSwitcher from "./FloatingLanguageSwitcher";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useAccessibility } from "../contexts/AccessibilityContext";
 import { getTranslatedField } from "../utils/translationHelpers";
 import { canAccessAdminPanel } from "../utils/roleUtils";
 import { useGetAllSocialWorkCategoriesQuery } from '../app/services/socialWorkCategoryApi';
@@ -40,6 +41,7 @@ export const Sidebar = () => {
     const navigate = useNavigate();
     const { isAuthenticated, user } = useSelector((state: any) => state.auth);
     const { t, language } = useLanguage();
+    const { isAccessibilityMode } = useAccessibility();
 
     const handleLogout = () => {
         dispatch(logout());
@@ -236,8 +238,13 @@ export const Sidebar = () => {
                 )}
             </div>
 
-            {/* Левое меню (desktop - 769px и больше) */}
-            <aside className="hidden min-[951px]:block w-[260px] h-screen border bg-[#eff6ff] group fixed left-0 top-0 z-30">
+            {/* Левое меню (desktop - 951px и больше) */}
+            <aside
+                className={
+                    "hidden min-[951px]:block w-[260px] h-screen border bg-[#eff6ff] group fixed left-0 top-0 z-30 " +
+                    (isAccessibilityMode ? "overflow-y-auto" : "")
+                }
+            >
                 <div className="flex h-full flex-col">
                     <div className="p-4 flex items-center justify-center w-full">
                         <Link to="/" className="flex flex-col items-center text-center">

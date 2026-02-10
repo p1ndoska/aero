@@ -22,7 +22,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 chmod 600 ssl/key.pem
 chmod 644 ssl/cert.pem
 
-echo "✅ SSL certificates generated in nginx/ssl/"
+echo " SSL certificates generated in nginx/ssl/"
 echo "⚠️  This is a self-signed certificate for development only"
 echo "   For production, use certificates from Let's Encrypt or your CA"
 
