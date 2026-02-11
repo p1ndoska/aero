@@ -22,22 +22,55 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
     const listContainerRef = useRef<HTMLDivElement | null>(null);
     const firstCardRef = useRef<HTMLDivElement | null>(null);
 
-    // Динамически подстраиваем количество новостей:
-    // показываем все доступные новости (если их много — лишние просто обрежутся контейнером по высоте).
+    // Динамически подстраиваем количество новостей под реальную высоту контейнера,
+    // чтобы карточки максимально заполняли блок и не перекрывали стрелку.
     useEffect(() => {
         const calculateItemsPerPage = () => {
-            const total = newsItems.length || baseItemsPerPage;
-            setItemsPerPage(total);
+            const container = listContainerRef.current;
+            const firstCard = firstCardRef.current;
+
+            if (!container || !firstCard) return;
+
+            const containerHeight = container.clientHeight;
+            const cardHeight = firstCard.clientHeight;
+
+            if (!cardHeight || containerHeight <= 0) return;
+
+            // Резерв под область со стрелкой и нижними отступами,
+            // чтобы стрелка всегда была видна и не уезжала за край.
+            const arrowReserve = 80; // px
+            const availableHeight = containerHeight - arrowReserve;
+
+            if (availableHeight <= 0) return;
+
+            // Сколько полных карточек помещается над стрелкой
+            let dynamicCount = Math.max(
+                baseItemsPerPage,
+                Math.floor(availableHeight / cardHeight)
+            );
+
+            // Не показываем больше, чем есть новостей
+            dynamicCount = Math.min(dynamicCount, newsItems.length || dynamicCount);
+
+            // На всякий случай ограничим максимумом
+            dynamicCount = Math.min(dynamicCount, 8);
+
+            setItemsPerPage(dynamicCount);
 
             // Если мы в конце списка и новое количество меньше, чем было,
             // подвинем стартовый индекс, чтобы не было пустоты.
             setStartIndex((prev) => {
-                const maxStart = Math.max(0, newsItems.length - total);
+                const maxStart = Math.max(0, newsItems.length - dynamicCount);
                 return Math.min(prev, maxStart);
             });
         };
 
         calculateItemsPerPage();
+        window.addEventListener("resize", calculateItemsPerPage);
+
+        return () => {
+            window.removeEventListener("resize", calculateItemsPerPage);
+        };
     }, [baseItemsPerPage, newsItems.length]);
 
     if (newsItems.length === 0) {
