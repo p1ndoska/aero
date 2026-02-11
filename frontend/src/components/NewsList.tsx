@@ -36,15 +36,14 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
 
             if (!cardHeight || containerHeight <= 0) return;
 
-            // Оставляем немного места под нижнюю стрелку и внутренние отступы
-            const bottomReserve = 56; // px
-            const availableHeight = containerHeight - bottomReserve;
+            // Доступная высота всего контейнера под карточки
+            const availableHeight = containerHeight;
 
             if (availableHeight <= 0) return;
 
             const dynamicCount = Math.max(
                 baseItemsPerPage,
-                Math.ceil(availableHeight / cardHeight)
+                Math.ceil(availableHeight / cardHeight) + 1 // +1, чтобы карточки занимали контейнер максимально плотно
             );
 
             setItemsPerPage(dynamicCount);
