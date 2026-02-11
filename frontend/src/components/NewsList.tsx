@@ -22,29 +22,27 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
     const listContainerRef = useRef<HTMLDivElement | null>(null);
     const firstCardRef = useRef<HTMLDivElement | null>(null);
 
-    // Динамически подстраиваем количество новостей под реальную высоту контейнера,
-    // чтобы карточки заполняли весь родительский блок с новостями.
+    // Динамически подстраиваем количество новостей под высоту экрана
+    // (простая логика по брейкпоинтам, чтобы на больших экранах было >3 карточек).
     useEffect(() => {
         const calculateItemsPerPage = () => {
-            const container = listContainerRef.current;
-            const firstCard = firstCardRef.current;
+            if (typeof window === "undefined") return;
 
-            if (!container || !firstCard) return;
+            const vh = window.innerHeight;
 
-            const containerHeight = container.clientHeight;
-            const cardHeight = firstCard.clientHeight;
+            let dynamicCount = baseItemsPerPage;
 
-            if (!cardHeight || containerHeight <= 0) return;
+            // Простейшая адаптация: на больших экранах показываем больше карточек
+            if (vh >= 900 && vh < 1100) {
+                dynamicCount = 4;
+            } else if (vh >= 1100 && vh < 1300) {
+                dynamicCount = 5;
+            } else if (vh >= 1300) {
+                dynamicCount = 6;
+            }
 
-            // Доступная высота всего контейнера под карточки
-            const availableHeight = containerHeight;
-
-            if (availableHeight <= 0) return;
-
-            const dynamicCount = Math.max(
-                baseItemsPerPage,
-                Math.ceil(availableHeight / cardHeight) + 1 // +1, чтобы карточки занимали контейнер максимально плотно
-            );
+            // Не показываем больше, чем есть новостей
+            dynamicCount = Math.min(dynamicCount, newsItems.length || dynamicCount);
 
             setItemsPerPage(dynamicCount);
 
