@@ -93,7 +93,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
             {/* Новости */}
             <div
                 ref={listContainerRef}
-                className="relative overflow-hidden flex-1 h-full pt-2 pb-4 space-y-6"
+                className="relative overflow-hidden flex-1 h-full pt-1 pb-1 space-y-4"
             >
                 {visibleItems.map((item, idx) => {
                     const isFirst = idx === 0;
@@ -139,7 +139,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
             {canScrollDown && (
                 <button
                     onClick={scrollDown}
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white shadow-md  rounded-full p-2 hover:bg-gray-100 transition"
+                    className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-white shadow-md  rounded-full p-2 hover:bg-gray-100 transition"
                 >
                     <ChevronDown className="h-6 w-6 text-[#213659]" />
                 </button>
