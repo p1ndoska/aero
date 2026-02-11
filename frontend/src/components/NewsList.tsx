@@ -21,32 +21,34 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
     const { t } = useLanguage();
     const listContainerRef = useRef<HTMLDivElement | null>(null);
     const firstCardRef = useRef<HTMLDivElement | null>(null);
+    const arrowDownRef = useRef<HTMLButtonElement | null>(null);
 
-    // Динамически подстраиваем количество новостей под реальную высоту контейнера,
-    // чтобы карточки максимально заполняли блок и не перекрывали стрелку.
+    // Динамически подстраиваем количество новостей под реальную высоту контейнера:
+    // наполняем блок максимально и слегка обрезаем нижнюю карточку, при этом стрелка всегда видна.
     useEffect(() => {
         const calculateItemsPerPage = () => {
             const container = listContainerRef.current;
             const firstCard = firstCardRef.current;
+            const arrowDown = arrowDownRef.current;
 
             if (!container || !firstCard) return;
 
             const containerHeight = container.clientHeight;
             const cardHeight = firstCard.clientHeight;
+            const arrowHeight = arrowDown ? arrowDown.clientHeight : 0;
 
             if (!cardHeight || containerHeight <= 0) return;
 
-            // Резерв под область со стрелкой и нижними отступами,
-            // чтобы стрелка всегда была видна и не уезжала за край.
-            const arrowReserve = 80; // px
-            const availableHeight = containerHeight - arrowReserve;
+            // Высота, доступная только под карточки (без области стрелки)
+            const availableHeight = Math.max(0, containerHeight - arrowHeight);
 
             if (availableHeight <= 0) return;
 
-            // Сколько полных карточек помещается над стрелкой
+            // Сколько карточек нужно, чтобы практически заполнить доступное пространство
+            // +1, чтобы последняя чуть заходила под стрелку и не оставалось заметного зазора
             let dynamicCount = Math.max(
                 baseItemsPerPage,
-                Math.floor(availableHeight / cardHeight)
+                Math.ceil(availableHeight / cardHeight) + 1
             );
 
             // Не показываем больше, чем есть новостей
@@ -148,6 +150,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
             )}
             {canScrollDown && (
                 <button
+                    ref={arrowDownRef}
                     onClick={scrollDown}
                     className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-white shadow-md  rounded-full p-2 hover:bg-gray-100 transition z-10"
                 >
