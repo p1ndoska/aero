@@ -22,57 +22,22 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
     const listContainerRef = useRef<HTMLDivElement | null>(null);
     const firstCardRef = useRef<HTMLDivElement | null>(null);
 
-    // Динамически подстраиваем количество новостей под реальную высоту контейнера:
-    // показываем максимум карточек, чтобы заполнить блок, и слегка «обрезаем» последнюю.
+    // Динамически подстраиваем количество новостей:
+    // показываем все доступные новости (если их много — лишние просто обрежутся контейнером по высоте).
     useEffect(() => {
         const calculateItemsPerPage = () => {
-            const container = listContainerRef.current;
-            const firstCard = firstCardRef.current;
-
-            if (!container || !firstCard) return;
-
-            const containerHeight = container.clientHeight;
-            const cardHeight = firstCard.clientHeight;
-
-            if (!cardHeight || containerHeight <= 0) return;
-
-            // Оставляем небольшой запас под стрелку (место, поверх которого она будет лежать)
-            const arrowReserve = 64; // px
-            const availableHeight = containerHeight - arrowReserve;
-
-            if (availableHeight <= 0) return;
-
-            // Сколько карточек полностью помещается
-            const fullCards = Math.max(
-                baseItemsPerPage,
-                Math.floor(availableHeight / cardHeight)
-            );
-
-            // +1 карточка, которая может слегка вылазить за нижнюю границу (её край обрежется)
-            let dynamicCount = fullCards + 1;
-
-            // Не показываем больше, чем есть новостей
-            dynamicCount = Math.min(dynamicCount, newsItems.length || dynamicCount);
-
-            // На всякий случай ограничим максимумом, чтобы не рендерить слишком много
-            dynamicCount = Math.min(dynamicCount, 6);
-
-            setItemsPerPage(dynamicCount);
+            const total = newsItems.length || baseItemsPerPage;
+            setItemsPerPage(total);
 
             // Если мы в конце списка и новое количество меньше, чем было,
             // подвинем стартовый индекс, чтобы не было пустоты.
             setStartIndex((prev) => {
-                const maxStart = Math.max(0, newsItems.length - dynamicCount);
+                const maxStart = Math.max(0, newsItems.length - total);
                 return Math.min(prev, maxStart);
             });
         };
 
         calculateItemsPerPage();
-        window.addEventListener("resize", calculateItemsPerPage);
-
-        return () => {
-            window.removeEventListener("resize", calculateItemsPerPage);
-        };
     }, [baseItemsPerPage, newsItems.length]);
 
     if (newsItems.length === 0) {
