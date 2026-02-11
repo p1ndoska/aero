@@ -36,24 +36,21 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
 
             if (!cardHeight || containerHeight <= 0) return;
 
-            // Фактор, позволяющий чуть плотнее упаковать карточки и минимизировать пустое место
-            const safetyFactor = 0.97;
+            // Фактор для корректировки высоты карточки (можно оставить 1 для прямого расчёта)
+            const safetyFactor = 1;
             const effectiveCardHeight = cardHeight * safetyFactor;
 
             const dynamicCount = Math.max(
                 baseItemsPerPage,
-                Math.ceil(containerHeight / effectiveCardHeight)
+                Math.ceil(containerHeight / effectiveCardHeight) + 1 // +1, чтобы последняя карточка немного «обрезалась» и не оставалось пустоты
             );
 
-            // Ограничиваем сверху на всякий случай
-            const clampedCount = Math.min(dynamicCount, 10);
-
-            setItemsPerPage(clampedCount);
+            setItemsPerPage(dynamicCount);
 
             // Если мы в конце списка и новое количество меньше, чем было,
             // подвинем стартовый индекс, чтобы не было пустоты.
             setStartIndex((prev) => {
-                const maxStart = Math.max(0, newsItems.length - clampedCount);
+                const maxStart = Math.max(0, newsItems.length - dynamicCount);
                 return Math.min(prev, maxStart);
             });
         };
@@ -92,7 +89,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
             {/* Новости */}
             <div
                 ref={listContainerRef}
-                className="relative overflow-hidden flex-1 pt-2 pb-4 space-y-6"
+                className="relative overflow-hidden flex-1 h-full pt-2 pb-4 space-y-6"
             >
                 {visibleItems.map((item, idx) => {
                     const isFirst = idx === 0;
