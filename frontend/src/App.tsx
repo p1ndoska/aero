@@ -156,13 +156,17 @@ const App = () => {
                 initial={{ x: 100, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.8 }}
-                className="md:w-1/3 w-full bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 min-h-[200px] h-full flex flex-col"
+                className="md:w-1/3 w-full bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 h-full flex flex-col min-h-0"
             >
-                <h2 className="text-xl font-bold text-gray-800 mb-4">{t('news')}</h2>
+                <h2 className="text-xl font-bold text-gray-800 mb-4 shrink-0">{t('news')}</h2>
 
-                {loading && <p className="text-gray-500">{t('loading')}</p>}
-                {error && <p className="text-red-500">{t('error')}: {error}</p>}
-                {!loading && !error && <NewsList newsItems={news} baseItemsPerPage={3} />}
+                {loading && <p className="text-gray-500 shrink-0">{t('loading')}</p>}
+                {error && <p className="text-red-500 shrink-0">{t('error')}: {error}</p>}
+                {!loading && !error && (
+                    <div className="flex-1 min-h-0">
+                        <NewsList newsItems={news} baseItemsPerPage={3} />
+                    </div>
+                )}
             </motion.div>
         </div>
     );
