@@ -28,10 +28,10 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
             const viewportHeight = window.innerHeight;
 
             // Примерная высота одной карточки новости с отступами
-            const approximateCardHeight = 190; // px
+            const approximateCardHeight = 220; // px
 
-            // Оставляем место под заголовок блока, отступы и кнопки прокрутки
-            const reservedHeight = 220; // px
+            // Больше запас под заголовок, отступы и кнопки, чтобы блок гарантированно влезал по высоте
+            const reservedHeight = 320; // px
 
             const availableHeight = Math.max(0, viewportHeight - reservedHeight);
 
@@ -41,8 +41,8 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
                 Math.floor(availableHeight / approximateCardHeight)
             );
 
-            // На очень больших экранах ограничим сверху, чтобы не загружать слишком много сразу
-            const clampedCount = Math.min(dynamicCount, 10);
+            // Ограничиваем сверху, чтобы не вылезать за экран
+            const clampedCount = Math.min(dynamicCount, 6);
 
             setItemsPerPage(clampedCount);
         };
