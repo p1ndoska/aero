@@ -108,7 +108,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
             className="relative flex-1 h-full flex flex-col min-h-0"
         >
             {/* Новости */}
-            <div className="relative flex-1 h-full overflow-hidden pt-1 pb-14 min-h-0">
+            <div className="relative flex-1 h-full overflow-hidden pt-1 pb-16 min-h-0">
                 {visibleItems.map((item, idx) => {
                     const isFirst = idx === 0;
                     const isLast = idx === visibleItems.length - 1;
@@ -142,16 +142,25 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
                 })}
             </div>
 
-            {/* Градиентный оверлей с блюром */}
+            {/* Градиентный оверлей с блюром - ПОЛНОСТЬЮ ПРОЗРАЧНЫЙ ФОН + БЛЮР */}
             {canScrollDown && (
-                <div className="absolute bottom-14 left-0 right-0 h-24 bg-gradient-to-t from-white via-white/80 to-transparent backdrop-blur-md z-30 pointer-events-none" />
+                <div
+                    className="absolute bottom-16 left-0 right-0 h-20 z-30"
+                    style={{
+                        background: 'linear-gradient(to top, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.7) 40%, rgba(255, 255, 255, 0) 100%)',
+                        backdropFilter: 'blur(12px)',
+                        WebkitBackdropFilter: 'blur(12px)',
+                        pointerEvents: 'none'
+                    }}
+                />
             )}
 
             {/* Кнопки "вверх/вниз" */}
             {canScrollUp && (
                 <button
                     onClick={scrollUp}
-                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm shadow-md rounded-full p-2 hover:bg-gray-100 transition z-40"
+                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-md shadow-lg rounded-full p-2 hover:bg-gray-100 transition z-[60] border border-gray-200"
+                    style={{ zIndex: 60 }}
                 >
                     <ChevronUp className="h-6 w-6 text-[#213659]" />
                 </button>
@@ -160,7 +169,8 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
                 <button
                     ref={arrowDownRef}
                     onClick={scrollDown}
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm shadow-md rounded-full p-2 hover:bg-gray-100 transition z-50"
+                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-md shadow-lg rounded-full p-2 hover:bg-gray-100 transition z-[70] border border-gray-200"
+                    style={{ zIndex: 70 }}
                 >
                     <ChevronDown className="h-6 w-6 text-[#213659]" />
                 </button>
@@ -168,10 +178,10 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
 
             {/* Кнопка "К началу списка" */}
             {startIndex > 0 && (
-                <div className="absolute bottom-16 left-0 right-0 flex justify-center z-40">
+                <div className="absolute bottom-16 left-0 right-0 flex justify-center" style={{ zIndex: 50 }}>
                     <Button
                         onClick={scrollToTop}
-                        className="bg-[#213659] hover:bg-[#1a2a4a] text-white px-6 py-3 rounded-xl z-40"
+                        className="bg-[#213659] hover:bg-[#1a2a4a] text-white px-6 py-3 rounded-xl"
                     >
                         <ArrowUp className="h-5 w-5 mr-2" />
                         {t('to_top')}
