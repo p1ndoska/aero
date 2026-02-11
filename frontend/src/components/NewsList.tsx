@@ -22,27 +22,38 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
     const listContainerRef = useRef<HTMLDivElement | null>(null);
     const firstCardRef = useRef<HTMLDivElement | null>(null);
 
-    // Динамически подстраиваем количество новостей под реальную высоту блока,
-    // чтобы карточки ровно заполняли доступное пространство по высоте.
+    // Динамически подстраиваем количество новостей под высоту экрана,
+    // чтобы карточки занимали всю доступную высоту (от первой до нижней стрелки).
     useEffect(() => {
         const calculateItemsPerPage = () => {
+            if (typeof window === "undefined") return;
+
             const container = listContainerRef.current;
             const firstCard = firstCardRef.current;
 
             if (!container || !firstCard) return;
 
-            const containerHeight = container.clientHeight;
-            const cardHeight = firstCard.clientHeight;
+            const containerRect = container.getBoundingClientRect();
+            const cardRect = firstCard.getBoundingClientRect();
 
-            if (!cardHeight || containerHeight <= 0) return;
+            const cardHeight = cardRect.height;
 
-            // Фактор для корректировки высоты карточки (можно оставить 1 для прямого расчёта)
-            const safetyFactor = 1;
-            const effectiveCardHeight = cardHeight * safetyFactor;
+            if (!cardHeight) return;
+
+            // Высота экрана
+            const viewportHeight = window.innerHeight;
+
+            // Оставляем немного места под нижнюю стрелку и паддинги
+            const bottomReserve = 72; // px
+
+            // Доступная высота от верхней границы контейнера до низа экрана
+            const availableHeight = viewportHeight - containerRect.top - bottomReserve;
+
+            if (availableHeight <= 0) return;
 
             const dynamicCount = Math.max(
                 baseItemsPerPage,
-                Math.ceil(containerHeight / effectiveCardHeight) + 1 // +1, чтобы последняя карточка немного «обрезалась» и не оставалось пустоты
+                Math.floor(availableHeight / cardHeight)
             );
 
             setItemsPerPage(dynamicCount);
