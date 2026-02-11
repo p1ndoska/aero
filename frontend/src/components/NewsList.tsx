@@ -2,7 +2,7 @@ import type { NewsItem } from "@/types/News.ts";
 import { NewsCard } from "@/components/NewsCard";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, ArrowUp } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "../contexts/LanguageContext";
 
@@ -19,32 +19,43 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
     const [startIndex, setStartIndex] = useState(0);
     const [itemsPerPage, setItemsPerPage] = useState(baseItemsPerPage);
     const { t } = useLanguage();
+    const listContainerRef = useRef<HTMLDivElement | null>(null);
+    const firstCardRef = useRef<HTMLDivElement | null>(null);
 
-    // Динамически подстраиваем количество новостей под высоту экрана
+    // Динамически подстраиваем количество новостей под реальную высоту блока,
+    // чтобы карточки ровно заполняли доступное пространство по высоте.
     useEffect(() => {
         const calculateItemsPerPage = () => {
-            if (typeof window === "undefined") return;
+            const container = listContainerRef.current;
+            const firstCard = firstCardRef.current;
 
-            const viewportHeight = window.innerHeight;
+            if (!container || !firstCard) return;
 
-            // Примерная высота одной карточки новости с отступами
-            const approximateCardHeight = 220; // px
+            const containerHeight = container.clientHeight;
+            const cardHeight = firstCard.clientHeight;
 
-            // Больше запас под заголовок, отступы и кнопки, чтобы блок гарантированно влезал по высоте
-            const reservedHeight = 320; // px
+            if (!cardHeight || containerHeight <= 0) return;
 
-            const availableHeight = Math.max(0, viewportHeight - reservedHeight);
+            // Небольшой запас, чтобы не вылезать за пределы из-за margin/padding/анимаций
+            const safetyFactor = 1.05;
+            const effectiveCardHeight = cardHeight * safetyFactor;
 
-            // Сколько карточек поместится по высоте
             const dynamicCount = Math.max(
                 baseItemsPerPage,
-                Math.floor(availableHeight / approximateCardHeight)
+                Math.floor(containerHeight / effectiveCardHeight)
             );
 
-            // Ограничиваем сверху, чтобы не вылезать за экран
-            const clampedCount = Math.min(dynamicCount, 6);
+            // Ограничиваем сверху на всякий случай
+            const clampedCount = Math.min(dynamicCount, 10);
 
             setItemsPerPage(clampedCount);
+
+            // Если мы в конце списка и новое количество меньше, чем было,
+            // подвинем стартовый индекс, чтобы не было пустоты.
+            setStartIndex((prev) => {
+                const maxStart = Math.max(0, newsItems.length - clampedCount);
+                return Math.min(prev, maxStart);
+            });
         };
 
         calculateItemsPerPage();
@@ -53,7 +64,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
         return () => {
             window.removeEventListener("resize", calculateItemsPerPage);
         };
-    }, [baseItemsPerPage]);
+    }, [baseItemsPerPage, newsItems.length]);
 
     if (newsItems.length === 0) {
         return <p className="text-[#213659]">{t('no_data')}</p>;
@@ -79,7 +90,10 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
     return (
         <div className="relative space-y-2 flex-1 flex flex-col">
             {/* Новости */}
-            <div className="relative overflow-hidden flex-1 pt-2 pb-10 space-y-6">
+            <div
+                ref={listContainerRef}
+                className="relative overflow-hidden flex-1 pt-2 pb-10 space-y-6"
+            >
                 {visibleItems.map((item, idx) => {
                     const isFirst = idx === 0;
                     const isLast = idx === visibleItems.length - 1;
@@ -87,6 +101,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
                     return (
                         <AnimatePresence key={item.id} mode="popLayout">
                             <motion.div
+                                ref={isFirst ? firstCardRef : undefined}
                                 initial={
                                     isLast
                                         ? { opacity: 0, y: 40 } // нижняя новость прилетает снизу
