@@ -62,13 +62,13 @@ const App = () => {
             style={{ backgroundImage: "url('/bg-sky.jpg')" }}
         >
             {/* Левый блок (2/4) поделен на 3 части */}
-            <div className="md:w-2/3 w-full flex flex-col gap-4 md:pr-4 md:h-auto">
-                {/* Верхний блок (2/4) */}
+            <div className="md:w-2/3 w-full flex flex-col gap-4 md:pr-4 h-full min-h-0">
+                {/* Верхний блок (2/4) - расширяется */}
                 <motion.div
                     initial={{ y: -50, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.7, ease: "easeOut" }}
-                    className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl shadow-md overflow-hidden h-[450px] relative"
+                    className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl shadow-md overflow-hidden flex-1 min-h-0 relative"
                 >
                     {/* Фоновое изображение */}
                     {heroImage?.hasImage && heroImage.imageUrl ? (
@@ -122,21 +122,22 @@ const App = () => {
                     </div>
                 </motion.div>
 
-                {/* Средний блок (1/4) - Карусель филиалов */}
+                {/* Средний блок (1/4) - Карусель филиалов - расширяется */}
                 <motion.div
                     initial={{ x: -100, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
+                    className="flex-1 min-h-0"
                 >
                     <BranchesCarousel />
                 </motion.div>
 
-                   {/* Нижний блок (1/4) - Логотипы организаций */}
+                   {/* Нижний блок (1/4) - Логотипы организаций - фиксированный размер */}
                    <motion.div
                        initial={{ y: 50, opacity: 0 }}
                        animate={{ y: 0, opacity: 1 }}
                        transition={{ duration: 0.7, delay: 0.6, ease: "easeOut" }}
-                       className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-md p-6 flex-1 flex flex-col"
+                       className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-md p-6 shrink-0 flex flex-col"
                    >
                     <div className="flex justify-center mb-3">
                         <h3 className="text-lg font-semibold text-gray-800 text-center">

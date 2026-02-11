@@ -37,12 +37,16 @@ export default function BranchesCarousel() {
   useEffect(() => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
-      const cardWidth = 280; // Увеличенная ширина карточки + отступ
-      const scrollAmount = currentIndex * cardWidth;
-      container.scrollTo({
-        left: scrollAmount,
-        behavior: 'smooth'
-      });
+      // Получаем реальную ширину первой карточки + отступ
+      const firstCard = container.querySelector('a');
+      if (firstCard) {
+        const cardWidth = firstCard.offsetWidth + 12; // 12px = gap-3 (0.75rem)
+        const scrollAmount = currentIndex * cardWidth;
+        container.scrollTo({
+          left: scrollAmount,
+          behavior: 'smooth'
+        });
+      }
     }
   }, [currentIndex]);
 
@@ -95,8 +99,8 @@ export default function BranchesCarousel() {
   }
 
   return (
-    <div className="flex-1 bg-white/90 backdrop-blur-sm rounded-2xl shadow-md p-4 min-h-[100px]">
-      <div className="flex items-center justify-center mb-3">
+    <div className="h-full bg-white/90 backdrop-blur-sm rounded-2xl shadow-md p-4 flex flex-col min-h-0">
+      <div className="flex items-center justify-center mb-3 shrink-0">
         <h3 className="text-lg font-semibold text-gray-800 text-center">
           {t('branches') || (language === 'en' ? 'Our Branches' : 
            language === 'be' ? 'Нашы філіялы' : 
@@ -104,10 +108,10 @@ export default function BranchesCarousel() {
         </h3>
       </div>
 
-      <div className="relative">
+      <div className="relative flex-1 min-h-0 flex items-center">
         <div
           ref={scrollContainerRef}
-          className="flex gap-3 overflow-x-hidden scrollbar-hide"
+          className="flex gap-3 overflow-x-hidden scrollbar-hide h-full w-full"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {branches.map((branch, index) => {
@@ -117,7 +121,13 @@ export default function BranchesCarousel() {
               <Link
                 key={branch.id}
                 to={`/about/branches/${branch.id}`}
-                className="flex-shrink-0 w-64 h-72 bg-white rounded-lg shadow-md border-2 border-gray-200 transition-all duration-300 hover:shadow-lg hover:scale-105"
+                className="flex-shrink-0 h-full min-h-[288px] bg-white rounded-lg shadow-md border-2 border-gray-200 transition-all duration-300 hover:shadow-lg hover:scale-105"
+                style={{ 
+                  aspectRatio: '4/5',
+                  width: 'auto',
+                  minWidth: '256px',
+                  maxWidth: '450px'
+                }}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
               >

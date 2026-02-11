@@ -364,28 +364,30 @@ export const Sidebar = () => {
                         </div>
                     </div>
 
-                    {/* Контакты */}
-                    <div className="border-t p-3 text-xs text-[#6A81A9]">
-                        <h3 className="font-semibold mb-1 text-[#213659]">{t('contacts')}</h3>
-                        <div className="space-y-0.5">
-                            <div className="flex items-center">
-                                <FaPhone className="mr-1" size={10} />
-                                <span>+375 (17) 215-40-52</span>
-                            </div>
-                            <div className="flex items-center">
-                                <FaPhone className="mr-1" size={10} />
-                                <span>+375 (17) 213-41-63 (факс)</span>
-                            </div>
-                            <div className="flex items-center">
-                                <FaEnvelope className="mr-1" size={10} />
-                                <span>office@ban.by</span>
+                    {/* Контакты - прижаты к низу */}
+                    <div className="mt-auto">
+                        <div className="border-t p-3 text-xs text-[#6A81A9]">
+                            <h3 className="font-semibold mb-1 text-[#213659]">{t('contacts')}</h3>
+                            <div className="space-y-0.5">
+                                <div className="flex items-center">
+                                    <FaPhone className="mr-1" size={10} />
+                                    <span>+375 (17) 215-40-52</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <FaPhone className="mr-1" size={10} />
+                                    <span>+375 (17) 213-41-63 (факс)</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <FaEnvelope className="mr-1" size={10} />
+                                    <span>office@ban.by</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="border-t p-3 text-xs text-[#6A81A9] flex-1">
-                        <p>{t('address')}: {t('minsk_address')}</p>
-                        <p>{t('working_hours')}: {t('working_time')}</p>
+                        <div className="border-t p-3 text-xs text-[#6A81A9]">
+                            <p>{t('address')}: {t('minsk_address')}</p>
+                            <p>{t('working_hours')}: {t('working_time')}</p>
+                        </div>
                     </div>
                 </div>
             </aside>
