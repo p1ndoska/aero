@@ -22,27 +22,40 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
     const listContainerRef = useRef<HTMLDivElement | null>(null);
     const firstCardRef = useRef<HTMLDivElement | null>(null);
 
-    // Динамически подстраиваем количество новостей под высоту экрана
-    // (простая логика по брейкпоинтам, чтобы на больших экранах было >3 карточек).
+    // Динамически подстраиваем количество новостей под реальную высоту контейнера:
+    // показываем максимум карточек, чтобы заполнить блок, и слегка «обрезаем» последнюю.
     useEffect(() => {
         const calculateItemsPerPage = () => {
-            if (typeof window === "undefined") return;
+            const container = listContainerRef.current;
+            const firstCard = firstCardRef.current;
 
-            const vh = window.innerHeight;
+            if (!container || !firstCard) return;
 
-            let dynamicCount = baseItemsPerPage;
+            const containerHeight = container.clientHeight;
+            const cardHeight = firstCard.clientHeight;
 
-            // Простейшая адаптация: на больших экранах показываем больше карточек
-            if (vh >= 900 && vh < 1100) {
-                dynamicCount = 4;
-            } else if (vh >= 1100 && vh < 1300) {
-                dynamicCount = 5;
-            } else if (vh >= 1300) {
-                dynamicCount = 6;
-            }
+            if (!cardHeight || containerHeight <= 0) return;
+
+            // Оставляем небольшой запас под стрелку (место, поверх которого она будет лежать)
+            const arrowReserve = 64; // px
+            const availableHeight = containerHeight - arrowReserve;
+
+            if (availableHeight <= 0) return;
+
+            // Сколько карточек полностью помещается
+            const fullCards = Math.max(
+                baseItemsPerPage,
+                Math.floor(availableHeight / cardHeight)
+            );
+
+            // +1 карточка, которая может слегка вылазить за нижнюю границу (её край обрежется)
+            let dynamicCount = fullCards + 1;
 
             // Не показываем больше, чем есть новостей
             dynamicCount = Math.min(dynamicCount, newsItems.length || dynamicCount);
+
+            // На всякий случай ограничим максимумом, чтобы не рендерить слишком много
+            dynamicCount = Math.min(dynamicCount, 6);
 
             setItemsPerPage(dynamicCount);
 
@@ -92,7 +105,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
             {/* Новости */}
             <div
                 ref={listContainerRef}
-                className="relative overflow-hidden flex-1 h-full pt-1 pb-1 space-y-4"
+                className="relative overflow-hidden flex-1 h-full pt-1 pb-6 space-y-4"
             >
                 {visibleItems.map((item, idx) => {
                     const isFirst = idx === 0;
@@ -130,7 +143,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
             {canScrollUp && (
                 <button
                     onClick={scrollUp}
-                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-white shadow-md  rounded-full p-2 hover:bg-gray-100 transition"
+                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-white shadow-md  rounded-full p-2 hover:bg-gray-100 transition z-10"
                 >
                     <ChevronUp className="h-6 w-6 text-[#213659]" />
                 </button>
@@ -138,7 +151,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
             {canScrollDown && (
                 <button
                     onClick={scrollDown}
-                    className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-white shadow-md  rounded-full p-2 hover:bg-gray-100 transition"
+                    className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-white shadow-md  rounded-full p-2 hover:bg-gray-100 transition z-10"
                 >
                     <ChevronDown className="h-6 w-6 text-[#213659]" />
                 </button>
