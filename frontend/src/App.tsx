@@ -58,7 +58,7 @@ const App = () => {
 
     return (
         <div
-            className="App min-h-screen flex flex-col md:flex-row md:items-stretch bg-cover bg-center p-4 gap-4"
+            className="App h-screen flex flex-col md:flex-row md:items-stretch bg-cover bg-center p-4 gap-4"
             style={{ backgroundImage: "url('/bg-sky.jpg')" }}
         >
             {/* Левый блок (2/4) поделен на 3 части */}
@@ -156,7 +156,7 @@ const App = () => {
                 initial={{ x: 100, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.8 }}
-                className="md:w-1/3 w-full bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 min-h-[200px] flex flex-col h-full"
+                className="md:w-1/3 w-full bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 min-h-[200px] flex flex-col"
             >
                 <h2 className="text-xl font-bold text-gray-800 mb-4">{t('news')}</h2>
 

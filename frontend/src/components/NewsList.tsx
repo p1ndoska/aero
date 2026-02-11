@@ -22,32 +22,23 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
     const listContainerRef = useRef<HTMLDivElement | null>(null);
     const firstCardRef = useRef<HTMLDivElement | null>(null);
 
-    // Динамически подстраиваем количество новостей под высоту экрана,
-    // чтобы карточки занимали всю доступную высоту (от первой до нижней стрелки).
+    // Динамически подстраиваем количество новостей под реальную высоту контейнера,
+    // чтобы карточки заполняли весь родительский блок с новостями.
     useEffect(() => {
         const calculateItemsPerPage = () => {
-            if (typeof window === "undefined") return;
-
             const container = listContainerRef.current;
             const firstCard = firstCardRef.current;
 
             if (!container || !firstCard) return;
 
-            const containerRect = container.getBoundingClientRect();
-            const cardRect = firstCard.getBoundingClientRect();
+            const containerHeight = container.clientHeight;
+            const cardHeight = firstCard.clientHeight;
 
-            const cardHeight = cardRect.height;
+            if (!cardHeight || containerHeight <= 0) return;
 
-            if (!cardHeight) return;
-
-            // Высота экрана
-            const viewportHeight = window.innerHeight;
-
-            // Оставляем немного места под нижнюю стрелку и паддинги
+            // Оставляем немного места под нижнюю стрелку и внутренние отступы
             const bottomReserve = 56; // px
-
-            // Доступная высота от верхней границы контейнера до низа экрана
-            const availableHeight = viewportHeight - containerRect.top - bottomReserve;
+            const availableHeight = containerHeight - bottomReserve;
 
             if (availableHeight <= 0) return;
 
