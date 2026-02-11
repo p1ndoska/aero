@@ -162,7 +162,7 @@ const App = () => {
 
                 {loading && <p className="text-gray-500">{t('loading')}</p>}
                 {error && <p className="text-red-500">{t('error')}: {error}</p>}
-                {!loading && !error && <NewsList newsItems={news} />}
+                {!loading && !error && <NewsList newsItems={news} baseItemsPerPage={3} />}
             </motion.div>
         </div>
     );

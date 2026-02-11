@@ -2,18 +2,58 @@ import type { NewsItem } from "@/types/News.ts";
 import { NewsCard } from "@/components/NewsCard";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, ArrowUp } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "../contexts/LanguageContext";
 
 interface NewsListProps {
     newsItems: NewsItem[];
-    itemsPerPage?: number;
+    /**
+     * Базовое количество новостей, которое хотим показывать минимум.
+     * Фактическое количество динамически подстраивается под высоту экрана.
+     */
+    baseItemsPerPage?: number;
 }
 
-export const NewsList = ({ newsItems, itemsPerPage = 3 }: NewsListProps) => {
+export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => {
     const [startIndex, setStartIndex] = useState(0);
+    const [itemsPerPage, setItemsPerPage] = useState(baseItemsPerPage);
     const { t } = useLanguage();
+
+    // Динамически подстраиваем количество новостей под высоту экрана
+    useEffect(() => {
+        const calculateItemsPerPage = () => {
+            if (typeof window === "undefined") return;
+
+            const viewportHeight = window.innerHeight;
+
+            // Примерная высота одной карточки новости с отступами
+            const approximateCardHeight = 190; // px
+
+            // Оставляем место под заголовок блока, отступы и кнопки прокрутки
+            const reservedHeight = 220; // px
+
+            const availableHeight = Math.max(0, viewportHeight - reservedHeight);
+
+            // Сколько карточек поместится по высоте
+            const dynamicCount = Math.max(
+                baseItemsPerPage,
+                Math.floor(availableHeight / approximateCardHeight)
+            );
+
+            // На очень больших экранах ограничим сверху, чтобы не загружать слишком много сразу
+            const clampedCount = Math.min(dynamicCount, 10);
+
+            setItemsPerPage(clampedCount);
+        };
+
+        calculateItemsPerPage();
+        window.addEventListener("resize", calculateItemsPerPage);
+
+        return () => {
+            window.removeEventListener("resize", calculateItemsPerPage);
+        };
+    }, [baseItemsPerPage]);
 
     if (newsItems.length === 0) {
         return <p className="text-[#213659]">{t('no_data')}</p>;
