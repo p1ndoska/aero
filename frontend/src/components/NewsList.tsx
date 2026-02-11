@@ -25,12 +25,11 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
 
             if (!container || newsItems.length === 0) return;
 
-            // Получаем высоту контейнера
             const containerHeight = container.clientHeight;
 
             if (containerHeight <= 0) return;
 
-            // Считаем среднюю высоту карточек (берем первые 3)
+            // Считаем среднюю высоту карточек
             let totalCardHeight = 0;
             let cardCount = 0;
 
@@ -42,37 +41,30 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
                 }
             }
 
-            const avgCardHeight = cardCount > 0 ? totalCardHeight / cardCount : 200; // fallback
-            const cardMargin = 16; // mb-4 = 1rem = 16px
+            const avgCardHeight = cardCount > 0 ? totalCardHeight / cardCount : 200;
+            const cardMargin = 16;
 
-            // Высота одной карточки с отступом
             const cardHeightWithMargin = avgCardHeight + cardMargin;
 
-            // Высота стрелки и кнопки
-            const arrowHeight = arrowDownRef.current?.clientHeight || 40;
-            const buttonHeight = startIndex > 0 ? 56 : 0; // кнопка "К началу списка"
-            const topButtonHeight = canScrollUp ? 48 : 0; // кнопка вверх
+            // Высота элементов управления
+            const arrowHeight = 56; // фиксированная высота стрелки с отступами
+            const buttonHeight = startIndex > 0 ? 56 : 0;
+            const topButtonHeight = canScrollUp ? 48 : 0;
 
             // Доступная высота для карточек
-            const availableHeight = containerHeight - arrowHeight - buttonHeight - topButtonHeight - 20; // 20px - запас
+            const availableHeight = containerHeight - arrowHeight - buttonHeight - topButtonHeight - 20;
 
             if (availableHeight <= 0) return;
 
-            // Считаем количество карточек
             let count = Math.floor(availableHeight / cardHeightWithMargin);
 
-            // Добавляем еще одну, чтобы она немного вылезала вниз
+            // Добавляем еще одну для обрезания
             count = Math.min(count + 1, newsItems.length);
-
-            // Минимум 3 карточки
             count = Math.max(count, baseItemsPerPage);
-
-            // Максимум 10
             count = Math.min(count, 10);
 
             setItemsPerPage(count);
 
-            // Корректируем индекс, если нужно
             setStartIndex((prev) => {
                 const maxStart = Math.max(0, newsItems.length - count);
                 return Math.min(prev, maxStart);
@@ -119,13 +111,8 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
             ref={containerRef}
             className="relative flex-1 h-full flex flex-col min-h-0"
         >
-            {/* Градиентный оверлей для плавного обрезания */}
-            {canScrollDown && (
-                <div className="absolute bottom-12 left-0 right-0 h-16 bg-gradient-to-t from-white/90 to-transparent pointer-events-none z-10" />
-            )}
-
             {/* Новости */}
-            <div className="relative flex-1 h-full overflow-hidden pt-1 pb-16 min-h-0">
+            <div className="relative flex-1 h-full overflow-hidden pt-1 pb-14 min-h-0">
                 {visibleItems.map((item, idx) => {
                     const isFirst = idx === 0;
                     const isLast = idx === visibleItems.length - 1;
@@ -157,13 +144,18 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
                         </AnimatePresence>
                     );
                 })}
+
+                {/* Градиентный оверлей с блюром для плавного обрезания */}
+                {canScrollDown && (
+                    <div className="absolute bottom-14 left-0 right-0 h-20 bg-gradient-to-t from-white/90 via-white/70 to-transparent backdrop-blur-sm pointer-events-none" />
+                )}
             </div>
 
             {/* Кнопки "вверх/вниз" */}
             {canScrollUp && (
                 <button
                     onClick={scrollUp}
-                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-white shadow-md rounded-full p-2 hover:bg-gray-100 transition z-20"
+                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm shadow-md rounded-full p-2 hover:bg-gray-100 transition z-20"
                 >
                     <ChevronUp className="h-6 w-6 text-[#213659]" />
                 </button>
@@ -172,7 +164,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
                 <button
                     ref={arrowDownRef}
                     onClick={scrollDown}
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 bg-white shadow-md rounded-full p-2 hover:bg-gray-100 transition z-20"
+                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm shadow-md rounded-full p-2 hover:bg-gray-100 transition z-20"
                 >
                     <ChevronDown className="h-6 w-6 text-[#213659]" />
                 </button>
@@ -180,7 +172,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
 
             {/* Кнопка "К началу списка" */}
             {startIndex > 0 && (
-                <div className="absolute bottom-12 left-0 right-0 flex justify-center z-20">
+                <div className="absolute bottom-16 left-0 right-0 flex justify-center z-20">
                     <Button
                         onClick={scrollToTop}
                         className="bg-[#213659] hover:bg-[#1a2a4a] text-white px-6 py-3 rounded-xl"
