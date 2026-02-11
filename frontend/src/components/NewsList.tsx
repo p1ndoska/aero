@@ -8,10 +8,6 @@ import { useLanguage } from "../contexts/LanguageContext";
 
 interface NewsListProps {
     newsItems: NewsItem[];
-    /**
-     * Базовое количество новостей, которое хотим показывать минимум.
-     * Фактическое количество динамически подстраивается под высоту экрана.
-     */
     baseItemsPerPage?: number;
 }
 
@@ -22,45 +18,55 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
     const listContainerRef = useRef<HTMLDivElement | null>(null);
     const firstCardRef = useRef<HTMLDivElement | null>(null);
     const arrowDownRef = useRef<HTMLButtonElement | null>(null);
+    const containerRef = useRef<HTMLDivElement | null>(null);
 
-    // Динамически подстраиваем количество новостей под реальную высоту контейнера:
-    // наполняем блок максимально и слегка обрезаем нижнюю карточку, при этом стрелка всегда видна.
     useEffect(() => {
         const calculateItemsPerPage = () => {
-            const container = listContainerRef.current;
+            const container = containerRef.current;
             const firstCard = firstCardRef.current;
             const arrowDown = arrowDownRef.current;
 
             if (!container || !firstCard) return;
 
-            const containerHeight = container.clientHeight;
-            const cardHeight = firstCard.clientHeight;
-            const arrowHeight = arrowDown ? arrowDown.clientHeight : 0;
+            // Получаем полную высоту контейнера
+            const containerRect = container.getBoundingClientRect();
+            const containerHeight = containerRect.height;
 
-            if (!cardHeight || containerHeight <= 0) return;
+            // Получаем высоту карточки с учетом всех отступов
+            const cardRect = firstCard.getBoundingClientRect();
+            const cardHeight = cardRect.height;
 
-            // Высота, доступная только под карточки (без области стрелки)
-            const availableHeight = Math.max(0, containerHeight - arrowHeight);
+            // Получаем высоту стрелки
+            const arrowHeight = arrowDown ? arrowDown.getBoundingClientRect().height : 40;
 
-            if (availableHeight <= 0) return;
+            // Дополнительные отступы (можно настроить)
+            const topPadding = 16; // padding-top контейнера
+            const bottomPadding = 8; // padding-bottom контейнера
+            const buttonHeight = startIndex > 0 ? 48 : 0; // высота кнопки "К началу списка"
 
-            // Сколько карточек нужно, чтобы практически заполнить доступное пространство
-            // +1, чтобы последняя чуть заходила под стрелку и не оставалось заметного зазора
-            let dynamicCount = Math.max(
-                baseItemsPerPage,
-                Math.ceil(availableHeight / cardHeight) + 1
+            // Высота, доступная только под карточки
+            const availableHeight = Math.max(0,
+                containerHeight - arrowHeight - topPadding - bottomPadding - buttonHeight
             );
 
-            // Не показываем больше, чем есть новостей
-            dynamicCount = Math.min(dynamicCount, newsItems.length || dynamicCount);
+            if (availableHeight <= 0 || cardHeight <= 0) return;
 
-            // На всякий случай ограничим максимумом
-            dynamicCount = Math.min(dynamicCount, 8);
+            // Рассчитываем количество карточек
+            let dynamicCount = Math.max(
+                baseItemsPerPage,
+                Math.floor(availableHeight / cardHeight)
+            );
+
+            // Убедимся, что последняя карточка немного выходит за пределы видимой области
+            if (dynamicCount * cardHeight < availableHeight) {
+                dynamicCount += 1;
+            }
+
+            dynamicCount = Math.min(dynamicCount, newsItems.length || dynamicCount);
+            dynamicCount = Math.min(dynamicCount, 10); // Максимальный лимит
 
             setItemsPerPage(dynamicCount);
 
-            // Если мы в конце списка и новое количество меньше, чем было,
-            // подвинем стартовый индекс, чтобы не было пустоты.
             setStartIndex((prev) => {
                 const maxStart = Math.max(0, newsItems.length - dynamicCount);
                 return Math.min(prev, maxStart);
@@ -68,12 +74,16 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
         };
 
         calculateItemsPerPage();
-        window.addEventListener("resize", calculateItemsPerPage);
+        const resizeObserver = new ResizeObserver(calculateItemsPerPage);
+
+        if (containerRef.current) {
+            resizeObserver.observe(containerRef.current);
+        }
 
         return () => {
-            window.removeEventListener("resize", calculateItemsPerPage);
+            resizeObserver.disconnect();
         };
-    }, [baseItemsPerPage, newsItems.length]);
+    }, [baseItemsPerPage, newsItems.length, startIndex]);
 
     if (newsItems.length === 0) {
         return <p className="text-[#213659]">{t('no_data')}</p>;
@@ -101,11 +111,18 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
     };
 
     return (
-        <div className="relative space-y-2 flex-1 h-full flex flex-col">
+        <div
+            ref={containerRef}
+            className="relative space-y-2 flex-1 h-full flex flex-col min-h-0"
+        >
             {/* Новости */}
             <div
                 ref={listContainerRef}
-                className="relative overflow-hidden flex-1 h-full pt-1 pb-0"
+                className="relative overflow-hidden flex-1 h-full pt-1 pb-0 min-h-0"
+                style={{
+                    maskImage: canScrollDown ? 'linear-gradient(to bottom, black 80%, transparent 100%)' : 'none',
+                    WebkitMaskImage: canScrollDown ? 'linear-gradient(to bottom, black 80%, transparent 100%)' : 'none'
+                }}
             >
                 {visibleItems.map((item, idx) => {
                     const isFirst = idx === 0;
@@ -118,17 +135,17 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
                                 ref={isFirst ? firstCardRef : undefined}
                                 initial={
                                     isLast
-                                        ? { opacity: 0, y: 40 } // нижняя новость прилетает снизу
+                                        ? { opacity: 0, y: 40 }
                                         : isFirst
-                                            ? { opacity: 0, y: -40 } // верхняя новость прилетает сверху
-                                            : false // средняя без анимации
+                                            ? { opacity: 0, y: -40 }
+                                            : false
                                 }
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={
                                     isFirst
-                                        ? { opacity: 0, y: -40 } // верхняя улетает вверх
+                                        ? { opacity: 0, y: -40 }
                                         : isLast
-                                            ? { opacity: 0, y: 40 } // нижняя уходит вниз
+                                            ? { opacity: 0, y: 40 }
                                             : {}
                                 }
                                 transition={{ duration: 0.35, ease: "easeOut" }}
@@ -140,11 +157,11 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
                 })}
             </div>
 
-            {/* Кнопки "вверх/вниз" поверх новостей */}
+            {/* Кнопки "вверх/вниз" */}
             {canScrollUp && (
                 <button
                     onClick={scrollUp}
-                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-white shadow-md  rounded-full p-2 hover:bg-gray-100 transition z-10"
+                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-white shadow-md rounded-full p-2 hover:bg-gray-100 transition z-10"
                 >
                     <ChevronUp className="h-6 w-6 text-[#213659]" />
                 </button>
@@ -153,7 +170,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
                 <button
                     ref={arrowDownRef}
                     onClick={scrollDown}
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 bg-white shadow-md  rounded-full p-2 hover:bg-gray-100 transition z-10"
+                    className="absolute bottom-0 left-1/2 -translate-x-1/2 bg-white shadow-md rounded-full p-2 hover:bg-gray-100 transition z-10"
                 >
                     <ChevronDown className="h-6 w-6 text-[#213659]" />
                 </button>
@@ -161,7 +178,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
 
             {/* Кнопка "К началу списка" */}
             {startIndex > 0 && (
-                <div className="flex justify-center">
+                <div className="flex justify-center mt-2">
                     <Button
                         onClick={scrollToTop}
                         className="bg-[#213659] hover:bg-[#1a2a4a] text-white px-6 py-3 rounded-xl"
