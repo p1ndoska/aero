@@ -145,7 +145,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
             {/* Градиентный оверлей с блюром - ПОЛНОСТЬЮ ПРОЗРАЧНЫЙ ФОН + БЛЮР */}
             {canScrollDown && (
                 <div
-                    className="absolute bottom-16 left-0 right-0 h-20 z-30"
+                    className="absolute bottom-16 left-0 right-0 h-20 z-30 pb-4"
                     style={{
                         background: 'linear-gradient(to top, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.7) 40%, rgba(255, 255, 255, 0) 100%)',
                         backdropFilter: 'blur(12px)',
