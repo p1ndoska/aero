@@ -67,17 +67,21 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
         return <p className="text-[#213659]">{t('no_data')}</p>;
     }
 
-    const visibleItems = newsItems.slice(startIndex, startIndex + itemsPerPage);
+    const maxStartIndex = Math.max(0, newsItems.length - itemsPerPage);
+    const clampedStartIndex = Math.min(startIndex, maxStartIndex);
+    const visibleItems = newsItems.slice(clampedStartIndex, clampedStartIndex + itemsPerPage);
 
-    const canScrollUp = startIndex > 0;
-    const canScrollDown = startIndex + itemsPerPage < newsItems.length;
+    const canScrollUp = clampedStartIndex > 0;
+    const canScrollDown = clampedStartIndex < maxStartIndex;
 
     const scrollDown = () => {
-        if (canScrollDown) setStartIndex((prev) => prev + 1);
+        if (canScrollDown) {
+            setStartIndex((prev) => Math.min(prev + 1, maxStartIndex));
+        }
     };
 
     const scrollUp = () => {
-        if (canScrollUp) setStartIndex((prev) => prev - 1);
+        if (canScrollUp) setStartIndex((prev) => Math.max(prev - 1, 0));
     };
 
     const scrollToTop = () => {
