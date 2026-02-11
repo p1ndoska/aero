@@ -44,7 +44,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
             const viewportHeight = window.innerHeight;
 
             // Оставляем немного места под нижнюю стрелку и паддинги
-            const bottomReserve = 72; // px
+            const bottomReserve = 56; // px
 
             // Доступная высота от верхней границы контейнера до низа экрана
             const availableHeight = viewportHeight - containerRect.top - bottomReserve;
@@ -53,7 +53,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
 
             const dynamicCount = Math.max(
                 baseItemsPerPage,
-                Math.floor(availableHeight / cardHeight)
+                Math.ceil(availableHeight / cardHeight)
             );
 
             setItemsPerPage(dynamicCount);
