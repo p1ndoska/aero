@@ -100,7 +100,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
     };
 
     return (
-        <div className="relative space-y-2 flex-1 flex flex-col">
+        <div className="relative space-y-2 flex-1 h-full flex flex-col">
             {/* Новости */}
             <div
                 ref={listContainerRef}
