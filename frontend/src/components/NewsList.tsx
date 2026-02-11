@@ -36,13 +36,13 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
 
             if (!cardHeight || containerHeight <= 0) return;
 
-            // Небольшой запас, чтобы не вылезать за пределы из-за margin/padding/анимаций
-            const safetyFactor = 1.05;
+            // Фактор, позволяющий чуть плотнее упаковать карточки и минимизировать пустое место
+            const safetyFactor = 0.97;
             const effectiveCardHeight = cardHeight * safetyFactor;
 
             const dynamicCount = Math.max(
                 baseItemsPerPage,
-                Math.floor(containerHeight / effectiveCardHeight)
+                Math.ceil(containerHeight / effectiveCardHeight)
             );
 
             // Ограничиваем сверху на всякий случай
@@ -92,7 +92,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
             {/* Новости */}
             <div
                 ref={listContainerRef}
-                className="relative overflow-hidden flex-1 pt-2 pb-10 space-y-6"
+                className="relative overflow-hidden flex-1 pt-2 pb-4 space-y-6"
             >
                 {visibleItems.map((item, idx) => {
                     const isFirst = idx === 0;
