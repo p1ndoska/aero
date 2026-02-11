@@ -19,6 +19,9 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
     const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
     const newsContainerRef = useRef<HTMLDivElement | null>(null);
 
+    // Новая логика: всегда показываем стрелку вниз, если последняя карточка обрезана
+    const shouldShowScrollDown = useRef(false);
+
     useEffect(() => {
         const calculateItemsPerPage = () => {
             const container = containerRef.current;
@@ -27,38 +30,44 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
             const containerHeight = container.clientHeight;
             if (containerHeight <= 0) return;
 
-            // Используем минимальную высоту карточки для адаптивности
+            // Используем минимальную высоту для адаптивности
             const minCardHeight = 200;
             const cardMargin = 16;
             const cardHeightWithMargin = minCardHeight + cardMargin;
 
-            // Вычисляем доступную высоту с учетом отступов
+            // Вычисляем доступную высоту
             const arrowHeight = 56;
             const buttonHeight = startIndex > 0 ? 56 : 0;
             const topButtonHeight = canScrollUp ? 48 : 0;
 
             const availableHeight = containerHeight - arrowHeight - buttonHeight - topButtonHeight - 20;
 
-            // Минимальное количество карточек
+            // Рассчитываем количество карточек
             let count = Math.max(3, Math.floor(availableHeight / cardHeightWithMargin));
 
-            // Если контейнер очень высокий, не ограничиваемся 10 карточками
-            if (containerHeight > 800) {
+            // Всегда добавляем одну карточку для обрезания на больших экранах
+            count = Math.min(count + 1, newsItems.length);
+
+            // Если есть место, показываем больше карточек
+            if (containerHeight > 700) {
                 count = Math.min(count + 1, newsItems.length);
-            } else {
-                count = Math.min(count + 1, 8);
             }
 
-            // Убедимся, что есть место для блюра
-            if (containerHeight < 400) {
-                count = Math.max(2, count);
+            // Убедимся, что последняя карточка всегда обрезана (для блюра)
+            if (newsItems.length > count) {
+                count = Math.min(count + 1, newsItems.length);
             }
 
             setItemsPerPage(count);
 
-            // Корректируем стартовый индекс
+            // Всегда устанавливаем индекс так, чтобы последняя карточка была обрезана
             setStartIndex((prev) => {
                 const maxStart = Math.max(0, newsItems.length - count);
+                // Если мы не в конце списка, оставляем как есть
+                // Если в конце, но есть место для еще одной карточки, сдвигаем
+                if (prev === maxStart && newsItems.length > count) {
+                    return Math.max(0, prev - 1);
+                }
                 return Math.min(prev, maxStart);
             });
         };
@@ -75,16 +84,20 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
         };
     }, [baseItemsPerPage, newsItems.length, startIndex]);
 
-    if (newsItems.length === 0) {
-        return <p className="text-[#213659]">{t('no_data')}</p>;
-    }
-
+    // Пересчитываем canScrollDown на основе реального состояния
     const maxStartIndex = Math.max(0, newsItems.length - itemsPerPage);
     const clampedStartIndex = Math.min(startIndex, maxStartIndex);
     const visibleItems = newsItems.slice(clampedStartIndex, clampedStartIndex + itemsPerPage);
 
+    // Всегда показываем стрелку вниз, если последняя карточка обрезана
     const canScrollUp = clampedStartIndex > 0;
-    const canScrollDown = clampedStartIndex < maxStartIndex;
+    const canScrollDown =
+        clampedStartIndex < maxStartIndex ||
+        (visibleItems.length > 0 &&
+            newsContainerRef.current &&
+            cardRefs.current[visibleItems.length - 1] &&
+            cardRefs.current[visibleItems.length - 1]?.getBoundingClientRect().bottom >
+            newsContainerRef.current.getBoundingClientRect().bottom);
 
     const scrollDown = () => {
         if (canScrollDown) {
@@ -142,8 +155,8 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
                     );
                 })}
 
-                {/* Блюр на обрезанном краю - работает на всех экранах */}
-                {canScrollDown && (
+                {/* Блюр на обрезанном краю - всегда показываем, если последняя карточка обрезана */}
+                {(canScrollDown || visibleItems.length > 0) && (
                     <div
                         className="absolute bottom-0 left-0 right-0 h-24 z-20"
                         style={{
@@ -156,11 +169,11 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
                 )}
             </div>
 
-            {/* Кнопки "вверх/вниз" - всегда видимы */}
+            {/* Кнопки "вверх/вниз" */}
             {canScrollUp && (
                 <button
                     onClick={scrollUp}
-                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-md shadow-lg rounded-full p-2 hover:bg-gray-100 transition z-30 border border-gray-200"
+                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-md shadow-lg rounded-full p-2 hover:bg-gray-100 transition z-30"
                 >
                     <ChevronUp className="h-6 w-6 text-[#213659]" />
                 </button>
@@ -168,7 +181,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
             {canScrollDown && (
                 <button
                     onClick={scrollDown}
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-md shadow-lg rounded-full p-2 hover:bg-gray-100 transition z-30 border border-gray-200"
+                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-md shadow-lg rounded-full p-2 hover:bg-gray-100 transition z-30"
                 >
                     <ChevronDown className="h-6 w-6 text-[#213659]" />
                 </button>
