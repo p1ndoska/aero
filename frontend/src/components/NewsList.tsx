@@ -105,7 +105,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
             {/* Новости */}
             <div
                 ref={listContainerRef}
-                className="relative overflow-hidden flex-1 h-full pt-1 pb-6 space-y-4"
+                className="relative overflow-hidden flex-1 h-full pt-1 pb-6"
             >
                 {visibleItems.map((item, idx) => {
                     const isFirst = idx === 0;
@@ -114,6 +114,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
                     return (
                         <AnimatePresence key={item.id} mode="popLayout">
                             <motion.div
+                                className="mb-4 last:mb-0"
                                 ref={isFirst ? firstCardRef : undefined}
                                 initial={
                                     isLast
