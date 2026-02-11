@@ -157,6 +157,7 @@ const App = () => {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.8 }}
                 className="md:w-1/3 w-full bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 h-full flex flex-col min-h-0 "
+                style={{ isolation: 'isolate' }}
             >
                 <h2 className="text-xl font-bold text-gray-800 mb-4 shrink-0">{t('news')}</h2>
 
