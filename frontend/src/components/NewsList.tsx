@@ -29,7 +29,6 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
 
             if (containerHeight <= 0) return;
 
-            // Считаем среднюю высоту карточек
             let totalCardHeight = 0;
             let cardCount = 0;
 
@@ -46,19 +45,16 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
 
             const cardHeightWithMargin = avgCardHeight + cardMargin;
 
-            // Высота элементов управления
-            const arrowHeight = 56; // фиксированная высота стрелки с отступами
+            const arrowHeight = 56;
             const buttonHeight = startIndex > 0 ? 56 : 0;
             const topButtonHeight = canScrollUp ? 48 : 0;
 
-            // Доступная высота для карточек
             const availableHeight = containerHeight - arrowHeight - buttonHeight - topButtonHeight - 20;
 
             if (availableHeight <= 0) return;
 
             let count = Math.floor(availableHeight / cardHeightWithMargin);
 
-            // Добавляем еще одну для обрезания
             count = Math.min(count + 1, newsItems.length);
             count = Math.max(count, baseItemsPerPage);
             count = Math.min(count, 10);
@@ -144,18 +140,18 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
                         </AnimatePresence>
                     );
                 })}
-
-                {/* Градиентный оверлей с блюром для плавного обрезания */}
-                {canScrollDown && (
-                    <div className="absolute bottom-14 left-0 right-0 h-20 bg-gradient-to-t from-white/90 via-white/70 to-transparent backdrop-blur-sm pointer-events-none" />
-                )}
             </div>
+
+            {/* Градиентный оверлей с блюром */}
+            {canScrollDown && (
+                <div className="absolute bottom-14 left-0 right-0 h-24 bg-gradient-to-t from-white via-white/80 to-transparent backdrop-blur-md z-30 pointer-events-none" />
+            )}
 
             {/* Кнопки "вверх/вниз" */}
             {canScrollUp && (
                 <button
                     onClick={scrollUp}
-                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm shadow-md rounded-full p-2 hover:bg-gray-100 transition z-20"
+                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm shadow-md rounded-full p-2 hover:bg-gray-100 transition z-40"
                 >
                     <ChevronUp className="h-6 w-6 text-[#213659]" />
                 </button>
@@ -164,7 +160,7 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
                 <button
                     ref={arrowDownRef}
                     onClick={scrollDown}
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm shadow-md rounded-full p-2 hover:bg-gray-100 transition z-20"
+                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm shadow-md rounded-full p-2 hover:bg-gray-100 transition z-50"
                 >
                     <ChevronDown className="h-6 w-6 text-[#213659]" />
                 </button>
@@ -172,10 +168,10 @@ export const NewsList = ({ newsItems, baseItemsPerPage = 3 }: NewsListProps) => 
 
             {/* Кнопка "К началу списка" */}
             {startIndex > 0 && (
-                <div className="absolute bottom-16 left-0 right-0 flex justify-center z-20">
+                <div className="absolute bottom-16 left-0 right-0 flex justify-center z-40">
                     <Button
                         onClick={scrollToTop}
-                        className="bg-[#213659] hover:bg-[#1a2a4a] text-white px-6 py-3 rounded-xl"
+                        className="bg-[#213659] hover:bg-[#1a2a4a] text-white px-6 py-3 rounded-xl z-40"
                     >
                         <ArrowUp className="h-5 w-5 mr-2" />
                         {t('to_top')}
