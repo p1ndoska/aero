@@ -17,10 +17,13 @@ export interface SearchResponse {
   message?: string;
 }
 
+const SEARCH_BASE_URL =
+  `${import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin)}/api/search`;
+
 export const searchApi = createApi({
   reducerPath: 'searchApi',
   baseQuery: fetchBaseQuery({ 
-    baseUrl: `${import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://localhost:8443')}/api/search`,
+    baseUrl: SEARCH_BASE_URL,
   }),
   endpoints: (builder) => ({
     searchAll: builder.query<SearchResponse, { query: string; language?: string }>({

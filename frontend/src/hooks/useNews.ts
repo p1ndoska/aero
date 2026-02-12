@@ -9,7 +9,9 @@ export const useNews = () => {
     useEffect(() => {
         const fetchNews = async () => {
             try {
-                const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://localhost:8443');
+                const apiUrl =
+                    import.meta.env.VITE_API_URL ||
+                    (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin);
                 const response = await fetch(`${apiUrl}/api/news`);
                 if (!response.ok) throw new Error("Не удалось загрузить новости");
 

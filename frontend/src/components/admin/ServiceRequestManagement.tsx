@@ -142,7 +142,9 @@ const ServiceRequestManagement: React.FC = () => {
         ...(filters.serviceType && filters.serviceType !== 'all' && { serviceType: filters.serviceType })
       });
 
-      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://localhost:8443');
+      const apiUrl =
+        import.meta.env.VITE_API_URL ||
+        (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin);
       const response = await fetchWithAuth(`${apiUrl}/api/service-requests?${queryParams}`, {
         headers: {
           'Content-Type': 'application/json'
@@ -170,7 +172,9 @@ const ServiceRequestManagement: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://localhost:8443');
+      const apiUrl =
+        import.meta.env.VITE_API_URL ||
+        (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin);
       const response = await fetchWithAuth(`${apiUrl}/api/service-requests-stats`, {
         headers: {
           'Content-Type': 'application/json'
@@ -194,7 +198,9 @@ const ServiceRequestManagement: React.FC = () => {
 
   const updateServiceRequest = async (id: number, updateData: Partial<ServiceRequest>) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://localhost:8443');
+      const apiUrl =
+        import.meta.env.VITE_API_URL ||
+        (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin);
       const response = await fetchWithAuth(`${apiUrl}/api/service-requests/${id}`, {
         method: 'PUT',
         headers: {
@@ -226,7 +232,9 @@ const ServiceRequestManagement: React.FC = () => {
     }
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://localhost:8443');
+      const apiUrl =
+        import.meta.env.VITE_API_URL ||
+        (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin);
       const response = await fetchWithAuth(`${apiUrl}/api/service-requests/${id}`, {
         method: 'DELETE',
         headers: {
