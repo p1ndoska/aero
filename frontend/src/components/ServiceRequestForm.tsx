@@ -77,13 +77,36 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
         }),
       });
 
+      const rawText = await response.text();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Ошибка при отправке заявки');
+        let errorMessage = 'Ошибка при отправке заявки';
+
+        try {
+          const errorData = JSON.parse(rawText);
+          if (errorData?.error) {
+            errorMessage = errorData.error;
+          }
+        } catch {
+          // Если сервер вернул HTML (например, 504 Gateway Timeout),
+          // не пытаемся парсить JSON и показываем статус/код.
+          if (response.status === 504) {
+            errorMessage = 'Сервер не ответил вовремя (ошибка 504). Попробуйте отправить заявку позже или свяжитесь с администратором.';
+          } else if (response.status) {
+            errorMessage = `Ошибка сервера (${response.status}). Попробуйте позже.`;
+          }
+        }
+
+        throw new Error(errorMessage);
       }
 
-      const result = await response.json();
-      
+      let result: any = null;
+      try {
+        result = rawText ? JSON.parse(rawText) : null;
+      } catch {
+        console.error('Service request: не удалось распарсить JSON ответа, raw:', rawText);
+      }
+
       toast.success('Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.');
       
       // Сброс формы
