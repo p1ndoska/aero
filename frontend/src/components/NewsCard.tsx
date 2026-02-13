@@ -36,7 +36,6 @@ export const NewsCard = ({news}:{news:NewsItem})=>{
                             e.currentTarget.style.display = 'none';
                         }}
                         onLoad={() => {
-                            console.log(' Изображение новости загружено:', news.photo);
                         }}
                     />
                 )}

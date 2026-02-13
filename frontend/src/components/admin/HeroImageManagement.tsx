@@ -140,7 +140,6 @@ const HeroImageManagement: React.FC = () => {
                     console.error('Полный URL:', `${BASE_URL}${currentImage.imageUrl?.startsWith('/') ? '' : '/'}${currentImage.imageUrl}`);
                   }}
                   onLoad={() => {
-                    console.log('Hero image загружено:', currentImage.imageUrl);
                   }}
                 />
                 <Button

@@ -314,9 +314,10 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             console.log('To:', email);
             console.log('From:', fromEmail);
             console.log('Subject:', mailOptions.subject);
+            console.log('Transporter initialized:', !!this.transporter);
             
             const result = await this.transporter.sendMail(mailOptions);
-            console.log(' Email sent successfully!');
+            console.log('✅ Email sent successfully!');
             console.log('Message ID:', result.messageId);
             console.log('Response:', result.response);
             return { success: true, messageId: result.messageId };
@@ -441,6 +442,7 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             console.log('=== Sending Service Request Admin Notification ===');
             console.log('To:', adminEmail);
             console.log('From:', fromEmail);
+            console.log('Transporter initialized:', !!this.transporter);
             
             const mailOptions = {
                 from: `"ГП «Белаэронавигация»" <${fromEmail}>`,
@@ -541,6 +543,7 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             console.log('To:', serviceRequest.email);
             console.log('From:', fromEmail);
             console.log('Subject: Подтверждение заявки #' + serviceRequest.id);
+            console.log('Transporter initialized:', !!this.transporter);
             
             const mailOptions = {
                 from: `"ГП «Белаэронавигация»" <${fromEmail}>`,
@@ -593,7 +596,7 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             };
             
             const result = await this.transporter.sendMail(mailOptions);
-            console.log(' Service request confirmation sent successfully!');
+            console.log('✅ Service request confirmation sent successfully!');
             console.log('Message ID:', result.messageId);
             console.log('Response:', result.response);
             return { success: true, messageId: result.messageId };
