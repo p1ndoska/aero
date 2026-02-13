@@ -31,7 +31,11 @@ async function testSMTPConnection() {
         console.error('   Please set EMAIL_USER/EMAIL_PASS or SMTP_USER/SMTP_PASS in .env file');
         process.exit(1);
     }
-    
+
+
+
+
+
     // Создаем transporter
     let transporter;
     if (smtpHost) {
@@ -151,4 +155,5 @@ async function testSMTPConnection() {
 }
 
 testSMTPConnection();
+////////////
 
