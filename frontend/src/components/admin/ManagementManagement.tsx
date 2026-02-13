@@ -209,14 +209,20 @@ export default function ManagementManagement() {
     const previousManager = managers.managers[index - 1];
 
     // Меняем порядок местами
-    const newOrder = previousManager.order;
-    const oldOrder = currentManager.order;
+    const newOrder = Number(previousManager.order);
+    const oldOrder = Number(currentManager.order);
+
+    // Проверяем, что значения валидны
+    if (isNaN(newOrder) || isNaN(oldOrder) || !currentManager.id || !previousManager.id) {
+      toast.error('Ошибка: некорректные данные для изменения порядка');
+      return;
+    }
 
     try {
       await updateManagersOrder({
         managers: [
-          { id: currentManager.id, order: newOrder },
-          { id: previousManager.id, order: oldOrder }
+          { id: Number(currentManager.id), order: newOrder },
+          { id: Number(previousManager.id), order: oldOrder }
         ]
       }).unwrap();
       toast.success('Порядок обновлен');
@@ -233,14 +239,20 @@ export default function ManagementManagement() {
     const nextManager = managers.managers[index + 1];
 
     // Меняем порядок местами
-    const newOrder = nextManager.order;
-    const oldOrder = currentManager.order;
+    const newOrder = Number(nextManager.order);
+    const oldOrder = Number(currentManager.order);
+
+    // Проверяем, что значения валидны
+    if (isNaN(newOrder) || isNaN(oldOrder) || !currentManager.id || !nextManager.id) {
+      toast.error('Ошибка: некорректные данные для изменения порядка');
+      return;
+    }
 
     try {
       await updateManagersOrder({
         managers: [
-          { id: currentManager.id, order: newOrder },
-          { id: nextManager.id, order: oldOrder }
+          { id: Number(currentManager.id), order: newOrder },
+          { id: Number(nextManager.id), order: oldOrder }
         ]
       }).unwrap();
       toast.success('Порядок обновлен');

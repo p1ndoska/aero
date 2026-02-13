@@ -265,12 +265,33 @@ const ManagementController = {
             return res.status(400).json({ error: 'Неверный формат данных. Ожидается массив объектов { id, order }' });
         }
 
+        if (managers.length === 0) {
+            return res.status(400).json({ error: 'Массив руководителей не может быть пустым' });
+        }
+
         try {
-            // Обновляем порядок для всех переданных руководителей
-            const updatePromises = managers.map(({ id, order }) => {
-                if (typeof id !== 'number' || typeof order !== 'number') {
-                    throw new Error(`Неверный формат данных для руководителя: id=${id}, order=${order}`);
+            // Валидация и преобразование данных
+            const validatedManagers = managers.map((item, index) => {
+                if (!item || typeof item !== 'object') {
+                    throw new Error(`Элемент ${index} не является объектом`);
                 }
+
+                const id = parseInt(item.id, 10);
+                const order = parseInt(item.order, 10);
+
+                if (isNaN(id) || id <= 0) {
+                    throw new Error(`Неверный формат ID для элемента ${index}: ${item.id}. Ожидается положительное число.`);
+                }
+
+                if (isNaN(order) || order < 0) {
+                    throw new Error(`Неверный формат order для элемента ${index}: ${item.order}. Ожидается неотрицательное число.`);
+                }
+
+                return { id, order };
+            });
+
+            // Обновляем порядок для всех переданных руководителей
+            const updatePromises = validatedManagers.map(({ id, order }) => {
                 return prisma.management.update({
                     where: { id },
                     data: { order }
@@ -285,6 +306,10 @@ const ManagementController = {
             });
         } catch (error) {
             console.error('updateManagersOrder error', error);
+            // Если это наша валидационная ошибка, возвращаем её сообщение
+            if (error.message && error.message.includes('Неверный формат')) {
+                return res.status(400).json({ error: error.message });
+            }
             return res.status(500).json({ error: 'Internal server error' });
         }
     }
