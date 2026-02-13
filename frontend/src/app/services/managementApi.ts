@@ -5,7 +5,8 @@ import type {
   UpdateManagementRequest, 
   ManagementResponse, 
   SingleManagementResponse,
-  AvailableSlotsResponse
+  AvailableSlotsResponse,
+  UpdateManagersOrderRequest
 } from "@/types/management";
 
 export const managementApi = api.injectEndpoints({
@@ -56,6 +57,15 @@ export const managementApi = api.injectEndpoints({
         return `/management/${id}/available-slots${queryString ? `?${queryString}` : ''}`;
       },
     }),
+
+    // Обновить порядок сортировки руководителей
+    updateManagersOrder: builder.mutation<{ message: string; updated: number }, UpdateManagersOrderRequest>({
+      query: (orderData) => ({
+        url: "/management/order",
+        method: "PUT",
+        body: orderData,
+      }),
+    }),
   }),
 });
 
@@ -66,6 +76,7 @@ export const {
   useUpdateManagerMutation,
   useDeleteManagerMutation,
   useGetAvailableSlotsQuery,
+  useUpdateManagersOrderMutation,
 } = managementApi;
 
 

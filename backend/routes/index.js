@@ -198,6 +198,7 @@ router.get('/management/:id', authenticationToken, checkRole(['SUPER_ADMIN','MED
 router.get('/management/:id/available-slots', ManagementController.getAvailableSlots);
 router.get('/management', ManagementController.getManagers);
 router.put('/management/:id', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ManagementController.updateManager);
+router.put('/management/order', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ManagementController.updateManagersOrder);
 router.delete('/management/:id', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ManagementController.deleteManager);
 
 //reception slots

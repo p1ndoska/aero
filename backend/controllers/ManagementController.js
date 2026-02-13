@@ -22,12 +22,14 @@ const ManagementController = {
                     officesEn: true,
                     officesBe: true,
                     images: true,
+                    order: true,
                     createdAt: true,
                     updatedAt: true
                 },
-                orderBy: {
-                    createdAt: 'desc'
-                }
+                orderBy: [
+                    { order: 'asc' },
+                    { createdAt: 'desc' }
+                ]
             });
             return res.status(200).json({ managers });
         } catch (error) {
@@ -69,7 +71,8 @@ const ManagementController = {
             phone, 
             offices, officesEn, officesBe,
             receptionSchedule, receptionScheduleEn, receptionScheduleBe, 
-            images 
+            images,
+            order
         } = req.body;
 
         if (!name || !position || !phone || !receptionSchedule) {
@@ -77,6 +80,16 @@ const ManagementController = {
         }
 
         try {
+            // Если order не указан, устанавливаем максимальный order + 1
+            let managerOrder = order;
+            if (managerOrder === undefined || managerOrder === null) {
+                const maxOrderManager = await prisma.management.findFirst({
+                    orderBy: { order: 'desc' },
+                    select: { order: true }
+                });
+                managerOrder = maxOrderManager ? maxOrderManager.order + 1 : 0;
+            }
+
             const newManager = await prisma.management.create({
                 data: {
                     name,
@@ -92,7 +105,8 @@ const ManagementController = {
                     receptionSchedule,
                     receptionScheduleEn: receptionScheduleEn || null,
                     receptionScheduleBe: receptionScheduleBe || null,
-                    images: images || []
+                    images: images || [],
+                    order: managerOrder
                 }
             });
 
@@ -148,7 +162,8 @@ const ManagementController = {
                     receptionSchedule: receptionSchedule !== undefined ? receptionSchedule : existingManager.receptionSchedule,
                     receptionScheduleEn: receptionScheduleEn !== undefined ? receptionScheduleEn : existingManager.receptionScheduleEn,
                     receptionScheduleBe: receptionScheduleBe !== undefined ? receptionScheduleBe : existingManager.receptionScheduleBe,
-                    images: images !== undefined ? images : existingManager.images
+                    images: images !== undefined ? images : existingManager.images,
+                    order: order !== undefined ? order : existingManager.order
                 }
             });
 
@@ -238,6 +253,38 @@ const ManagementController = {
             });
         } catch (error) {
             console.error('getAvailableSlots error', error);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+    },
+
+    // Обновить порядок сортировки руководителей
+    updateManagersOrder: async (req, res) => {
+        const { managers } = req.body; // массив объектов { id, order }
+
+        if (!Array.isArray(managers)) {
+            return res.status(400).json({ error: 'Неверный формат данных. Ожидается массив объектов { id, order }' });
+        }
+
+        try {
+            // Обновляем порядок для всех переданных руководителей
+            const updatePromises = managers.map(({ id, order }) => {
+                if (typeof id !== 'number' || typeof order !== 'number') {
+                    throw new Error(`Неверный формат данных для руководителя: id=${id}, order=${order}`);
+                }
+                return prisma.management.update({
+                    where: { id },
+                    data: { order }
+                });
+            });
+
+            await Promise.all(updatePromises);
+
+            return res.status(200).json({ 
+                message: 'Порядок сортировки успешно обновлен',
+                updated: managers.length
+            });
+        } catch (error) {
+            console.error('updateManagersOrder error', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
     }

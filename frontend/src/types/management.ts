@@ -54,6 +54,7 @@ export interface Management {
   officesEn?: string;
   officesBe?: string;
   images: string[];
+  order: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -74,6 +75,7 @@ export interface CreateManagementRequest {
   officesEn?: string;
   officesBe?: string;
   images?: string[];
+  order?: number;
 }
 
 // Запрос на обновление руководителя
@@ -92,6 +94,12 @@ export interface UpdateManagementRequest {
   officesEn?: string;
   officesBe?: string;
   images?: string[];
+  order?: number;
+}
+
+// Запрос на обновление порядка сортировки
+export interface UpdateManagersOrderRequest {
+  managers: Array<{ id: number; order: number }>;
 }
 
 // Ответ API для руководителей

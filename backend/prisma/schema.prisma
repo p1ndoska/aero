@@ -132,6 +132,7 @@ model Management {
   officesEn     String? // Кабинеты на английском
   officesBe     String? // Кабинеты на беларуском
   images      String[]  // Массив путей к изображениям
+  order       Int       @default(0) // Порядок сортировки
   receptionSlots ReceptionSlot[] // Слоты для записи на прием
   recurringScheduleTemplates RecurringScheduleTemplate[] // Шаблоны повторяющегося расписания
   createdAt   DateTime  @default(now())

@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2, Users, Upload, X, Image as ImageIcon, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, Upload, X, Image as ImageIcon, Calendar, ChevronUp, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
-import { useGetAllManagersQuery, useCreateManagerMutation, useUpdateManagerMutation, useDeleteManagerMutation } from '@/app/services/managementApi';
+import { useGetAllManagersQuery, useCreateManagerMutation, useUpdateManagerMutation, useDeleteManagerMutation, useUpdateManagersOrderMutation } from '@/app/services/managementApi';
 import { useUploadImageMutation } from '@/app/services/uploadApi';
 import ReceptionScheduleCalendar from './ReceptionScheduleCalendar';
 import type { Management, CreateManagementRequest } from '@/types/management';
@@ -17,6 +17,7 @@ export default function ManagementManagement() {
   const [createManager, { isLoading: isCreating }] = useCreateManagerMutation();
   const [updateManager, { isLoading: isUpdating }] = useUpdateManagerMutation();
   const [deleteManager, { isLoading: isDeleting }] = useDeleteManagerMutation();
+  const [updateManagersOrder, { isLoading: isUpdatingOrder }] = useUpdateManagersOrderMutation();
   const [uploadImage] = useUploadImageMutation();
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -41,7 +42,8 @@ export default function ManagementManagement() {
     receptionSchedule: '',
     receptionScheduleEn: '',
     receptionScheduleBe: '',
-    images: []
+    images: [],
+    order: 0
   });
 
   const resetForm = () => {
@@ -59,7 +61,8 @@ export default function ManagementManagement() {
       receptionSchedule: '',
       receptionScheduleEn: '',
       receptionScheduleBe: '',
-      images: []
+      images: [],
+      order: 0
     });
     setSelectedImages([]);
     setPreviewImages([]);
@@ -150,7 +153,8 @@ export default function ManagementManagement() {
       receptionSchedule: manager.receptionSchedule,
       receptionScheduleEn: manager.receptionScheduleEn || '',
       receptionScheduleBe: manager.receptionScheduleBe || '',
-      images: manager.images
+      images: manager.images,
+      order: manager.order
     });
     setSelectedImages([]);
     setPreviewImages([]);
@@ -195,6 +199,54 @@ export default function ManagementManagement() {
       refetch();
     } catch (error: any) {
       toast.error(error.data?.error || 'Ошибка при удалении руководителя');
+    }
+  };
+
+  const handleMoveUp = async (index: number) => {
+    if (!managers?.managers || index === 0) return;
+
+    const currentManager = managers.managers[index];
+    const previousManager = managers.managers[index - 1];
+
+    // Меняем порядок местами
+    const newOrder = previousManager.order;
+    const oldOrder = currentManager.order;
+
+    try {
+      await updateManagersOrder({
+        managers: [
+          { id: currentManager.id, order: newOrder },
+          { id: previousManager.id, order: oldOrder }
+        ]
+      }).unwrap();
+      toast.success('Порядок обновлен');
+      refetch();
+    } catch (error: any) {
+      toast.error(error.data?.error || 'Ошибка при обновлении порядка');
+    }
+  };
+
+  const handleMoveDown = async (index: number) => {
+    if (!managers?.managers || index === managers.managers.length - 1) return;
+
+    const currentManager = managers.managers[index];
+    const nextManager = managers.managers[index + 1];
+
+    // Меняем порядок местами
+    const newOrder = nextManager.order;
+    const oldOrder = currentManager.order;
+
+    try {
+      await updateManagersOrder({
+        managers: [
+          { id: currentManager.id, order: newOrder },
+          { id: nextManager.id, order: oldOrder }
+        ]
+      }).unwrap();
+      toast.success('Порядок обновлен');
+      refetch();
+    } catch (error: any) {
+      toast.error(error.data?.error || 'Ошибка при обновлении порядка');
     }
   };
 
@@ -525,6 +577,28 @@ export default function ManagementManagement() {
                     </div>
                   </div>
                   <div className="flex gap-2">
+                    <div className="flex flex-col gap-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleMoveUp(managers.managers.findIndex(m => m.id === manager.id))}
+                        disabled={isUpdatingOrder || managers.managers.findIndex(m => m.id === manager.id) === 0}
+                        className="border-[#B1D1E0] hover:border-[#2A52BE] text-[#213659] p-1 h-8"
+                        title="Переместить вверх"
+                      >
+                        <ChevronUp className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleMoveDown(managers.managers.findIndex(m => m.id === manager.id))}
+                        disabled={isUpdatingOrder || managers.managers.findIndex(m => m.id === manager.id) === managers.managers.length - 1}
+                        className="border-[#B1D1E0] hover:border-[#2A52BE] text-[#213659] p-1 h-8"
+                        title="Переместить вниз"
+                      >
+                        <ChevronDown className="w-4 h-4" />
+                      </Button>
+                    </div>
                     <Button
                       variant="outline"
                       size="sm"
