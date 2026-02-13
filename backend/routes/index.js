@@ -281,9 +281,10 @@ router.get('/social-work-pages', SocialWorkPageContentController.getAllSocialWor
 router.get('/organization-logos', OrganizationLogoController.getAllOrganizationLogos);
 router.get('/organization-logos/:id', OrganizationLogoController.getOrganizationLogo);
 router.post('/organization-logos', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN', 'SOCIAL_ADMIN']), OrganizationLogoController.createOrganizationLogo);
+// ВАЖНО: Специфичный маршрут /order должен быть ПЕРЕД маршрутом /:id
+router.put('/organization-logos/order', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN', 'SOCIAL_ADMIN']), OrganizationLogoController.updateLogosOrder);
 router.put('/organization-logos/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN', 'SOCIAL_ADMIN']), OrganizationLogoController.updateOrganizationLogo);
 router.delete('/organization-logos/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN', 'SOCIAL_ADMIN']), OrganizationLogoController.deleteOrganizationLogo);
-router.put('/organization-logos/order', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN', 'SOCIAL_ADMIN']), OrganizationLogoController.updateLogosOrder);
 
 //social work categories routes
 router.get('/social-work-categories', SocialWorkCategoryController.getAllSocialWorkCategories);

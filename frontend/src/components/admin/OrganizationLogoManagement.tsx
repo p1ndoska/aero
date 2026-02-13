@@ -23,6 +23,8 @@ interface OrganizationLogoFormData {
   nameBe: string;
   logoUrl: string;
   internalPath: string;
+  externalUrl: string;
+  linkType: 'internal' | 'external' | 'none';
   isActive: boolean;
   sortOrder: number;
 }
@@ -33,6 +35,8 @@ const initialFormData: OrganizationLogoFormData = {
   nameBe: '',
   logoUrl: '',
   internalPath: '',
+  externalUrl: '',
+  linkType: 'none',
   isActive: true,
   sortOrder: 0
 };
@@ -156,8 +160,16 @@ export default function OrganizationLogoManagement() {
       return;
     }
     
+    // Подготовка данных для отправки
+    const submitData = {
+      ...formData,
+      internalPath: formData.linkType === 'internal' ? formData.internalPath : '',
+      externalUrl: formData.linkType === 'external' ? formData.externalUrl : ''
+    };
+    delete (submitData as any).linkType;
+    
     try {
-      await updateLogo({ id: editingLogo.id, body: formData }).unwrap();
+      await updateLogo({ id: editingLogo.id, body: submitData }).unwrap();
       toast.success('Логотип организации успешно обновлен');
       setFormData(initialFormData);
       setIsEditDialogOpen(false);
@@ -182,12 +194,15 @@ export default function OrganizationLogoManagement() {
 
   const handleEditLogo = (logo: any) => {
     setEditingLogo(logo);
+    const linkType = logo.externalUrl ? 'external' : (logo.internalPath ? 'internal' : 'none');
     setFormData({
       name: logo.name || '',
       nameEn: logo.nameEn || '',
       nameBe: logo.nameBe || '',
       logoUrl: logo.logoUrl || '',
       internalPath: logo.internalPath || '',
+      externalUrl: logo.externalUrl || '',
+      linkType,
       isActive: logo.isActive,
       sortOrder: logo.sortOrder
     });
@@ -201,15 +216,19 @@ export default function OrganizationLogoManagement() {
     [newLogos[index], newLogos[index - 1]] = [newLogos[index - 1], newLogos[index]];
     
     const updateData = newLogos.map((logo, idx) => ({
-      id: logo.id,
+      id: Number(logo.id),
       sortOrder: idx
     }));
     
     try {
+      console.log('Moving logo up, update data:', updateData);
       await updateOrder({ logos: updateData }).unwrap();
+      toast.success('Порядок логотипов обновлен');
       refetch();
     } catch (error: any) {
-      toast.error('Ошибка при изменении порядка');
+      console.error('Error moving logo up:', error);
+      const errorMessage = error?.data?.error || error?.data?.details || 'Ошибка при изменении порядка';
+      toast.error(errorMessage);
     }
   };
 
@@ -220,15 +239,19 @@ export default function OrganizationLogoManagement() {
     [newLogos[index], newLogos[index + 1]] = [newLogos[index + 1], newLogos[index]];
     
     const updateData = newLogos.map((logo, idx) => ({
-      id: logo.id,
+      id: Number(logo.id),
       sortOrder: idx
     }));
     
     try {
+      console.log('Moving logo down, update data:', updateData);
       await updateOrder({ logos: updateData }).unwrap();
+      toast.success('Порядок логотипов обновлен');
       refetch();
     } catch (error: any) {
-      toast.error('Ошибка при изменении порядка');
+      console.error('Error moving logo down:', error);
+      const errorMessage = error?.data?.error || error?.data?.details || 'Ошибка при изменении порядка';
+      toast.error(errorMessage);
     }
   };
 
@@ -351,33 +374,35 @@ export default function OrganizationLogoManagement() {
                     )}
                   </div>
                 </div>
-                {logo.internalPath && logo.internalPath !== "" && (
+                {(logo.internalPath && logo.internalPath !== "") || (logo.externalUrl && logo.externalUrl !== "") ? (
                   <div className="text-center">
                     <Badge variant="outline" className="text-xs">
                       <Link className="w-3 h-3 mr-1" />
-                      Внутренняя ссылка
+                      {logo.externalUrl ? 'Внешняя ссылка' : 'Внутренняя ссылка'}
                     </Badge>
                     <p className="text-xs text-gray-500 mt-1">
-                      {INTERNAL_PAGES.find(page => page.value === logo.internalPath)?.label || logo.internalPath}
+                      {logo.externalUrl 
+                        ? logo.externalUrl 
+                        : INTERNAL_PAGES.find(page => page.value === logo.internalPath)?.label || logo.internalPath}
                     </p>
                   </div>
-                )}
+                ) : null}
                 <div className="flex gap-2 pt-2">
                   <Button
-                    size="sm"
                     variant="outline"
                     onClick={() => handleEditLogo(logo)}
                     className="flex-1"
                   >
-                    <Edit className="w-3 h-3 mr-1" />
+                    <Edit className="w-4 h-4 mr-2" />
                     Изменить
                   </Button>
                   <Button
-                    size="sm"
                     variant="destructive"
                     onClick={() => handleDeleteLogo(logo.id)}
+                    className="flex-1 bg-red-800 hover:bg-red-900 text-white border-0"
                   >
-                    <Trash2 className="w-3 h-3" />
+                    <Trash2 className="w-4 h-4 mr-2 text-white" />
+                    <span className="text-white">Удалить</span>
                   </Button>
                 </div>
               </div>
@@ -443,42 +468,69 @@ export default function OrganizationLogoManagement() {
               required
             />
             <div>
-              <label className="block text-sm font-medium mb-2">Внутренняя страница сайта</label>
+              <label className="block text-sm font-medium mb-2">Тип ссылки</label>
               <Select
-                value={formData.internalPath || "none"}
-                onValueChange={(value) => setFormData({ ...formData, internalPath: value === "none" ? "" : value })}
+                value={formData.linkType}
+                onValueChange={(value: 'internal' | 'external' | 'none') => {
+                  setFormData({ 
+                    ...formData, 
+                    linkType: value,
+                    internalPath: value !== 'internal' ? '' : formData.internalPath,
+                    externalUrl: value !== 'external' ? '' : formData.externalUrl
+                  });
+                }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Выберите страницу сайта" />
+                  <SelectValue placeholder="Выберите тип ссылки" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border border-gray-200 shadow-lg">
                   <SelectItem value="none">Без ссылки</SelectItem>
-                  {Object.entries(getPagesByCategory()).map(([category, pages]) => (
-                    <div key={category}>
-                      <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        {category === 'about' ? 'О компании' : 
-                         category === 'social' ? 'Социальная работа' : 
-                         category === 'news' ? 'Новости' : 'Другое'}
-                      </div>
-                      {pages.map((page) => (
-                        <SelectItem key={page.value} value={page.value}>
-                          {page.label}
-                        </SelectItem>
-                      ))}
-                    </div>
-                  ))}
+                  <SelectItem value="internal">Внутренняя страница сайта</SelectItem>
+                  <SelectItem value="external">Внешняя ссылка</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Порядок сортировки</label>
-              <Input
-                type="number"
-                value={formData.sortOrder}
-                onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
-                placeholder="0"
-              />
-            </div>
+            {formData.linkType === 'internal' && (
+              <div>
+                <label className="block text-sm font-medium mb-2">Внутренняя страница сайта</label>
+                <Select
+                  value={formData.internalPath || "none"}
+                  onValueChange={(value) => setFormData({ ...formData, internalPath: value === "none" ? "" : value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите страницу сайта" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                    <SelectItem value="none">Без ссылки</SelectItem>
+                    {Object.entries(getPagesByCategory()).map(([category, pages]) => (
+                      <div key={category}>
+                        <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          {category === 'about' ? 'О компании' : 
+                           category === 'social' ? 'Социальная работа' : 
+                           category === 'news' ? 'Новости' : 'Другое'}
+                        </div>
+                        {pages.map((page) => (
+                          <SelectItem key={page.value} value={page.value}>
+                            {page.label}
+                          </SelectItem>
+                        ))}
+                      </div>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            {formData.linkType === 'external' && (
+              <div>
+                <label className="block text-sm font-medium mb-2">Внешняя ссылка</label>
+                <Input
+                  type="url"
+                  value={formData.externalUrl}
+                  onChange={(e) => setFormData({ ...formData, externalUrl: e.target.value })}
+                  placeholder="https://example.com"
+                />
+              </div>
+            )}
               <div className="flex justify-end gap-3 pt-4 border-t">
                 <Button 
                   type="button" 
@@ -543,53 +595,69 @@ export default function OrganizationLogoManagement() {
               required
             />
             <div>
-              <label className="block text-sm font-medium mb-2">Внутренняя страница сайта</label>
+              <label className="block text-sm font-medium mb-2">Тип ссылки</label>
               <Select
-                value={formData.internalPath || "none"}
-                onValueChange={(value) => setFormData({ ...formData, internalPath: value === "none" ? "" : value })}
+                value={formData.linkType}
+                onValueChange={(value: 'internal' | 'external' | 'none') => {
+                  setFormData({ 
+                    ...formData, 
+                    linkType: value,
+                    internalPath: value !== 'internal' ? '' : formData.internalPath,
+                    externalUrl: value !== 'external' ? '' : formData.externalUrl
+                  });
+                }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Выберите страницу сайта" />
+                  <SelectValue placeholder="Выберите тип ссылки" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border border-gray-200 shadow-lg">
                   <SelectItem value="none">Без ссылки</SelectItem>
-                  {Object.entries(getPagesByCategory()).map(([category, pages]) => (
-                    <div key={category}>
-                      <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        {category === 'about' ? 'О компании' : 
-                         category === 'social' ? 'Социальная работа' : 
-                         category === 'news' ? 'Новости' : 'Другое'}
-                      </div>
-                      {pages.map((page) => (
-                        <SelectItem key={page.value} value={page.value}>
-                          {page.label}
-                        </SelectItem>
-                      ))}
-                    </div>
-                  ))}
+                  <SelectItem value="internal">Внутренняя страница сайта</SelectItem>
+                  <SelectItem value="external">Внешняя ссылка</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                />
-                <span className="text-sm font-medium">Активна</span>
-              </label>
+            {formData.linkType === 'internal' && (
               <div>
-                <label className="block text-sm font-medium mb-2">Порядок сортировки</label>
+                <label className="block text-sm font-medium mb-2">Внутренняя страница сайта</label>
+                <Select
+                  value={formData.internalPath || "none"}
+                  onValueChange={(value) => setFormData({ ...formData, internalPath: value === "none" ? "" : value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите страницу сайта" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                    <SelectItem value="none">Без ссылки</SelectItem>
+                    {Object.entries(getPagesByCategory()).map(([category, pages]) => (
+                      <div key={category}>
+                        <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          {category === 'about' ? 'О компании' : 
+                           category === 'social' ? 'Социальная работа' : 
+                           category === 'news' ? 'Новости' : 'Другое'}
+                        </div>
+                        {pages.map((page) => (
+                          <SelectItem key={page.value} value={page.value}>
+                            {page.label}
+                          </SelectItem>
+                        ))}
+                      </div>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            {formData.linkType === 'external' && (
+              <div>
+                <label className="block text-sm font-medium mb-2">Внешняя ссылка</label>
                 <Input
-                  type="number"
-                  value={formData.sortOrder}
-                  onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
-                  placeholder="0"
-                  className="w-24"
+                  type="url"
+                  value={formData.externalUrl}
+                  onChange={(e) => setFormData({ ...formData, externalUrl: e.target.value })}
+                  placeholder="https://example.com"
                 />
               </div>
-            </div>
+            )}
               <div className="flex justify-end gap-3 pt-4 border-t">
                 <Button 
                   type="button" 

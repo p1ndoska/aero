@@ -7,6 +7,7 @@ interface OrganizationLogo {
   nameBe?: string;
   logoUrl: string;
   internalPath?: string;
+  externalUrl?: string;
   isActive: boolean;
   sortOrder: number;
   createdAt: string;
@@ -19,6 +20,7 @@ interface CreateOrganizationLogoRequest {
   nameBe?: string;
   logoUrl: string;
   internalPath?: string;
+  externalUrl?: string;
   isActive?: boolean;
   sortOrder?: number;
 }

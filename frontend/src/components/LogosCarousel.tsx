@@ -10,6 +10,7 @@ interface OrganizationLogo {
   logoUrl: string;
   name: string;
   internalPath?: string;
+  externalUrl?: string;
 }
 
 interface LogosCarouselProps {
@@ -100,46 +101,51 @@ const LogosCarousel: React.FC<LogosCarouselProps> = ({ logos, loading }) => {
         className="flex gap-3 overflow-x-hidden scrollbar-hide"
         style={{ scrollBehavior: 'smooth' }}
       >
-        {logos.map((logo) => (
-          <div key={logo.id} className="flex-shrink-0 flex flex-col items-center min-w-[120px]">
-            {logo.internalPath && logo.internalPath !== "" ? (
-              <Link
-                to={logo.internalPath}
-                className="flex flex-col items-center hover:opacity-80 transition-opacity w-full"
-              >
-                <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 flex items-center justify-center bg-white rounded-lg border border-gray-200 shadow-sm mb-1 p-1.5">
-                  <img
-                    src={logo.logoUrl}
-                    alt={getTranslatedField(logo, 'name', language)}
-                    className="max-w-full max-h-full object-contain"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
-                </div>
-                <span className="text-xs text-gray-600 text-center break-words leading-tight mt-0.5">
-                  {getTranslatedField(logo, 'name', language)}
-                </span>
-              </Link>
-            ) : (
-              <div className="flex flex-col items-center w-full">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 flex items-center justify-center bg-white rounded-lg border border-gray-200 shadow-sm mb-1 p-1.5">
-                  <img
-                    src={logo.logoUrl}
-                    alt={getTranslatedField(logo, 'name', language)}
-                    className="max-w-full max-h-full object-contain"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
-                </div>
-                <span className="text-xs text-gray-600 text-center break-words leading-tight mt-0.5">
-                  {getTranslatedField(logo, 'name', language)}
-                </span>
+        {logos.map((logo) => {
+          const logoContent = (
+            <>
+              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 flex items-center justify-center bg-white rounded-lg border border-gray-200 shadow-sm mb-1 p-1.5">
+                <img
+                  src={logo.logoUrl}
+                  alt={getTranslatedField(logo, 'name', language)}
+                  className="max-w-full max-h-full object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
               </div>
-            )}
-          </div>
-        ))}
+              <span className="text-xs text-gray-600 text-center break-words leading-tight mt-0.5">
+                {getTranslatedField(logo, 'name', language)}
+              </span>
+            </>
+          );
+
+          return (
+            <div key={logo.id} className="flex-shrink-0 flex flex-col items-center min-w-[120px]">
+              {logo.externalUrl && logo.externalUrl !== "" ? (
+                <a
+                  href={logo.externalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center hover:opacity-80 transition-opacity w-full"
+                >
+                  {logoContent}
+                </a>
+              ) : logo.internalPath && logo.internalPath !== "" ? (
+                <Link
+                  to={logo.internalPath}
+                  className="flex flex-col items-center hover:opacity-80 transition-opacity w-full"
+                >
+                  {logoContent}
+                </Link>
+              ) : (
+                <div className="flex flex-col items-center w-full">
+                  {logoContent}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Стрелки по бокам */}

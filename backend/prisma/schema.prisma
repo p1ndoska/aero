@@ -296,6 +296,7 @@ model OrganizationLogo {
   nameBe      String?   // Название на беларуском
   logoUrl     String    // URL логотипа
   internalPath String?  // Путь к внутренней странице сайта (например: /about/company)
+  externalUrl String?   // Внешняя ссылка (например: https://example.com)
   isActive    Boolean   @default(true) // Активна ли организация
   sortOrder   Int       @default(0) // Порядок сортировки
   createdAt   DateTime  @default(now())
