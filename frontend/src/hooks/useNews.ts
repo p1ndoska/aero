@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import type { NewsItem } from "@/types/News.ts";
-import { BASE_URL } from "@/constants";
 
 export const useNews = () => {
     const [news, setNews] = useState<NewsItem[]>([]);
@@ -10,7 +9,10 @@ export const useNews = () => {
     useEffect(() => {
         const fetchNews = async () => {
             try {
-                const response = await fetch(`${BASE_URL}/api/news`);
+                const apiUrl =
+                    import.meta.env.VITE_API_URL ||
+                    (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin);
+                const response = await fetch(`${apiUrl}/api/news`);
                 if (!response.ok) throw new Error("Не удалось загрузить новости");
 
                 const data: NewsItem[] = await response.json();

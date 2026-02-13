@@ -900,7 +900,7 @@ export default function VacancyManagement() {
                     {application.resumeUrl && (
                       <div className="mb-4">
                         <a
-                          href={`${import.meta.env.VITE_API_URL || (typeof window !== 'undefined' ? window.location.origin : '')}/${application.resumeUrl}`}
+                          href={`${import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin)}/${application.resumeUrl}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:underline text-sm"

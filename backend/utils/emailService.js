@@ -9,42 +9,110 @@ class EmailService {
 
     initializeTransporter() {
         // Настройка SMTP транспорта
-        // Поддерживаем как EMAIL_USER/EMAIL_PASS, так и SMTP_USER/SMTP_PASS для обратной совместимости
-        const emailUser = process.env.EMAIL_USER || process.env.SMTP_USER || 'your-email@gmail.com';
-        const emailPass = process.env.EMAIL_PASS || process.env.SMTP_PASS || 'your-app-password';
+        const smtpHost = process.env.SMTP_HOST;
+        const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 587;
+        const smtpSecure = process.env.SMTP_SECURE === 'true' || smtpPort === 465;
+        
+        // Если указан SMTP_HOST, используем SMTP_USER/SMTP_PASS (для тестовых сервисов типа Ethereal)
+        // Иначе используем EMAIL_USER/EMAIL_PASS (для продакшена, например Gmail)
+        let emailUser, emailPass;
+        
+        if (smtpHost) {
+            // Для кастомного SMTP используем SMTP_USER/SMTP_PASS, если они указаны
+            // Иначе fallback на EMAIL_USER/EMAIL_PASS
+            emailUser = process.env.SMTP_USER || process.env.EMAIL_USER || 'your-email@gmail.com';
+            emailPass = process.env.SMTP_PASS || process.env.EMAIL_PASS || 'your-app-password';
+        } else {
+            // Для Gmail используем EMAIL_USER/EMAIL_PASS, если они указаны
+            // Иначе fallback на SMTP_USER/SMTP_PASS для обратной совместимости
+            emailUser = process.env.EMAIL_USER || process.env.SMTP_USER || 'your-email@gmail.com';
+            emailPass = process.env.EMAIL_PASS || process.env.SMTP_PASS || 'your-app-password';
+        }
         
         console.log('=== Email Service Configuration ===');
-        console.log('EMAIL_USER:', emailUser ? `${emailUser.substring(0, 3)}***` : 'NOT SET');
-        console.log('EMAIL_PASS:', emailPass ? '***SET***' : 'NOT SET');
-        console.log('Service: Gmail (auto-configured)');
+        console.log('Email User:', emailUser ? `${emailUser.substring(0, 3)}***` : 'NOT SET');
+        console.log('Email Pass:', emailPass ? '***SET***' : 'NOT SET');
         
         if (emailUser === 'your-email@gmail.com' || emailPass === 'your-app-password') {
             console.warn('⚠️ WARNING: Email credentials are using default values!');
-            console.warn('⚠️ Please set EMAIL_USER and EMAIL_PASS in your .env file');
+            console.warn('⚠️ Please set EMAIL_USER and EMAIL_PASS (or SMTP_USER and SMTP_PASS) in your .env file');
         }
         
-        // Используем service: 'gmail' как в voluntaryReport.js, чтобы автоматически настроить правильные параметры
-        this.transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: emailUser,
-                pass: emailPass
+        // Если указан SMTP_HOST, используем универсальную конфигурацию SMTP
+        // Иначе используем service: 'gmail' для автоматической настройки Gmail
+        if (smtpHost) {
+            console.log(`SMTP Host: ${smtpHost}`);
+            console.log(`SMTP Port: ${smtpPort}`);
+            console.log(`SMTP Secure: ${smtpSecure}`);
+            
+            this.transporter = nodemailer.createTransport({
+                host: smtpHost,
+                port: smtpPort,
+                secure: smtpSecure, // true для 465, false для других портов
+                auth: {
+                    user: emailUser,
+                    pass: emailPass
+                },
+                tls: {
+                    // Не отклонять недействительные сертификаты (для тестовых серверов)
+                    rejectUnauthorized: false
+                }
+            });
+        } else {
+            // Автоматическая настройка для Gmail
+            console.log('Service: Gmail (auto-configured)');
+            
+            // Проверяем, что это Gmail адрес
+            if (emailUser.includes('@gmail.com')) {
+                this.transporter = nodemailer.createTransport({
+                    service: 'gmail',
+                    auth: {
+                        user: emailUser,
+                        pass: emailPass
+                    }
+                });
+            } else {
+                // Если не Gmail, но SMTP_HOST не указан, используем Gmail настройки по умолчанию
+                console.warn('⚠️ WARNING: Non-Gmail address detected but SMTP_HOST not set. Using Gmail settings.');
+                this.transporter = nodemailer.createTransport({
+                    service: 'gmail',
+                    auth: {
+                        user: emailUser,
+                        pass: emailPass
+                    }
+                });
             }
-        });
+        }
 
         // Проверка подключения
         this.transporter.verify((error, success) => {
             if (error) {
-                console.error(' Email service connection error:', error.message);
-                console.error(' Error code:', error.code);
-                console.error(' Error command:', error.command);
+                console.error('❌ Email service connection error:', error.message);
+                console.error('   Error code:', error.code);
+                console.error('   Error command:', error.command);
                 if (error.response) {
-                    console.error(' SMTP response:', error.response);
+                    console.error('   SMTP response:', error.response);
                 }
+                console.error('   Please check your EMAIL_USER, EMAIL_PASS, and SMTP settings in .env file');
             } else {
-                console.log(' Email service ready and verified');
+                console.log('✅ Email service ready and verified');
             }
         });
+    }
+
+    /**
+     * Получить адрес отправителя (from email)
+     * Использует ту же логику, что и initializeTransporter
+     */
+    getFromEmail() {
+        const smtpHost = process.env.SMTP_HOST;
+        if (smtpHost) {
+            // Для кастомного SMTP используем SMTP_USER, если указан
+            return process.env.SMTP_USER || process.env.EMAIL_USER || 'noreply@belaeronavigatsia.by';
+        } else {
+            // Для Gmail используем EMAIL_USER, если указан
+            return process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@belaeronavigatsia.by';
+        }
     }
 
     /**
@@ -231,8 +299,8 @@ ${notes ? `- Цель визита: ${notes}` : ''}
 Это письмо отправлено автоматически, пожалуйста, не отвечайте на него.
             `;
 
-            // Используем EMAIL_USER с fallback на SMTP_USER
-            const fromEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@belaeronavigatsia.by';
+            // Используем правильный адрес отправителя в зависимости от конфигурации
+            const fromEmail = this.getFromEmail();
             
             const mailOptions = {
                 from: `"ГП «Белаэронавигация»" <${fromEmail}>`,
@@ -466,8 +534,8 @@ ${notes ? `- Цель визита: ${notes}` : ''}
                 return { success: false, error: 'Missing required data: email and fullName are required' };
             }
 
-            // Используем EMAIL_USER с fallback на SMTP_USER
-            const fromEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@belaeronavigatsia.by';
+            // Используем правильный адрес отправителя в зависимости от конфигурации
+            const fromEmail = this.getFromEmail();
             
             console.log('=== Sending Service Request Confirmation Email ===');
             console.log('To:', serviceRequest.email);

@@ -14,7 +14,6 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetAllServicesCategoriesQuery } from '@/app/services/servicesCategoryApi';
 import { getTranslatedField } from '@/utils/translationHelpers';
 import { fetchWithAuth } from '@/utils/apiHelpers';
-import { BASE_URL } from '@/constants';
 
 interface ServiceRequest {
   id: number;
@@ -143,8 +142,10 @@ const ServiceRequestManagement: React.FC = () => {
         ...(filters.serviceType && filters.serviceType !== 'all' && { serviceType: filters.serviceType })
       });
 
-      const { BASE_URL } = await import('@/constants');
-      const response = await fetchWithAuth(`${BASE_URL}/api/service-requests?${queryParams}`, {
+      const apiUrl =
+        import.meta.env.VITE_API_URL ||
+        (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin);
+      const response = await fetchWithAuth(`${apiUrl}/api/service-requests?${queryParams}`, {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -171,8 +172,10 @@ const ServiceRequestManagement: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const { BASE_URL } = await import('@/constants');
-      const response = await fetchWithAuth(`${BASE_URL}/api/service-requests-stats`, {
+      const apiUrl =
+        import.meta.env.VITE_API_URL ||
+        (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin);
+      const response = await fetchWithAuth(`${apiUrl}/api/service-requests-stats`, {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -195,7 +198,10 @@ const ServiceRequestManagement: React.FC = () => {
 
   const updateServiceRequest = async (id: number, updateData: Partial<ServiceRequest>) => {
     try {
-      const response = await fetchWithAuth(`${BASE_URL}/api/service-requests/${id}`, {
+      const apiUrl =
+        import.meta.env.VITE_API_URL ||
+        (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin);
+      const response = await fetchWithAuth(`${apiUrl}/api/service-requests/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -226,7 +232,10 @@ const ServiceRequestManagement: React.FC = () => {
     }
 
     try {
-      const response = await fetchWithAuth(`${BASE_URL}/api/service-requests/${id}`, {
+      const apiUrl =
+        import.meta.env.VITE_API_URL ||
+        (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin);
+      const response = await fetchWithAuth(`${apiUrl}/api/service-requests/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'

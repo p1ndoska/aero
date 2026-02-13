@@ -17,9 +17,8 @@ export interface SearchResponse {
   message?: string;
 }
 
-import { BASE_URL } from '@/constants';
-
-const SEARCH_BASE_URL = `${BASE_URL}/api/search`;
+const SEARCH_BASE_URL =
+  `${import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin)}/api/search`;
 
 export const searchApi = createApi({
   reducerPath: 'searchApi',
