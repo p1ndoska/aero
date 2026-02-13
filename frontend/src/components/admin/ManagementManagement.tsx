@@ -208,27 +208,47 @@ export default function ManagementManagement() {
     const currentManager = managers.managers[index];
     const previousManager = managers.managers[index - 1];
 
-    // Меняем порядок местами
-    const newOrder = Number(previousManager.order);
-    const oldOrder = Number(currentManager.order);
-
     // Проверяем, что значения валидны
-    if (isNaN(newOrder) || isNaN(oldOrder) || !currentManager.id || !previousManager.id) {
+    const currentId = currentManager.id != null ? Number(currentManager.id) : NaN;
+    const previousId = previousManager.id != null ? Number(previousManager.id) : NaN;
+
+    if (isNaN(currentId) || isNaN(previousId) || currentId <= 0 || previousId <= 0) {
       toast.error('Ошибка: некорректные данные для изменения порядка');
       return;
     }
 
+    // Получаем текущие значения order или используем индексы
+    let currentOrder = currentManager.order != null ? Number(currentManager.order) : index;
+    let previousOrder = previousManager.order != null ? Number(previousManager.order) : index - 1;
+
+    // Если оба order равны 0 или одинаковые, используем индексы
+    if (currentOrder === previousOrder) {
+      currentOrder = index;
+      previousOrder = index - 1;
+    }
+
+    // Меняем порядок местами
+    const newOrder = previousOrder;
+    const oldOrder = currentOrder;
+
+    const payload = {
+      managers: [
+        { id: currentId, order: newOrder },
+        { id: previousId, order: oldOrder }
+      ]
+    };
+
     try {
-      await updateManagersOrder({
-        managers: [
-          { id: Number(currentManager.id), order: newOrder },
-          { id: Number(previousManager.id), order: oldOrder }
-        ]
-      }).unwrap();
+      await updateManagersOrder(payload).unwrap();
       toast.success('Порядок обновлен');
-      refetch();
+      // Небольшая задержка перед refetch, чтобы дать время RTK Query обновить кэш
+      setTimeout(() => {
+        refetch();
+      }, 100);
     } catch (error: any) {
-      toast.error(error.data?.error || 'Ошибка при обновлении порядка');
+      console.error('Ошибка при обновлении порядка:', error);
+      const errorMessage = error.data?.error || error.error || error.message || 'Ошибка при обновлении порядка';
+      toast.error(errorMessage);
     }
   };
 
@@ -238,27 +258,47 @@ export default function ManagementManagement() {
     const currentManager = managers.managers[index];
     const nextManager = managers.managers[index + 1];
 
-    // Меняем порядок местами
-    const newOrder = Number(nextManager.order);
-    const oldOrder = Number(currentManager.order);
-
     // Проверяем, что значения валидны
-    if (isNaN(newOrder) || isNaN(oldOrder) || !currentManager.id || !nextManager.id) {
+    const currentId = currentManager.id != null ? Number(currentManager.id) : NaN;
+    const nextId = nextManager.id != null ? Number(nextManager.id) : NaN;
+
+    if (isNaN(currentId) || isNaN(nextId) || currentId <= 0 || nextId <= 0) {
       toast.error('Ошибка: некорректные данные для изменения порядка');
       return;
     }
 
+    // Получаем текущие значения order или используем индексы
+    let currentOrder = currentManager.order != null ? Number(currentManager.order) : index;
+    let nextOrder = nextManager.order != null ? Number(nextManager.order) : index + 1;
+
+    // Если оба order равны 0 или одинаковые, используем индексы
+    if (currentOrder === nextOrder) {
+      currentOrder = index;
+      nextOrder = index + 1;
+    }
+
+    // Меняем порядок местами
+    const newOrder = nextOrder;
+    const oldOrder = currentOrder;
+
+    const payload = {
+      managers: [
+        { id: currentId, order: newOrder },
+        { id: nextId, order: oldOrder }
+      ]
+    };
+
     try {
-      await updateManagersOrder({
-        managers: [
-          { id: Number(currentManager.id), order: newOrder },
-          { id: Number(nextManager.id), order: oldOrder }
-        ]
-      }).unwrap();
+      await updateManagersOrder(payload).unwrap();
       toast.success('Порядок обновлен');
-      refetch();
+      // Небольшая задержка перед refetch, чтобы дать время RTK Query обновить кэш
+      setTimeout(() => {
+        refetch();
+      }, 100);
     } catch (error: any) {
-      toast.error(error.data?.error || 'Ошибка при обновлении порядка');
+      console.error('Ошибка при обновлении порядка:', error);
+      const errorMessage = error.data?.error || error.error || error.message || 'Ошибка при обновлении порядка';
+      toast.error(errorMessage);
     }
   };
 

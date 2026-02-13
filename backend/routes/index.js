@@ -194,11 +194,12 @@ router.delete('/role/:id', authenticationToken, checkRole(['SUPER_ADMIN']), Role
 
 //management
 router.post('/management/create', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ManagementController.createManager);
-router.get('/management/:id', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ManagementController.getManagerById);
-router.get('/management/:id/available-slots', ManagementController.getAvailableSlots);
 router.get('/management', ManagementController.getManagers);
-router.put('/management/:id', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ManagementController.updateManager);
+// ВАЖНО: Специфичные роуты должны быть ПЕРЕД параметризованными
 router.put('/management/order', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ManagementController.updateManagersOrder);
+router.get('/management/:id/available-slots', ManagementController.getAvailableSlots);
+router.get('/management/:id', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ManagementController.getManagerById);
+router.put('/management/:id', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ManagementController.updateManager);
 router.delete('/management/:id', authenticationToken, checkRole(['SUPER_ADMIN','MEDIA_ADMIN']), ManagementController.deleteManager);
 
 //reception slots

@@ -8,6 +8,8 @@
       <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/controllers/ManagementController.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controllers/ManagementController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/routes/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/routes/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/managementApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/services/managementApi.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/admin/ManagementManagement.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/admin/ManagementManagement.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -103,7 +105,7 @@
       <workItem from="1765364105454" duration="42827000" />
       <workItem from="1769506289074" duration="15000" />
       <workItem from="1770715135339" duration="3780000" />
-      <workItem from="1770803097919" duration="14176000" />
+      <workItem from="1770803097919" duration="14899000" />
     </task>
     <servers />
   </component>

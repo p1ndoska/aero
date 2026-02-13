@@ -14,6 +14,7 @@ export const managementApi = api.injectEndpoints({
     // Получить всех руководителей
     getAllManagers: builder.query<ManagementResponse, void>({
       query: () => "/management",
+      providesTags: ['Management'],
     }),
 
     // Получить руководителя по ID
@@ -65,6 +66,7 @@ export const managementApi = api.injectEndpoints({
         method: "PUT",
         body: orderData,
       }),
+      invalidatesTags: ['Management'],
     }),
   }),
 });

@@ -261,6 +261,10 @@ const ManagementController = {
     updateManagersOrder: async (req, res) => {
         const { managers } = req.body; // массив объектов { id, order }
 
+        if (!managers) {
+            return res.status(400).json({ error: 'Отсутствует поле managers в теле запроса' });
+        }
+
         if (!Array.isArray(managers)) {
             return res.status(400).json({ error: 'Неверный формат данных. Ожидается массив объектов { id, order }' });
         }
@@ -276,15 +280,41 @@ const ManagementController = {
                     throw new Error(`Элемент ${index} не является объектом`);
                 }
 
-                const id = parseInt(item.id, 10);
-                const order = parseInt(item.order, 10);
+                // Проверяем наличие полей
+                if (item.id === undefined || item.id === null) {
+                    throw new Error(`Элемент ${index}: отсутствует поле id`);
+                }
+
+                if (item.order === undefined || item.order === null) {
+                    throw new Error(`Элемент ${index}: отсутствует поле order`);
+                }
+
+                // Преобразуем в число, учитывая что может быть строка или число
+                let id;
+                let order;
+                
+                if (typeof item.id === 'number') {
+                    id = item.id;
+                } else if (typeof item.id === 'string') {
+                    id = parseInt(item.id, 10);
+                } else {
+                    throw new Error(`Элемент ${index}: id имеет неверный тип: ${typeof item.id}`);
+                }
+
+                if (typeof item.order === 'number') {
+                    order = item.order;
+                } else if (typeof item.order === 'string') {
+                    order = parseInt(item.order, 10);
+                } else {
+                    throw new Error(`Элемент ${index}: order имеет неверный тип: ${typeof item.order}`);
+                }
 
                 if (isNaN(id) || id <= 0) {
-                    throw new Error(`Неверный формат ID для элемента ${index}: ${item.id}. Ожидается положительное число.`);
+                    throw new Error(`Неверный формат ID для элемента ${index}: "${item.id}" (тип: ${typeof item.id}). Ожидается положительное число.`);
                 }
 
                 if (isNaN(order) || order < 0) {
-                    throw new Error(`Неверный формат order для элемента ${index}: ${item.order}. Ожидается неотрицательное число.`);
+                    throw new Error(`Неверный формат order для элемента ${index}: "${item.order}" (тип: ${typeof item.order}). Ожидается неотрицательное число.`);
                 }
 
                 return { id, order };
@@ -307,8 +337,12 @@ const ManagementController = {
         } catch (error) {
             console.error('updateManagersOrder error', error);
             // Если это наша валидационная ошибка, возвращаем её сообщение
-            if (error.message && error.message.includes('Неверный формат')) {
+            if (error.message && (error.message.includes('Неверный формат') || error.message.includes('отсутствует поле') || error.message.includes('неверный тип'))) {
                 return res.status(400).json({ error: error.message });
+            }
+            // Если это ошибка Prisma
+            if (error.code === 'P2025') {
+                return res.status(404).json({ error: 'Один из руководителей не найден' });
             }
             return res.status(500).json({ error: 'Internal server error' });
         }
