@@ -5,16 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7907d4e3-2b81-45bb-b55a-57f59f5314f6" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/controllers/ManagementController.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controllers/ManagementController.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/backend/prisma/schema.prisma" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/routes/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/routes/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/nginx.conf" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/nginx.conf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/managementApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/services/managementApi.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/searchApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/services/searchApi.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/admin/ManagementManagement.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/admin/ManagementManagement.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/types/management.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/types/management.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nginx-single.conf" beforeDir="false" afterPath="$PROJECT_DIR$/nginx-single.conf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/nginx/nginx.conf" beforeDir="false" afterPath="$PROJECT_DIR$/nginx/nginx.conf" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -110,7 +100,7 @@
       <workItem from="1765364105454" duration="42827000" />
       <workItem from="1769506289074" duration="15000" />
       <workItem from="1770715135339" duration="3780000" />
-      <workItem from="1770803097919" duration="12818000" />
+      <workItem from="1770803097919" duration="13109000" />
     </task>
     <servers />
   </component>
