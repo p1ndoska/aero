@@ -53,10 +53,15 @@ class EmailService {
                     user: emailUser,
                     pass: emailPass
                 },
+                connectionTimeout: 10000, // 10 секунд таймаут подключения
+                greetingTimeout: 10000, // 10 секунд таймаут приветствия
+                socketTimeout: 10000, // 10 секунд таймаут сокета
                 tls: {
                     // Не отклонять недействительные сертификаты (для тестовых серверов)
                     rejectUnauthorized: false
-                }
+                },
+                debug: process.env.NODE_ENV === 'development', // Включаем debug в режиме разработки
+                logger: process.env.NODE_ENV === 'development' // Логируем в режиме разработки
             });
         } else {
             // Автоматическая настройка для Gmail
@@ -69,7 +74,12 @@ class EmailService {
                     auth: {
                         user: emailUser,
                         pass: emailPass
-                    }
+                    },
+                    connectionTimeout: 10000, // 10 секунд таймаут подключения
+                    greetingTimeout: 10000, // 10 секунд таймаут приветствия
+                    socketTimeout: 10000, // 10 секунд таймаут сокета
+                    debug: process.env.NODE_ENV === 'development',
+                    logger: process.env.NODE_ENV === 'development'
                 });
             } else {
                 // Если не Gmail, но SMTP_HOST не указан, используем Gmail настройки по умолчанию
@@ -79,7 +89,12 @@ class EmailService {
                     auth: {
                         user: emailUser,
                         pass: emailPass
-                    }
+                    },
+                    connectionTimeout: 10000,
+                    greetingTimeout: 10000,
+                    socketTimeout: 10000,
+                    debug: process.env.NODE_ENV === 'development',
+                    logger: process.env.NODE_ENV === 'development'
                 });
             }
         }
@@ -92,6 +107,12 @@ class EmailService {
                 console.error('   Error command:', error.command);
                 if (error.response) {
                     console.error('   SMTP response:', error.response);
+                }
+                if (error.code === 'ETIMEDOUT' || error.code === 'ECONNREFUSED') {
+                    console.error('   ⚠️ Network issue: Cannot reach SMTP server');
+                    console.error('   Check firewall settings and network connectivity');
+                    console.error('   SMTP server:', smtpHost || 'smtp.gmail.com');
+                    console.error('   SMTP port:', smtpPort || 587);
                 }
                 console.error('   Please check your EMAIL_USER, EMAIL_PASS, and SMTP settings in .env file');
             } else {
@@ -322,14 +343,32 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             return { success: true, messageId: result.messageId };
 
         } catch (error) {
-            console.error(' Email sending error:', error);
-            console.error('Error message:', error.message);
-            console.error('Error code:', error.code);
+            console.error('❌ Email sending error:', error);
+            console.error('   Error message:', error.message);
+            console.error('   Error code:', error.code);
+            console.error('   Error name:', error.name);
             if (error.response) {
-                console.error('SMTP response:', error.response);
+                console.error('   SMTP response:', error.response);
             }
             if (error.responseCode) {
-                console.error('Response code:', error.responseCode);
+                console.error('   Response code:', error.responseCode);
+            }
+            // Детальная диагностика сетевых проблем
+            if (error.code === 'ETIMEDOUT' || error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || error.code === 'EHOSTUNREACH') {
+                console.error('   ⚠️ NETWORK ISSUE DETECTED!');
+                console.error('   This might be a firewall or network connectivity problem');
+                const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
+                const smtpPort = process.env.SMTP_PORT || 587;
+                console.error(`   Check if SMTP server ${smtpHost}:${smtpPort} is accessible from this server`);
+                console.error('   Common causes:');
+                console.error('     - Firewall blocking SMTP ports (587, 465)');
+                console.error('     - Network restrictions');
+                console.error('     - DNS resolution issues');
+                console.error('     - Proxy/VPN interference');
+            }
+            if (error.code === 'EAUTH') {
+                console.error('   ⚠️ AUTHENTICATION FAILED!');
+                console.error('   Check EMAIL_USER and EMAIL_PASS credentials');
             }
             return { success: false, error: error.message, details: error.response || error.code };
         }

@@ -171,7 +171,6 @@ export default function ManagementPage() {
                         if (placeholder) placeholder.style.display = 'flex';
                       }}
                       onLoad={() => {
-                        console.log(' Изображение загружено для', manager.name, ':', manager.images[0]);
                       }}
                     />
                   ) : null}
