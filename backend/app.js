@@ -14,13 +14,16 @@ const app = express();
 // Разрешаем запросы с локального dev сервера и Docker
 const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 
-// Базовый список разрешенных origins
-const baseOrigins = [
-  'http://localhost:5173',      // Vite dev server (локальная разработка)
-  'https://localhost:8443',     // Docker production
-  'http://localhost:3000',      // Альтернативный порт
-  'http://localhost:8080',      // HTTP порт Docker
-];
+// Базовый список разрешенных origins из переменных окружения
+// Если CORS_ALLOWED_ORIGINS не задан, используем значения по умолчанию
+const baseOrigins = process.env.CORS_ALLOWED_ORIGINS
+  ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(url => url.trim()).filter(Boolean)
+  : [
+      'http://localhost:5173',      // Vite dev server (локальная разработка)
+      'https://localhost:8443',     // Docker production
+      'http://localhost:3000',       // Альтернативный порт
+      'http://localhost:8080',       // HTTP порт Docker
+    ];
 
 // В development режиме добавляем FRONTEND_URL только если он не https://localhost:8443
 // В production используем FRONTEND_URL как есть

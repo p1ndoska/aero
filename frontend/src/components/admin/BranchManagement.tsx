@@ -734,10 +734,7 @@ export default function BranchManagement() {
       const fd = new FormData();
       fd.append('image', file);
       try {
-        const apiUrl =
-          import.meta.env.VITE_API_URL ||
-          (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin);
-        const resp = await fetchWithAuth(`${apiUrl}/api/upload`, {
+        const resp = await fetchWithAuth(`${BASE_URL}/api/upload`, {
           method: 'POST',
           body: fd,
         });

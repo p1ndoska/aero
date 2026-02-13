@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { useLanguage } from '../contexts/LanguageContext';
+import { BASE_URL } from '@/constants';
 
 interface ServiceRequestFormProps {
   serviceType: string;
@@ -63,10 +64,7 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      const apiUrl =
-        import.meta.env.VITE_API_URL ||
-        (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin);
-      const response = await fetch(`${apiUrl}/api/service-requests`, {
+      const response = await fetch(`${BASE_URL}/api/service-requests`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
