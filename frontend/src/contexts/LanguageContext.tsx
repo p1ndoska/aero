@@ -151,6 +151,7 @@ const translations = {
     'refresh': 'Обновить',
     'sending_uppercase': 'ОТПРАВКА...',
     'submit': 'ОТПРАВИТЬ',
+    'enter_code_from_image':'Введите код с изображения',
     'required_fields_note': '* - поля, обязательные для заполнения',
     'questionnaire_sent_successfully': 'Анкета успешно отправлена!',
     'error_sending_questionnaire': 'Ошибка при отправке анкеты',

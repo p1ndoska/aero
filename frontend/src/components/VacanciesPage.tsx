@@ -27,6 +27,7 @@ import MultilingualContentEditor from './admin/MultilingualContentEditor';
 
 export default function VacanciesPage() {
   const HR_EMAIL = 'office@ban.by';
+  const { language, t } = useLanguage();
 
   const handleSendResumeByEmail = (vacancy: Vacancy) => {
     const translatedTitle = getTranslatedField(vacancy, 'title', language) || vacancy.title;
@@ -45,7 +46,6 @@ export default function VacanciesPage() {
     const mailto = `mailto:${HR_EMAIL}?subject=${encodeURIComponent(subject)}&body=${body}`;
     window.location.href = mailto;
   };
-  const { language, t } = useLanguage();
   const { data: vacancies, isLoading } = useGetAllVacanciesQuery({ active: true });
   const { data: pageContent, refetch: refetchPageContent } = useGetVacancyPageContentQuery();
   const [updatePageContent, { isLoading: isUpdatingContent }] = useUpdateVacancyPageContentMutation();

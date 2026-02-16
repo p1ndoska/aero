@@ -108,11 +108,11 @@ export default function BranchesCarousel() {
         </h3>
       </div>
 
-      <div className="relative flex-1 min-h-0 flex items-center">
+      <div className="relative flex-1 min-h-0 flex items-stretch">
         <div
           ref={scrollContainerRef}
-          className="flex gap-3 overflow-x-hidden scrollbar-hide h-full w-full"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          className="flex gap-3 overflow-x-hidden scrollbar-hide w-full items-stretch"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', minHeight: '200px' }}
         >
           {branches.map((branch, index) => {
             const mainImage = branch.images?.[0];
@@ -121,19 +121,22 @@ export default function BranchesCarousel() {
               <Link
                 key={branch.id}
                 to={`/about/branches/${branch.id}`}
-                className="flex-shrink-0 h-full min-h-[288px] bg-white rounded-lg shadow-md border-2 border-gray-200 transition-all duration-300 hover:shadow-lg hover:scale-105"
+                className="flex-shrink-0 bg-white rounded-lg shadow-md border-2 border-gray-200 transition-all duration-300 hover:shadow-lg hover:scale-105"
                 style={{ 
-                  aspectRatio: '4/5',
                   width: 'auto',
                   minWidth: '256px',
-                  maxWidth: '450px'
+                  maxWidth: '450px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
+                  minHeight: '200px'
                 }}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
               >
-                <div className="w-full h-full flex flex-col">
+                <div className="w-full flex flex-col" style={{ height: '100%', minHeight: '200px' }}>
                   {/* Фотография филиала */}
-                  <div className="flex-[3] relative overflow-hidden rounded-t-lg bg-gradient-to-br from-blue-50 to-blue-100">
+                  <div className="flex-1 min-h-[120px] relative overflow-hidden rounded-t-lg bg-gradient-to-br from-blue-50 to-blue-100">
                     {mainImage ? (
                       <img
                         src={`${BASE_URL}${mainImage.startsWith('/') ? '' : '/'}${mainImage}`}
@@ -152,9 +155,9 @@ export default function BranchesCarousel() {
                     </div>
                   </div>
                   
-                  {/* Название филиала */}
-                  <div className="p-2 bg-white rounded-b-lg flex-1 flex flex-col justify-center">
-                    <h4 className="font-semibold text-[#213659] text-base text-center leading-tight line-clamp-2">
+                  {/* Название филиала - всегда видимо */}
+                  <div className="p-3 bg-white rounded-b-lg flex-shrink-0 flex flex-col justify-center" style={{ minHeight: '60px', maxHeight: '80px' }}>
+                    <h4 className="font-semibold text-[#213659] text-sm sm:text-base text-center leading-tight line-clamp-2 break-words">
                       {getTranslatedField(branch, 'name', language)}
                     </h4>
                   </div>

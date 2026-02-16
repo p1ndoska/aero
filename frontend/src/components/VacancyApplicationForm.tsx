@@ -9,6 +9,9 @@ import { Upload, FileText, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCreateApplicationMutation } from '@/app/services/vacancyApi';
 import type { Vacancy } from '@/types/vacancy';
+import { useLanguage } from '@/contexts/LanguageContext';
+import Captcha, { validateCaptcha } from './Captcha';
+
 
 interface VacancyApplicationFormProps {
   vacancy: Vacancy;
@@ -24,14 +27,16 @@ export default function VacancyApplicationForm({
   onSuccess,
 }: VacancyApplicationFormProps) {
   const [createApplication, { isLoading }] = useCreateApplicationMutation();
-  
+  const { t } = useLanguage();
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     phone: '',
     coverLetter: '',
   });
-  
+  const [antispamCode, setAntispamCode] = useState('');
+
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -129,6 +134,13 @@ export default function VacancyApplicationForm({
 
     if (!formData.fullName.trim()) {
       newErrors.fullName = 'Введите ваше полное имя';
+    }
+
+    // Проверка капчи
+    if (!antispamCode || !validateCaptcha(antispamCode)) {
+      toast.error(t('invalid_security_code') || 'Неверный код безопасности');
+      setErrors({ ...errors, captcha: t('invalid_security_code') || 'Неверный код безопасности' });
+      return;
     }
 
     if (!formData.email.trim()) {
@@ -359,6 +371,19 @@ export default function VacancyApplicationForm({
               персонала рассмотрят вашу заявку и свяжутся с вами в случае заинтересованности.
             </p>
           </div>
+
+          {/* Капча */}
+          <Captcha
+              value={antispamCode}
+              onChange={(value) => {
+                setAntispamCode(value);
+                if (errors.captcha) {
+                  setErrors({ ...errors, captcha: '' });
+                }
+              }}
+              error={errors.captcha}
+              required
+          />
 
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={handleClose}>

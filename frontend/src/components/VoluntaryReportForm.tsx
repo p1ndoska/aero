@@ -9,6 +9,8 @@ import { CalendarIcon, ClockIcon } from 'lucide-react';
 import { voluntaryReportService, type VoluntaryReportData } from '@/app/services/voluntaryReportService';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
+import Captcha, { validateCaptcha } from './Captcha';
+
 
 export default function VoluntaryReportForm() {
   const { t } = useLanguage();
@@ -24,25 +26,12 @@ export default function VoluntaryReportForm() {
     recurrenceProbability: '',
     consequences: ''
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const [captchaCode, setCaptchaCode] = useState('');
   const [antispamCode, setAntispamCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Генерация капчи при монтировании компонента
-  useEffect(() => {
-    generateNewCaptcha();
-  }, []);
 
-  const generateNewCaptcha = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < 7; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    setCaptchaCode(result);
-    setAntispamCode(''); // Очищаем поле ввода при генерации новой капчи
-  };
 
   const handleInputChange = (field: keyof VoluntaryReportData, value: string) => {
     setFormData(prev => ({
@@ -63,11 +52,12 @@ export default function VoluntaryReportForm() {
     }
 
     // Проверка капчи
-    if (!antispamCode || antispamCode !== captchaCode) {
+    if (!antispamCode || !validateCaptcha(antispamCode)) {
       toast.error(t('invalid_security_code') || 'Неверный код безопасности');
-      generateNewCaptcha(); // Генерируем новую капчу при ошибке
+      setErrors({ ...errors, captcha: t('invalid_security_code') || 'Неверный код безопасности' });
       return;
     }
+
 
     setIsSubmitting(true);
 
@@ -276,39 +266,17 @@ export default function VoluntaryReportForm() {
             </div>
 
             {/* Капча */}
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="antispamCode" className="text-sm font-medium">
-                  {t('enter_antispam_code') || 'Введите код безопасности'}: *
-                </Label>
-                <div className="flex gap-2 mt-1">
-                  <Input
-                    id="antispamCode"
-                    value={antispamCode}
-                    onChange={(e) => setAntispamCode(e.target.value)}
-                    placeholder={t('enter_code') || 'Введите код'}
-                    required
-                    className="flex-1"
-                  />
-                  <div className="flex items-center justify-center w-24 h-10 bg-gray-100 border border-gray-300 rounded text-sm font-mono font-bold">
-                    {captchaCode}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={generateNewCaptcha}
-                    className="px-3"
-                    title={t('refresh') || 'Обновить'}
-                  >
-                    🔄
-                  </Button>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {t('enter_code_from_image') || 'Введите код, показанный на изображении'}
-                </p>
-              </div>
-            </div>
+            <Captcha
+                value={antispamCode}
+                onChange={(value) => {
+                  setAntispamCode(value);
+                  if (errors.captcha) {
+                    setErrors({ ...errors, captcha: '' });
+                  }
+                }}
+                error={errors.captcha}
+                required
+            />
 
             <div className="flex justify-center pt-6">
               <Button

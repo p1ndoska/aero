@@ -7,25 +7,20 @@
     <list default="true" id="7907d4e3-2b81-45bb-b55a-57f59f5314f6" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/controllers/AeronauticalInfoCategoryController.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/controllers/AeronauticalInfoCategoryController.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/backend/prisma/schema.prisma" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/aeronauticalInfoCategoryApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/services/aeronauticalInfoCategoryApi.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/services/api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/baseQueryWithAuth.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/services/baseQueryWithAuth.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/AboutCompanyPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/AboutCompanyPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/BranchDetailsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/BranchDetailsPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/DynamicPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/DynamicPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/HistoryPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/HistoryPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/NewsCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/NewsCard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/NewsDetailPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/NewsDetailPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Sidebar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/SocialWorkPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/SocialWorkPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/backend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/backend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/BranchesCarousel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/BranchesCarousel.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/CategoryListPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/CategoryListPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/ConsumerQuestionnaireForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ConsumerQuestionnaireForm.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/ResumeUploadForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ResumeUploadForm.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/VacanciesPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/VacanciesPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/admin/AeronauticalInfoCategoryManagement.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/admin/AeronauticalInfoCategoryManagement.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/admin/ContentConstructor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/admin/ContentConstructor.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/admin/MultilingualContentEditor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/admin/MultilingualContentEditor.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/admin/NewsManagement.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/admin/NewsManagement.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/types/branch.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/types/branch.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/VacancyApplicationForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/VacancyApplicationForm.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/VoluntaryReportForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/VoluntaryReportForm.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/admin/OrganizationLogoManagement.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/admin/OrganizationLogoManagement.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/contexts/LanguageContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/contexts/LanguageContext.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -120,7 +115,7 @@
       <workItem from="1765364105454" duration="42827000" />
       <workItem from="1769506289074" duration="15000" />
       <workItem from="1770715135339" duration="3780000" />
-      <workItem from="1770803097919" duration="32144000" />
+      <workItem from="1770803097919" duration="39993000" />
     </task>
     <servers />
   </component>
@@ -144,6 +139,11 @@
           <url>file://$PROJECT_DIR$/backend/controllers/NewsController.js</url>
           <line>4</line>
           <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/frontend/src/components/VoluntaryReportForm.tsx</url>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="6" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

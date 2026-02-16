@@ -15,6 +15,9 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { canAccessAdminPanel } from '@/utils/roleUtils';
 import { getTranslatedField } from '../../utils/translationHelpers';
 import { INTERNAL_PAGES, getPagesByCategory } from '../../utils/internalPages';
+import { useGetAllSocialWorkCategoriesQuery } from '@/app/services/socialWorkCategoryApi';
+import { useGetAllAboutCompanyCategoriesQuery } from '@/app/services/aboutCompanyCategoryApi';
+import { useGetAllServicesCategoriesQuery } from '@/app/services/servicesCategoryApi';
 import LogoUpload from './LogoUpload';
 
 interface OrganizationLogoFormData {
@@ -44,6 +47,9 @@ const initialFormData: OrganizationLogoFormData = {
 export default function OrganizationLogoManagement() {
   const { language } = useLanguage();
   const { data: logos, refetch, isLoading, error } = useGetAllOrganizationLogosQuery();
+  const { data: socialWorkCategories } = useGetAllSocialWorkCategoriesQuery();
+  const { data: aboutCompanyCategories } = useGetAllAboutCompanyCategoriesQuery();
+  const { data: servicesCategories } = useGetAllServicesCategoriesQuery(undefined);
   const [createLogo] = useCreateOrganizationLogoMutation();
   const [updateLogo] = useUpdateOrganizationLogoMutation();
   const [deleteLogo] = useDeleteOrganizationLogoMutation();
@@ -327,11 +333,11 @@ export default function OrganizationLogoManagement() {
                     ↓
                   </Button>
                 </div>
-              </div>
-              <div className="flex gap-2">
-                <Badge variant={logo.isActive ? "default" : "secondary"}>
+                </div>
+             <div className="flex gap-2">
+                 {/* <Badge variant={logo.isActive ? "default" : "secondary"}>
                   {logo.isActive ? 'Активна' : 'Неактивна'}
-                </Badge>
+                </Badge>*/}
                 <Badge variant="outline">Порядок: {logo.sortOrder}</Badge>
               </div>
             </CardHeader>
@@ -399,10 +405,10 @@ export default function OrganizationLogoManagement() {
                   <Button
                     variant="destructive"
                     onClick={() => handleDeleteLogo(logo.id)}
-                    className="flex-1 bg-red-800 hover:bg-red-900 text-white border-0"
+                    className="flex-1 bg-transparent hover:bg-gray-50 text-red-600  border border-solid border-red-600"
                   >
-                    <Trash2 className="w-4 h-4 mr-2 text-white" />
-                    <span className="text-white">Удалить</span>
+                    <Trash2 className="w-4 h-4 mr-2 text-red-600 border-red-600" />
+                    <span className="text-red-600">Удалить</span>
                   </Button>
                 </div>
               </div>
@@ -502,20 +508,93 @@ export default function OrganizationLogoManagement() {
                   </SelectTrigger>
                   <SelectContent className="bg-white border border-gray-200 shadow-lg">
                     <SelectItem value="none">Без ссылки</SelectItem>
-                    {Object.entries(getPagesByCategory()).map(([category, pages]) => (
-                      <div key={category}>
+                    
+                    {/* О компании - статические страницы */}
+                    {getPagesByCategory().about.length > 0 && (
+                      <div>
                         <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          {category === 'about' ? 'О компании' : 
-                           category === 'social' ? 'Социальная работа' : 
-                           category === 'news' ? 'Новости' : 'Другое'}
+                          О компании
                         </div>
-                        {pages.map((page) => (
+                        {getPagesByCategory().about.map((page) => (
                           <SelectItem key={page.value} value={page.value}>
                             {page.label}
                           </SelectItem>
                         ))}
                       </div>
-                    ))}
+                    )}
+                    
+                    {/* О компании - динамические категории */}
+                    {aboutCompanyCategories && aboutCompanyCategories.length > 0 && (
+                      <div>
+                        {aboutCompanyCategories
+                          .filter((cat: any) => cat.isActive)
+                          .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+                          .map((category: any) => (
+                            <SelectItem key={`/about/${category.pageType}`} value={`/about/${category.pageType}`}>
+                              {getTranslatedField(category, 'name', language) || category.name}
+                            </SelectItem>
+                          ))}
+                      </div>
+                    )}
+                    
+                    {/* Социальная работа - статические страницы */}
+                    {getPagesByCategory().social.length > 0 && (
+                      <div>
+                        <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Социальная работа
+                        </div>
+                        {getPagesByCategory().social.map((page) => (
+                          <SelectItem key={page.value} value={page.value}>
+                            {page.label}
+                          </SelectItem>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Социальная работа - динамические категории */}
+                    {socialWorkCategories && socialWorkCategories.length > 0 && (
+                      <div>
+                        {socialWorkCategories
+                          .filter((cat: any) => cat.isActive)
+                          .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+                          .map((category: any) => (
+                            <SelectItem key={`/social/${category.pageType}`} value={`/social/${category.pageType}`}>
+                              {getTranslatedField(category, 'name', language) || category.name}
+                            </SelectItem>
+                          ))}
+                      </div>
+                    )}
+                    
+                    {/* Услуги - динамические категории */}
+                    {servicesCategories && servicesCategories.length > 0 && (
+                      <div>
+                        <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Услуги
+                        </div>
+                        {servicesCategories
+                          .filter((cat: any) => cat.isActive)
+                          .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+                          .map((category: any) => (
+                            <SelectItem key={`/services/${category.pageType}`} value={`/services/${category.pageType}`}>
+                              {getTranslatedField(category, 'name', language) || category.name}
+                            </SelectItem>
+                          ))}
+                      </div>
+                    )}
+                    
+                    {/* Новости и другие */}
+                    {(getPagesByCategory().news.length > 0 || getPagesByCategory().other.length > 0) && (
+                      <div>
+                        <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          {getPagesByCategory().news.length > 0 ? 'Новости' : 'Другое'}
+                        </div>
+                        {[...getPagesByCategory().news, ...getPagesByCategory().other].map((page) => (
+                          <SelectItem key={page.value} value={page.value}>
+                            {page.label}
+                          </SelectItem>
+                        ))}
+                      </div>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -629,20 +708,93 @@ export default function OrganizationLogoManagement() {
                   </SelectTrigger>
                   <SelectContent className="bg-white border border-gray-200 shadow-lg">
                     <SelectItem value="none">Без ссылки</SelectItem>
-                    {Object.entries(getPagesByCategory()).map(([category, pages]) => (
-                      <div key={category}>
+                    
+                    {/* О компании - статические страницы */}
+                    {getPagesByCategory().about.length > 0 && (
+                      <div>
                         <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          {category === 'about' ? 'О компании' : 
-                           category === 'social' ? 'Социальная работа' : 
-                           category === 'news' ? 'Новости' : 'Другое'}
+                          О компании
                         </div>
-                        {pages.map((page) => (
+                        {getPagesByCategory().about.map((page) => (
                           <SelectItem key={page.value} value={page.value}>
                             {page.label}
                           </SelectItem>
                         ))}
                       </div>
-                    ))}
+                    )}
+                    
+                    {/* О компании - динамические категории */}
+                    {aboutCompanyCategories && aboutCompanyCategories.length > 0 && (
+                      <div>
+                        {aboutCompanyCategories
+                          .filter((cat: any) => cat.isActive)
+                          .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+                          .map((category: any) => (
+                            <SelectItem key={`/about/${category.pageType}`} value={`/about/${category.pageType}`}>
+                              {getTranslatedField(category, 'name', language) || category.name}
+                            </SelectItem>
+                          ))}
+                      </div>
+                    )}
+                    
+                    {/* Социальная работа - статические страницы */}
+                    {getPagesByCategory().social.length > 0 && (
+                      <div>
+                        <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Социальная работа
+                        </div>
+                        {getPagesByCategory().social.map((page) => (
+                          <SelectItem key={page.value} value={page.value}>
+                            {page.label}
+                          </SelectItem>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Социальная работа - динамические категории */}
+                    {socialWorkCategories && socialWorkCategories.length > 0 && (
+                      <div>
+                        {socialWorkCategories
+                          .filter((cat: any) => cat.isActive)
+                          .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+                          .map((category: any) => (
+                            <SelectItem key={`/social/${category.pageType}`} value={`/social/${category.pageType}`}>
+                              {getTranslatedField(category, 'name', language) || category.name}
+                            </SelectItem>
+                          ))}
+                      </div>
+                    )}
+                    
+                    {/* Услуги - динамические категории */}
+                    {servicesCategories && servicesCategories.length > 0 && (
+                      <div>
+                        <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Услуги
+                        </div>
+                        {servicesCategories
+                          .filter((cat: any) => cat.isActive)
+                          .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+                          .map((category: any) => (
+                            <SelectItem key={`/services/${category.pageType}`} value={`/services/${category.pageType}`}>
+                              {getTranslatedField(category, 'name', language) || category.name}
+                            </SelectItem>
+                          ))}
+                      </div>
+                    )}
+                    
+                    {/* Новости и другие */}
+                    {(getPagesByCategory().news.length > 0 || getPagesByCategory().other.length > 0) && (
+                      <div>
+                        <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          {getPagesByCategory().news.length > 0 ? 'Новости' : 'Другое'}
+                        </div>
+                        {[...getPagesByCategory().news, ...getPagesByCategory().other].map((page) => (
+                          <SelectItem key={page.value} value={page.value}>
+                            {page.label}
+                          </SelectItem>
+                        ))}
+                      </div>
+                    )}
                   </SelectContent>
                 </Select>
               </div>

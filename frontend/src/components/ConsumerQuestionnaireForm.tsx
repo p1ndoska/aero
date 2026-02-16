@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { questionnaireService, type QuestionnaireData } from '@/app/services/questionnaireService';
 import { useLanguage } from '@/contexts/LanguageContext';
+import Captcha, { validateCaptcha } from './Captcha';
 
 interface FormData {
   userAddress: string;
@@ -25,7 +26,6 @@ interface FormData {
 }
 
 const ConsumerQuestionnaireForm: React.FC = () => {
-  const { t } = useLanguage();
   const [formData, setFormData] = useState<FormData>({
     userAddress: '',
     userName: '',
@@ -41,7 +41,9 @@ const ConsumerQuestionnaireForm: React.FC = () => {
     antispamCode: ''
   });
 
-  const [captchaCode, setCaptchaCode] = useState('D4SJU.CU');
+  const { t } = useLanguage();
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [antispamCode, setAntispamCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -368,32 +370,18 @@ const ConsumerQuestionnaireForm: React.FC = () => {
                   className="mt-1"
                 />
               </div>
-              <div>
-                <Label htmlFor="antispamCode" className="text-sm font-medium">
-                  {t('enter_antispam_code')}: *
-                </Label>
-                <div className="flex gap-2 mt-1">
-                  <Input
-                    id="antispamCode"
-                    value={formData.antispamCode}
-                    onChange={(e) => handleInputChange('antispamCode', e.target.value)}
-                    required
-                    className="flex-1"
-                  />
-                  <div className="flex items-center justify-center w-24 h-10 bg-gray-100 border border-gray-300 rounded text-sm font-mono">
-                    {captchaCode}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={generateNewCaptcha}
-                    className="px-3"
-                  >
-                    {t('refresh')}
-                  </Button>
-                </div>
-              </div>
+              {/* Капча */}
+              <Captcha
+                  value={antispamCode}
+                  onChange={(value) => {
+                    setAntispamCode(value);
+                    if (errors.captcha) {
+                      setErrors({ ...errors, captcha: '' });
+                    }
+                  }}
+                  error={errors.captcha}
+                  required
+              />
             </div>
           </CardContent>
         </Card>

@@ -21,6 +21,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set());
   const [editingCell, setEditingCell] = useState<{elementId: string; rowIndex: number; cellIndex: number} | null>(null);
+  const [activeTab, setActiveTab] = useState<'content' | 'form'>('content');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cellFileInputRef = useRef<HTMLInputElement>(null);
   const [uploadImage] = useUploadImageMutation();
@@ -1621,6 +1622,36 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
 
   return (
     <div className="space-y-4 content-constructor-container">
+      {/* Вкладки конструктора: Контент / Форма */}
+      <div className="sticky top-0 z-10 bg-white border-b pb-2 pt-2 -mx-4 px-4">
+        <div className="flex gap-4">
+          <button
+            type="button"
+            className={`text-sm pb-1 border-b-2 transition-colors ${
+              activeTab === 'content'
+                ? 'border-[#213659] text-[#213659] font-semibold'
+                : 'border-transparent text-gray-500 hover:text-[#213659]'
+            }`}
+            onClick={() => setActiveTab('content')}
+          >
+            Основной контент
+          </button>
+          <button
+            type="button"
+            className={`text-sm pb-1 border-b-2 transition-colors ${
+              activeTab === 'form'
+                ? 'border-[#213659] text-[#213659] font-semibold'
+                : 'border-transparent text-gray-500 hover:text-[#213659]'
+            }`}
+            onClick={() => setActiveTab('form')}
+          >
+            Форма
+          </button>
+        </div>
+      </div>
+
+      {activeTab === 'content' && (
+        <>
       {/* Скрытый input для загрузки файлов */}
       <input
         ref={fileInputRef}
@@ -1656,7 +1687,8 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
         }}
       />
 
-      <div className="flex gap-2 flex-wrap">
+      <div className="sticky top-[60px] z-10 bg-white py-2 -mx-4 px-4 border-b">
+        <div className="flex gap-2 flex-wrap">
         <Button
           type="button"
           variant="outline"
@@ -1737,6 +1769,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
           <Video className="w-4 h-4" />
           Видео
         </Button>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -1750,8 +1783,53 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
           </CardContent>
         </Card>
       )}
+        </>
+      )}
+
+      {activeTab === 'form' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Конструктор формы</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Здесь будет визуальный конструктор формы. Можно будет добавлять поля, настраивать валидацию
+              и порядок элементов. Пока реализован только интерфейс вкладки, без логики.
+            </p>
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              <div className="border rounded-md p-3 bg-gray-50">
+                <p className="text-xs font-semibold text-gray-700 mb-1">Планируемые элементы формы</p>
+                <ul className="text-xs text-gray-600 list-disc list-inside space-y-1">
+                  <li>Текстовое поле</li>
+                  <li>Email / телефон</li>
+                  <li>Textarea</li>
+                  <li>Чекбокс / переключатель</li>
+                  <li>Селект / выпадающий список</li>
+                </ul>
+              </div>
+              <div className="border rounded-md p-3 bg-gray-50">
+                <p className="text-xs font-semibold text-gray-700 mb-1">Настройки</p>
+                <ul className="text-xs text-gray-600 list-disc list-inside space-y-1">
+                  <li>Обязательные поля</li>
+                  <li>Подписи и placeholder&apos;ы</li>
+                  <li>Порядок полей</li>
+                </ul>
+              </div>
+              <div className="border rounded-md p-3 bg-gray-50">
+                <p className="text-xs font-semibold text-gray-700 mb-1">Интеграция</p>
+                <p className="text-xs text-gray-600">
+                  Позже здесь будет настройка, как обрабатывать отправку формы
+                  (email, API и т.&nbsp;д.).
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500">
+              Структуру и поведение формы мы добавим позже, когда вы решите, как её нужно обрабатывать.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
-
 

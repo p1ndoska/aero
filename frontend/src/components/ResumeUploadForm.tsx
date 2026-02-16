@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Upload, FileText, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { BASE_URL } from '@/constants';
+import { useLanguage } from '@/contexts/LanguageContext';
+import Captcha, { validateCaptcha } from './Captcha';
 
 interface ResumeUploadFormProps {
   isOpen: boolean;
@@ -19,6 +21,7 @@ export default function ResumeUploadForm({
   onClose,
   onSuccess,
 }: ResumeUploadFormProps) {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -28,6 +31,7 @@ export default function ResumeUploadForm({
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [antispamCode, setAntispamCode] = useState('');
 
   // Функция форматирования телефона в формате +375 (XX) XXX-XX-XX
   const formatPhoneNumber = (value: string): string => {
@@ -162,6 +166,13 @@ export default function ResumeUploadForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Проверка капчи
+    if (!antispamCode || !validateCaptcha(antispamCode)) {
+      toast.error(t('invalid_security_code') || 'Неверный код безопасности');
+      setErrors({ ...errors, captcha: t('invalid_security_code') || 'Неверный код безопасности' });
+      return;
+    }
+
     if (!validateForm()) {
       toast.error('Пожалуйста, заполните все обязательные поля корректно');
       return;
@@ -234,6 +245,7 @@ export default function ResumeUploadForm({
     });
     setResumeFile(null);
     setErrors({});
+    setAntispamCode('');
     onClose();
   };
 
@@ -353,6 +365,19 @@ export default function ResumeUploadForm({
               персонала рассмотрят ваше резюме и свяжутся с вами при появлении подходящих вакансий.
             </p>
           </div>
+
+          {/* Капча */}
+          <Captcha
+            value={antispamCode}
+            onChange={(value) => {
+              setAntispamCode(value);
+              if (errors.captcha) {
+                setErrors({ ...errors, captcha: '' });
+              }
+            }}
+            error={errors.captcha}
+            required
+          />
 
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={handleClose}>

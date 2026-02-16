@@ -55,7 +55,7 @@ export default function CategoryListPage<TCategory extends Record<string, any>>(
                   const description = getTranslatedField(category, 'description', language) || category.description;
                   const slug = String(category[slugField]);
                   return (
-                    <Card key={slug} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white border border-gray-200">
+                    <Card key={slug} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-blue-50 border border-gray-200">
                       <CardHeader>
                         <CardTitle className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
                           {name}
