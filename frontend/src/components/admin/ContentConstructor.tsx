@@ -6,10 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Trash2, MoveUp, MoveDown, Type, Heading, Link, Image, Upload, List, Table, FileText, Lock } from 'lucide-react';
+import { Plus, Trash2, MoveUp, MoveDown, Type, Heading, Link, Image, Upload, List, Table, FileText, Lock, Video } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUploadImageMutation, useUploadFileMutation } from '@/app/services/uploadApi';
-import type { ContentElement } from '@/types/branch';
+import type { ContentElement, TableCellContent, TableRow } from '@/types/branch';
+import { BASE_URL } from '@/constants';
 
 interface ContentConstructorProps {
   content: ContentElement[];
@@ -19,7 +20,9 @@ interface ContentConstructorProps {
 export default function ContentConstructor({ content, onChange }: ContentConstructorProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set());
+  const [editingCell, setEditingCell] = useState<{elementId: string; rowIndex: number; cellIndex: number} | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cellFileInputRef = useRef<HTMLInputElement>(null);
   const [uploadImage] = useUploadImageMutation();
   const [uploadFile] = useUploadFileMutation();
 
@@ -93,6 +96,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
              type === 'list' ? { items: [] } :
              type === 'table' ? { headers: [], rows: [] } :
              type === 'file' ? { fileName: '', fileUrl: '', fileType: '', fileSize: 0 } :
+             type === 'video' ? { videoSrc: '', videoTitle: '', videoWidth: 800, videoHeight: 450, controls: true, autoplay: false, loop: false, muted: false } :
              type === 'paragraph' ? { textIndent: false, textAlign: 'left' } : {}
     };
     
@@ -103,7 +107,12 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
   const updateElement = (id: string, updates: Partial<ContentElement>) => {
     const updatedContent = content.map(el => {
       if (el.id === id) {
-        return { ...el, ...updates };
+        // Убеждаемся, что isPrivate всегда булево значение
+        const normalizedUpdates = { ...updates };
+        if ('isPrivate' in normalizedUpdates) {
+          normalizedUpdates.isPrivate = Boolean(normalizedUpdates.isPrivate);
+        }
+        return { ...el, ...normalizedUpdates };
       }
       return el;
     });
@@ -209,6 +218,117 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
         });
       }
     }
+    
+    // Для видео
+    if (element.type === 'video') {
+      if (!file.type.startsWith('video/')) {
+        toast.error('Пожалуйста, выберите видео файл');
+        return;
+      }
+
+      if (file.size > 100 * 1024 * 1024) { // 100MB limit для видео
+        toast.error('Размер видео файла не должен превышать 100MB');
+        return;
+      }
+
+      setUploadingImages(prev => new Set(prev).add(elementId));
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const result = await uploadFile(formData).unwrap();
+        
+        updateElement(elementId, {
+          props: {
+            ...element.props,
+            videoSrc: result.url,
+            videoTitle: file.name
+          }
+        });
+
+        toast.success('Видео успешно загружено');
+      } catch (error: any) {
+        toast.error(error.data?.error || 'Ошибка при загрузке видео');
+      } finally {
+        setUploadingImages(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(elementId);
+          return newSet;
+        });
+      }
+    }
+  };
+
+  const handleCellFileUpload = async (elementId: string, rowIndex: number, cellIndex: number, file: File) => {
+    const element = content.find(el => el.id === elementId);
+    if (!element || element.type !== 'table') return;
+
+    const uploadKey = `${elementId}-${rowIndex}-${cellIndex}`;
+    setUploadingImages(prev => new Set(prev).add(uploadKey));
+
+    try {
+      if (file.type.startsWith('image/')) {
+        // Загрузка изображения
+        if (file.size > 5 * 1024 * 1024) {
+          toast.error('Размер файла не должен превышать 5MB');
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', file);
+        const result = await uploadImage(formData).unwrap();
+        
+        const newRows = [...(element.props?.rows || [])];
+        const newCells = [...newRows[rowIndex].cells];
+        newCells[cellIndex] = { 
+          type: 'image', 
+          src: result.url, 
+          alt: file.name 
+        };
+        newRows[rowIndex] = { ...newRows[rowIndex], cells: newCells };
+        
+        updateElement(elementId, {
+          props: { ...element.props, rows: newRows }
+        });
+
+        toast.success('Изображение успешно загружено');
+      } else {
+        // Загрузка файла
+        if (file.size > 10 * 1024 * 1024) {
+          toast.error('Размер файла не должен превышать 10MB');
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+        const result = await uploadFile(formData).unwrap();
+        
+        const newRows = [...(element.props?.rows || [])];
+        const newCells = [...newRows[rowIndex].cells];
+        newCells[cellIndex] = { 
+          type: 'file', 
+          fileName: file.name, 
+          fileUrl: result.url, 
+          fileSize: file.size 
+        };
+        newRows[rowIndex] = { ...newRows[rowIndex], cells: newCells };
+        
+        updateElement(elementId, {
+          props: { ...element.props, rows: newRows }
+        });
+
+        toast.success('Файл успешно загружен');
+      }
+    } catch (error: any) {
+      toast.error(error.data?.error || 'Ошибка при загрузке файла');
+    } finally {
+      setUploadingImages(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(uploadKey);
+        return newSet;
+      });
+    }
   };
 
   const triggerFileInput = (elementId: string) => {
@@ -216,6 +336,84 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
       fileInputRef.current.setAttribute('data-element-id', elementId);
       fileInputRef.current.click();
     }
+  };
+
+  const triggerCellFileInput = (elementId: string, rowIndex: number, cellIndex: number) => {
+    if (cellFileInputRef.current) {
+      cellFileInputRef.current.setAttribute('data-element-id', elementId);
+      cellFileInputRef.current.setAttribute('data-row-index', rowIndex.toString());
+      cellFileInputRef.current.setAttribute('data-cell-index', cellIndex.toString());
+      cellFileInputRef.current.click();
+    }
+  };
+
+  // Функция для рендеринга содержимого ячейки
+  const renderCellContent = (cell: TableCellContent | string) => {
+    // Поддержка старого формата (строка) для обратной совместимости
+    if (typeof cell === 'string') {
+      return <span>{cell}</span>;
+    }
+
+    switch (cell.type) {
+      case 'text':
+        return <span>{cell.value}</span>;
+      case 'link':
+        return (
+          <a 
+            href={cell.href} 
+            target={cell.target || '_blank'}
+            className="text-blue-600 underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {cell.text}
+          </a>
+        );
+      case 'image':
+        return (
+          <div className="flex justify-center">
+            <img 
+              src={cell.src} 
+              alt={cell.alt || ''}
+              className="max-w-full h-auto rounded object-contain"
+              style={{ maxHeight: '100px', maxWidth: '150px' }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+        );
+      case 'file':
+        const formatFileSize = (bytes: number) => {
+          if (bytes === 0) return '0 Bytes';
+          const k = 1024;
+          const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+          const i = Math.floor(Math.log(bytes) / Math.log(k));
+          return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        };
+        return (
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-gray-600" />
+            <a
+              href={cell.fileUrl}
+              download={cell.fileName}
+              className="text-blue-600 hover:text-blue-800 text-sm"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {cell.fileName} ({formatFileSize(cell.fileSize)})
+            </a>
+          </div>
+        );
+      default:
+        return <span>{JSON.stringify(cell)}</span>;
+    }
+  };
+
+  // Функция для нормализации ячейки (конвертация строки в объект)
+  const normalizeCell = (cell: TableCellContent | string): TableCellContent => {
+    if (typeof cell === 'string') {
+      return { type: 'text', value: cell };
+    }
+    return cell;
   };
 
   const renderElement = (element: ContentElement) => {
@@ -346,7 +544,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                   <tr key={row.id || rowIdx}>
                     {row.cells.map((cell, cellIdx) => (
                       <td key={cellIdx} className="border border-gray-300 px-2 py-1 text-sm">
-                        {cell}
+                        {renderCellContent(cell)}
                       </td>
                     ))}
                   </tr>
@@ -391,6 +589,40 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
               </a>
             </div>
           );
+        case 'video':
+          if (!element.props?.videoSrc) {
+            return (
+              <div className="p-4 border-2 border-dashed border-gray-300 rounded">
+                <p className="text-gray-500 text-sm">Видео не добавлено</p>
+              </div>
+            );
+          }
+          // Если URL уже полный (начинается с http), используем как есть, иначе добавляем BASE_URL
+          const videoSrc = element.props.videoSrc.startsWith('http') 
+            ? element.props.videoSrc 
+            : `${BASE_URL}${element.props.videoSrc.startsWith('/') ? '' : '/'}${element.props.videoSrc}`;
+          return (
+            <div className="flex flex-col gap-2 items-center justify-center">
+              <div className="w-full max-w-full flex justify-center">
+                <video
+                  src={videoSrc}
+                  controls={element.props.controls !== false}
+                  autoPlay={element.props.autoplay || false}
+                  loop={element.props.loop || false}
+                  muted={element.props.muted || false}
+                  width={element.props.videoWidth || 800}
+                  height={element.props.videoHeight || 450}
+                  className="max-w-full h-auto rounded-lg mx-auto"
+                  style={{ maxWidth: '100%', height: 'auto' }}
+                >
+                  Ваш браузер не поддерживает видео.
+                </video>
+              </div>
+              {element.props.videoTitle && (
+                <p className="text-sm text-gray-500 text-center">{element.props.videoTitle}</p>
+              )}
+            </div>
+          );
         default:
           return (
             <div className="p-4 border-2 border-dashed border-gray-300 rounded">
@@ -417,13 +649,15 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
               {element.type === 'list' && <List className="w-4 h-4" />}
               {element.type === 'table' && <Table className="w-4 h-4" />}
               {element.type === 'file' && <FileText className="w-4 h-4" />}
+              {element.type === 'video' && <Video className="w-4 h-4" />}
               {element.type === 'heading' ? `Заголовок H${element.props?.level || 2}` : 
                element.type === 'paragraph' ? 'Абзац' :
                element.type === 'link' ? 'Ссылка' : 
                element.type === 'image' ? 'Изображение' : 
                element.type === 'list' ? 'Список' :
                element.type === 'table' ? 'Таблица' :
-               element.type === 'file' ? 'Файл' : 'Неизвестный'}
+               element.type === 'file' ? 'Файл' :
+               element.type === 'video' ? 'Видео' : 'Неизвестный'}
             </CardTitle>
             <div className="flex gap-1">
               <Button
@@ -769,7 +1003,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                             const newCells = [...(row.cells || [])];
                             if (columnsCount > newCells.length) {
                               for (let i = newCells.length; i < columnsCount; i++) {
-                                newCells.push('');
+                                newCells.push({ type: 'text', value: '' });
                               }
                             } else if (columnsCount < newCells.length) {
                               newCells.splice(columnsCount);
@@ -847,21 +1081,289 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                             </Button>
                           </div>
                           <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${element.props?.headers?.length || 2}, 1fr)` }}>
-                            {row.cells.map((cell: string, cellIndex: number) => (
+                            {row.cells.map((cell: TableCellContent | string, cellIndex: number) => {
+                              const normalizedCell = normalizeCell(cell);
+                              const isEditingThisCell = editingCell?.elementId === element.id && 
+                                                       editingCell?.rowIndex === rowIndex && 
+                                                       editingCell?.cellIndex === cellIndex;
+                              
+                              return (
+                                <div key={cellIndex} className="space-y-1">
+                                  {!isEditingThisCell ? (
+                                    <div 
+                                      className="border border-gray-300 rounded p-2 min-h-[40px] cursor-pointer hover:bg-gray-50"
+                                      onClick={() => setEditingCell({ elementId: element.id, rowIndex, cellIndex })}
+                                    >
+                                      {renderCellContent(normalizedCell)}
+                                    </div>
+                                  ) : (
+                                    <div className="border border-blue-300 rounded p-2 space-y-2 bg-blue-50">
+                                      <Select
+                                        value={normalizedCell.type}
+                                        onValueChange={(type) => {
+                                          const newRows = [...(element.props?.rows || [])];
+                                          let newCell: TableCellContent;
+                                          
+                                          if (type === 'text') {
+                                            newCell = { type: 'text', value: normalizedCell.type === 'text' ? normalizedCell.value : '' };
+                                          } else if (type === 'link') {
+                                            newCell = { 
+                                              type: 'link', 
+                                              text: normalizedCell.type === 'link' ? normalizedCell.text : '',
+                                              href: normalizedCell.type === 'link' ? normalizedCell.href : '',
+                                              target: normalizedCell.type === 'link' ? normalizedCell.target : '_blank'
+                                            };
+                                          } else if (type === 'image') {
+                                            newCell = { 
+                                              type: 'image', 
+                                              src: normalizedCell.type === 'image' ? normalizedCell.src : '',
+                                              alt: normalizedCell.type === 'image' ? normalizedCell.alt : ''
+                                            };
+                                          } else {
+                                            newCell = { 
+                                              type: 'file', 
+                                              fileName: normalizedCell.type === 'file' ? normalizedCell.fileName : '',
+                                              fileUrl: normalizedCell.type === 'file' ? normalizedCell.fileUrl : '',
+                                              fileSize: normalizedCell.type === 'file' ? normalizedCell.fileSize : 0
+                                            };
+                                          }
+                                          
+                                          // Создаем новый массив cells вместо мутации существующего
+                                          const newCells = [...newRows[rowIndex].cells];
+                                          newCells[cellIndex] = newCell;
+                                          newRows[rowIndex] = { ...newRows[rowIndex], cells: newCells };
+                                          
+                                          updateElement(element.id, {
+                                            props: { ...element.props, rows: newRows }
+                                          });
+                                        }}
+                                      >
+                                        <SelectTrigger className="w-full">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-white">
+                                          <SelectItem value="text">Текст</SelectItem>
+                                          <SelectItem value="link">Ссылка</SelectItem>
+                                          <SelectItem value="image">Изображение</SelectItem>
+                                          <SelectItem value="file">Файл</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+
+                                      {normalizedCell.type === 'text' && (
                               <Input
-                                key={cellIndex}
-                                value={cell}
+                                          value={normalizedCell.value}
                                 onChange={(e) => {
                                   const newRows = [...(element.props?.rows || [])];
-                                  newRows[rowIndex].cells[cellIndex] = e.target.value;
+                                            const newCells = [...newRows[rowIndex].cells];
+                                            newCells[cellIndex] = { type: 'text', value: e.target.value };
+                                            newRows[rowIndex] = { ...newRows[rowIndex], cells: newCells };
                                   updateElement(element.id, {
                                     props: { ...element.props, rows: newRows }
                                   });
                                 }}
-                                placeholder={`Ячейка ${cellIndex + 1}`}
-                                size={1}
-                              />
-                            ))}
+                                          placeholder="Введите текст"
+                                        />
+                                      )}
+
+                                      {normalizedCell.type === 'link' && (
+                                        <>
+                                          <Input
+                                            value={normalizedCell.text}
+                                            onChange={(e) => {
+                                              const newRows = [...(element.props?.rows || [])];
+                                              const newCells = [...newRows[rowIndex].cells];
+                                              newCells[cellIndex] = { 
+                                                ...normalizedCell, 
+                                                text: e.target.value 
+                                              } as TableCellContent;
+                                              newRows[rowIndex] = { ...newRows[rowIndex], cells: newCells };
+                                              updateElement(element.id, {
+                                                props: { ...element.props, rows: newRows }
+                                              });
+                                            }}
+                                            placeholder="Текст ссылки"
+                                          />
+                                          <Input
+                                            value={normalizedCell.href}
+                                            onChange={(e) => {
+                                              const newRows = [...(element.props?.rows || [])];
+                                              const newCells = [...newRows[rowIndex].cells];
+                                              newCells[cellIndex] = { 
+                                                ...normalizedCell, 
+                                                href: e.target.value 
+                                              } as TableCellContent;
+                                              newRows[rowIndex] = { ...newRows[rowIndex], cells: newCells };
+                                              updateElement(element.id, {
+                                                props: { ...element.props, rows: newRows }
+                                              });
+                                            }}
+                                            placeholder="URL ссылки"
+                                          />
+                                          <Select
+                                            value={normalizedCell.target || '_blank'}
+                                            onValueChange={(target) => {
+                                              const newRows = [...(element.props?.rows || [])];
+                                              const newCells = [...newRows[rowIndex].cells];
+                                              newCells[cellIndex] = { 
+                                                ...normalizedCell, 
+                                                target 
+                                              } as TableCellContent;
+                                              newRows[rowIndex] = { ...newRows[rowIndex], cells: newCells };
+                                              updateElement(element.id, {
+                                                props: { ...element.props, rows: newRows }
+                                              });
+                                            }}
+                                          >
+                                            <SelectTrigger>
+                                              <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="_blank">Новая вкладка</SelectItem>
+                                              <SelectItem value="_self">Текущая вкладка</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </>
+                                      )}
+
+                                      {normalizedCell.type === 'image' && (
+                                        <>
+                                          <div className="flex gap-2">
+                                            <Button
+                                              type="button"
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => triggerCellFileInput(element.id, rowIndex, cellIndex)}
+                                              disabled={uploadingImages.has(`${element.id}-${rowIndex}-${cellIndex}`)}
+                                              className="flex items-center gap-2"
+                                            >
+                                              <Upload className="w-4 h-4" />
+                                              {uploadingImages.has(`${element.id}-${rowIndex}-${cellIndex}`) ? 'Загрузка...' : 'Загрузить'}
+                                            </Button>
+                                            {normalizedCell.src && (
+                                              <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => {
+                                                  const newRows = [...(element.props?.rows || [])];
+                                                  const newCells = [...newRows[rowIndex].cells];
+                                                  newCells[cellIndex] = { type: 'image', src: '', alt: '' };
+                                                  newRows[rowIndex] = { ...newRows[rowIndex], cells: newCells };
+                                                  updateElement(element.id, {
+                                                    props: { ...element.props, rows: newRows }
+                                                  });
+                                                }}
+                                              >
+                                                Удалить
+                                              </Button>
+                                            )}
+                                          </div>
+                                          <Input
+                                            value={normalizedCell.src}
+                                            onChange={(e) => {
+                                              const newRows = [...(element.props?.rows || [])];
+                                              const newCells = [...newRows[rowIndex].cells];
+                                              newCells[cellIndex] = { 
+                                                ...normalizedCell, 
+                                                src: e.target.value 
+                                              } as TableCellContent;
+                                              newRows[rowIndex] = { ...newRows[rowIndex], cells: newCells };
+                                              updateElement(element.id, {
+                                                props: { ...element.props, rows: newRows }
+                                              });
+                                            }}
+                                            placeholder="URL изображения"
+                                          />
+                                          <Input
+                                            value={normalizedCell.alt || ''}
+                                            onChange={(e) => {
+                                              const newRows = [...(element.props?.rows || [])];
+                                              const newCells = [...newRows[rowIndex].cells];
+                                              newCells[cellIndex] = { 
+                                                ...normalizedCell, 
+                                                alt: e.target.value 
+                                              } as TableCellContent;
+                                              newRows[rowIndex] = { ...newRows[rowIndex], cells: newCells };
+                                              updateElement(element.id, {
+                                                props: { ...element.props, rows: newRows }
+                                              });
+                                            }}
+                                            placeholder="Альтернативный текст"
+                                          />
+                                        </>
+                                      )}
+
+                                      {normalizedCell.type === 'file' && (
+                                        <>
+                                          <div className="flex gap-2">
+                                            <Button
+                                              type="button"
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => triggerCellFileInput(element.id, rowIndex, cellIndex)}
+                                              disabled={uploadingImages.has(`${element.id}-${rowIndex}-${cellIndex}`)}
+                                              className="flex items-center gap-2"
+                                            >
+                                              <Upload className="w-4 h-4" />
+                                              {uploadingImages.has(`${element.id}-${rowIndex}-${cellIndex}`) ? 'Загрузка...' : 'Загрузить'}
+                                            </Button>
+                                            {normalizedCell.fileUrl && (
+                                              <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => {
+                                                  const newRows = [...(element.props?.rows || [])];
+                                                  const newCells = [...newRows[rowIndex].cells];
+                                                  newCells[cellIndex] = { 
+                                                    type: 'file', 
+                                                    fileName: '', 
+                                                    fileUrl: '', 
+                                                    fileSize: 0 
+                                                  };
+                                                  newRows[rowIndex] = { ...newRows[rowIndex], cells: newCells };
+                                                  updateElement(element.id, {
+                                                    props: { ...element.props, rows: newRows }
+                                                  });
+                                                }}
+                                              >
+                                                Удалить
+                                              </Button>
+                                            )}
+                                          </div>
+                                          <Input
+                                            value={normalizedCell.fileName}
+                                            onChange={(e) => {
+                                              const newRows = [...(element.props?.rows || [])];
+                                              const newCells = [...newRows[rowIndex].cells];
+                                              newCells[cellIndex] = { 
+                                                ...normalizedCell, 
+                                                fileName: e.target.value 
+                                              } as TableCellContent;
+                                              newRows[rowIndex] = { ...newRows[rowIndex], cells: newCells };
+                                              updateElement(element.id, {
+                                                props: { ...element.props, rows: newRows }
+                                              });
+                                            }}
+                                            placeholder="Название файла"
+                                          />
+                                        </>
+                                      )}
+
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setEditingCell(null)}
+                                        className="w-full"
+                                      >
+                                        Готово
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       ))}
@@ -872,9 +1374,9 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                       size="sm"
                       onClick={() => {
                         const headersCount = element.props?.headers?.length || 2;
-                        const newRow = {
+                        const newRow: TableRow = {
                           id: Date.now().toString(),
-                          cells: Array(headersCount).fill('')
+                          cells: Array(headersCount).fill(null).map(() => ({ type: 'text' as const, value: '' }))
                         };
                         const newRows = [...(element.props?.rows || []), newRow];
                         updateElement(element.id, {
@@ -951,6 +1453,133 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                 </div>
               )}
 
+              {element.type === 'video' && (
+                <div className="space-y-3">
+                  <div>
+                    <Label>Загрузить видео файл</Label>
+                    <div className="flex gap-2 mt-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => triggerFileInput(element.id)}
+                        disabled={uploadingImages.has(element.id)}
+                        className="flex items-center gap-2"
+                      >
+                        <Upload className="w-4 h-4" />
+                        {uploadingImages.has(element.id) ? 'Загрузка...' : 'Выбрать видео файл'}
+                      </Button>
+                      {element.props?.videoSrc && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => updateElement(element.id, { 
+                            props: { ...element.props, videoSrc: '', videoTitle: '' }
+                          })}
+                        >
+                          Удалить
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Поддерживаются: MP4, WebM, OGG (максимум 100MB)
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor={`videoTitle-${element.id}`}>Заголовок видео</Label>
+                    <Input
+                      id={`videoTitle-${element.id}`}
+                      value={element.props?.videoTitle || ''}
+                      onChange={(e) => updateElement(element.id, { 
+                        props: { ...element.props, videoTitle: e.target.value }
+                      })}
+                      placeholder="Название видео (необязательно)"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor={`videoWidth-${element.id}`}>Ширина (px)</Label>
+                      <Input
+                        id={`videoWidth-${element.id}`}
+                        type="number"
+                        value={element.props?.videoWidth || 800}
+                        onChange={(e) => updateElement(element.id, { 
+                          props: { ...element.props, videoWidth: parseInt(e.target.value) || 800 }
+                        })}
+                        min="100"
+                        max="1920"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`videoHeight-${element.id}`}>Высота (px)</Label>
+                      <Input
+                        id={`videoHeight-${element.id}`}
+                        type="number"
+                        value={element.props?.videoHeight || 450}
+                        onChange={(e) => updateElement(element.id, { 
+                          props: { ...element.props, videoHeight: parseInt(e.target.value) || 450 }
+                        })}
+                        min="100"
+                        max="1080"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`videoControls-${element.id}`}
+                        checked={element.props?.controls !== false}
+                        onChange={(e) => updateElement(element.id, { 
+                          props: { ...element.props, controls: e.target.checked }
+                        })}
+                        className="rounded"
+                      />
+                      <Label htmlFor={`videoControls-${element.id}`}>Показывать элементы управления</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`videoAutoplay-${element.id}`}
+                        checked={element.props?.autoplay || false}
+                        onChange={(e) => updateElement(element.id, { 
+                          props: { ...element.props, autoplay: e.target.checked }
+                        })}
+                        className="rounded"
+                      />
+                      <Label htmlFor={`videoAutoplay-${element.id}`}>Автовоспроизведение</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`videoLoop-${element.id}`}
+                        checked={element.props?.loop || false}
+                        onChange={(e) => updateElement(element.id, { 
+                          props: { ...element.props, loop: e.target.checked }
+                        })}
+                        className="rounded"
+                      />
+                      <Label htmlFor={`videoLoop-${element.id}`}>Зацикливание</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`videoMuted-${element.id}`}
+                        checked={element.props?.muted || false}
+                        onChange={(e) => updateElement(element.id, { 
+                          props: { ...element.props, muted: e.target.checked }
+                        })}
+                        className="rounded"
+                      />
+                      <Label htmlFor={`videoMuted-${element.id}`}>Без звука</Label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Настройка приватности блока */}
               <div className="border-t pt-4 mt-4">
                 <div className="flex items-center space-x-2">
@@ -977,6 +1606,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
               {element.content || 
                element.props?.src || 
                element.props?.fileUrl ||
+               element.props?.videoSrc ||
                (element.props?.items && element.props.items.length > 0) ||
                (element.props?.headers && element.props.headers.length > 0) ||
                (element.props?.rows && element.props.rows.length > 0) ? 
@@ -1002,6 +1632,24 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
           const elementId = e.target.getAttribute('data-element-id');
           if (file && elementId) {
             handleFileUpload(elementId, file);
+          }
+          // Сбрасываем input
+          e.target.value = '';
+        }}
+      />
+      {/* Скрытый input для загрузки файлов в ячейки таблицы */}
+      <input
+        ref={cellFileInputRef}
+        type="file"
+        accept="*/*"
+        style={{ display: 'none' }}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          const elementId = e.target.getAttribute('data-element-id');
+          const rowIndex = e.target.getAttribute('data-row-index');
+          const cellIndex = e.target.getAttribute('data-cell-index');
+          if (file && elementId && rowIndex !== null && cellIndex !== null) {
+            handleCellFileUpload(elementId, parseInt(rowIndex), parseInt(cellIndex), file);
           }
           // Сбрасываем input
           e.target.value = '';
@@ -1078,6 +1726,16 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
         >
           <FileText className="w-4 h-4" />
           Файл
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => addElement('video')}
+          className="flex items-center gap-2"
+        >
+          <Video className="w-4 h-4" />
+          Видео
         </Button>
       </div>
 

@@ -1,7 +1,8 @@
 import { createElement, useState, useRef, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useGetBranchByIdQuery } from '@/app/services/branchApi';
-import { Building2, ArrowLeft, MapPin, Phone, Mail, Image as ImageIcon, X, ChevronLeft, ChevronRight, Navigation } from 'lucide-react';
+import { Building2, ArrowLeft, MapPin, Phone, Mail, Image as ImageIcon, X, ChevronLeft, ChevronRight, Navigation, FileText } from 'lucide-react';
+import type { TableCellContent } from '@/types/branch';
 import YandexMap from './YandexMap';
 import { BASE_URL } from '@/constants';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -393,6 +394,66 @@ export default function BranchDetailsPage() {
                         case 'table':
                           const headers = element.props?.headers || [];
                           const rows = element.props?.rows || [];
+                          
+                          // Функция для рендеринга содержимого ячейки таблицы
+                          const renderTableCell = (cell: TableCellContent | string) => {
+                            if (typeof cell === 'string') {
+                              return <span>{cell}</span>;
+                            }
+
+                            switch (cell.type) {
+                              case 'text':
+                                return <span>{cell.value}</span>;
+                              case 'link':
+                                return (
+                                  <a 
+                                    href={cell.href} 
+                                    target={cell.target || '_blank'}
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    {cell.text}
+                                  </a>
+                                );
+                              case 'image':
+                                return (
+                                  <div className="flex justify-center">
+                                    <img 
+                                      src={`${BASE_URL}${cell.src?.startsWith('/') ? '' : '/'}${cell.src}`}
+                                      alt={cell.alt || ''}
+                                      className="max-w-full h-auto rounded object-contain"
+                                      style={{ maxHeight: '150px', maxWidth: '200px' }}
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                      }}
+                                    />
+                                  </div>
+                                );
+                              case 'file':
+                                const formatFileSize = (bytes: number) => {
+                                  if (bytes === 0) return '0 Bytes';
+                                  const k = 1024;
+                                  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                                  const i = Math.floor(Math.log(bytes) / Math.log(k));
+                                  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                                };
+                                return (
+                                  <div className="flex items-center gap-2">
+                                    <FileText className="w-4 h-4 text-gray-600" />
+                                    <a
+                                      href={`${BASE_URL}${cell.fileUrl?.startsWith('/') ? '' : '/'}${cell.fileUrl}`}
+                                      download={cell.fileName}
+                                      className="text-blue-600 hover:text-blue-800 text-sm"
+                                    >
+                                      {cell.fileName} ({formatFileSize(cell.fileSize)})
+                                    </a>
+                                  </div>
+                                );
+                              default:
+                                return <span>{typeof cell === 'string' ? cell : JSON.stringify(cell)}</span>;
+                            }
+                          };
+                          
                           return (
                             <div key={index} className="mb-6 overflow-x-auto">
                               <table className="min-w-full border border-gray-300 bg-white">
@@ -410,9 +471,9 @@ export default function BranchDetailsPage() {
                                 <tbody>
                                   {rows.map((row: any, rowIdx: number) => (
                                     <tr key={row.id || rowIdx}>
-                                      {row.cells.map((cell: string, cellIdx: number) => (
+                                      {row.cells.map((cell: TableCellContent | string, cellIdx: number) => (
                                         <td key={cellIdx} className="border border-gray-300 px-4 py-2">
-                                          {cell}
+                                          {renderTableCell(cell)}
                                         </td>
                                       ))}
                                     </tr>

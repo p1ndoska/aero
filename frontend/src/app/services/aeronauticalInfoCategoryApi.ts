@@ -12,6 +12,9 @@ export interface AeronauticalInfoCategory {
   pageType: string;
   isActive: boolean;
   sortOrder: number;
+  parentId?: number | null;
+  parent?: AeronauticalInfoCategory | null;
+  children?: AeronauticalInfoCategory[];
   createdAt: string;
   updatedAt: string;
 }
@@ -26,6 +29,7 @@ export interface CreateAeronauticalInfoCategoryRequest {
   pageType: string;
   isActive?: boolean;
   sortOrder?: number;
+  parentId?: number | null;
 }
 
 export interface UpdateAeronauticalInfoCategoryRequest extends CreateAeronauticalInfoCategoryRequest {

@@ -1,7 +1,7 @@
 // Типы для элементов конструктора контента
 export interface ContentElement {
   id: string;
-  type: 'paragraph' | 'heading' | 'link' | 'image' | 'list' | 'table' | 'file';
+  type: 'paragraph' | 'heading' | 'link' | 'image' | 'list' | 'table' | 'file' | 'video';
   content: string;
   isPrivate?: boolean; // Только для авторизованных пользователей
   props?: {
@@ -20,13 +20,21 @@ export interface ContentElement {
     fileUrl?: string; // URL файла
     fileSize?: number; // Размер файла
     fileType?: string; // Тип файла
+    videoSrc?: string; // Для видео - URL или путь к файлу
+    videoTitle?: string; // Заголовок видео
+    videoWidth?: number; // Ширина видео
+    videoHeight?: number; // Высота видео
+    controls?: boolean; // Показывать элементы управления
+    autoplay?: boolean; // Автовоспроизведение
+    loop?: boolean; // Зацикливание
+    muted?: boolean; // Без звука
   };
 }
 
 // Тип для строки таблицы
 export interface TableRow {
   id: string;
-  cells: string[];
+  cells: TableCellContent[];
 }
 
 // Основной интерфейс филиала
@@ -106,5 +114,11 @@ export interface BranchResponse {
 export interface SingleBranchResponse {
   branch: Branch;
 }
+
+export type TableCellContent =
+  | {type: 'text'; value: string}
+  | {type: 'link'; text: string; href: string; target?: string}
+  | {type: 'image'; src: string; alt?:string}
+  | {type: 'file'; fileName: string; fileUrl: string; fileSize: number};
 
 

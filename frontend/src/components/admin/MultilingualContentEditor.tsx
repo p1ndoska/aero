@@ -33,6 +33,8 @@ interface MultilingualContentEditorProps {
   // Placeholders
   titlePlaceholder?: string;
   subtitlePlaceholder?: string;
+  // Скрыть поля title и subtitle (для новостей)
+  hideTitleSubtitle?: boolean;
 }
 
 export default function MultilingualContentEditor({
@@ -55,7 +57,8 @@ export default function MultilingualContentEditor({
   onSubtitleBeChange,
   onContentBeChange,
   titlePlaceholder = 'Введите заголовок',
-  subtitlePlaceholder = 'Введите подзаголовок'
+  subtitlePlaceholder = 'Введите подзаголовок',
+  hideTitleSubtitle = false
 }: MultilingualContentEditorProps) {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('ru');
@@ -71,30 +74,34 @@ export default function MultilingualContentEditor({
 
         {/* Русский язык */}
         <TabsContent value="ru" className="space-y-6 mt-6">
-          <div>
-            <Label htmlFor="title-ru" className="block text-sm font-medium mb-2">
-              {t('page_title')} (RU)
-            </Label>
-            <Input
-              id="title-ru"
-              value={titleRu}
-              onChange={(e) => onTitleRuChange(e.target.value)}
-              placeholder={titlePlaceholder}
-              className="w-full"
-            />
-          </div>
-          <div>
-            <Label htmlFor="subtitle-ru" className="block text-sm font-medium mb-2">
-              {t('subtitle')} (RU)
-            </Label>
-            <Textarea
-              id="subtitle-ru"
-              value={subtitleRu}
-              onChange={(e) => onSubtitleRuChange(e.target.value)}
-              placeholder={subtitlePlaceholder}
-              className="min-h-[80px] resize-none"
-            />
-          </div>
+          {!hideTitleSubtitle && (
+            <>
+              <div>
+                <Label htmlFor="title-ru" className="block text-sm font-medium mb-2">
+                  {t('page_title')} (RU)
+                </Label>
+                <Input
+                  id="title-ru"
+                  value={titleRu}
+                  onChange={(e) => onTitleRuChange(e.target.value)}
+                  placeholder={titlePlaceholder}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <Label htmlFor="subtitle-ru" className="block text-sm font-medium mb-2">
+                  {t('subtitle')} (RU)
+                </Label>
+                <Textarea
+                  id="subtitle-ru"
+                  value={subtitleRu}
+                  onChange={(e) => onSubtitleRuChange(e.target.value)}
+                  placeholder={subtitlePlaceholder}
+                  className="min-h-[80px] resize-none"
+                />
+              </div>
+            </>
+          )}
           <div>
             <Label className="block text-sm font-medium mb-4">
               {t('main_content')} (RU)
@@ -108,30 +115,34 @@ export default function MultilingualContentEditor({
 
         {/* Английский язык */}
         <TabsContent value="en" className="space-y-6 mt-6">
-          <div>
-            <Label htmlFor="title-en" className="block text-sm font-medium mb-2">
-              {t('page_title')} (EN)
-            </Label>
-            <Input
-              id="title-en"
-              value={titleEn}
-              onChange={(e) => onTitleEnChange(e.target.value)}
-              placeholder={titlePlaceholder}
-              className="w-full"
-            />
-          </div>
-          <div>
-            <Label htmlFor="subtitle-en" className="block text-sm font-medium mb-2">
-              {t('subtitle')} (EN)
-            </Label>
-            <Textarea
-              id="subtitle-en"
-              value={subtitleEn}
-              onChange={(e) => onSubtitleEnChange(e.target.value)}
-              placeholder={subtitlePlaceholder}
-              className="min-h-[80px] resize-none"
-            />
-          </div>
+          {!hideTitleSubtitle && (
+            <>
+              <div>
+                <Label htmlFor="title-en" className="block text-sm font-medium mb-2">
+                  {t('page_title')} (EN)
+                </Label>
+                <Input
+                  id="title-en"
+                  value={titleEn}
+                  onChange={(e) => onTitleEnChange(e.target.value)}
+                  placeholder={titlePlaceholder}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <Label htmlFor="subtitle-en" className="block text-sm font-medium mb-2">
+                  {t('subtitle')} (EN)
+                </Label>
+                <Textarea
+                  id="subtitle-en"
+                  value={subtitleEn}
+                  onChange={(e) => onSubtitleEnChange(e.target.value)}
+                  placeholder={subtitlePlaceholder}
+                  className="min-h-[80px] resize-none"
+                />
+              </div>
+            </>
+          )}
           <div>
             <Label className="block text-sm font-medium mb-4">
               {t('main_content')} (EN)
@@ -145,30 +156,34 @@ export default function MultilingualContentEditor({
 
         {/* Белорусский язык */}
         <TabsContent value="be" className="space-y-6 mt-6">
-          <div>
-            <Label htmlFor="title-be" className="block text-sm font-medium mb-2">
-              {t('page_title')} (BE)
-            </Label>
-            <Input
-              id="title-be"
-              value={titleBe}
-              onChange={(e) => onTitleBeChange(e.target.value)}
-              placeholder={titlePlaceholder}
-              className="w-full"
-            />
-          </div>
-          <div>
-            <Label htmlFor="subtitle-be" className="block text-sm font-medium mb-2">
-              {t('subtitle')} (BE)
-            </Label>
-            <Textarea
-              id="subtitle-be"
-              value={subtitleBe}
-              onChange={(e) => onSubtitleBeChange(e.target.value)}
-              placeholder={subtitlePlaceholder}
-              className="min-h-[80px] resize-none"
-            />
-          </div>
+          {!hideTitleSubtitle && (
+            <>
+              <div>
+                <Label htmlFor="title-be" className="block text-sm font-medium mb-2">
+                  {t('page_title')} (BE)
+                </Label>
+                <Input
+                  id="title-be"
+                  value={titleBe}
+                  onChange={(e) => onTitleBeChange(e.target.value)}
+                  placeholder={titlePlaceholder}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <Label htmlFor="subtitle-be" className="block text-sm font-medium mb-2">
+                  {t('subtitle')} (BE)
+                </Label>
+                <Textarea
+                  id="subtitle-be"
+                  value={subtitleBe}
+                  onChange={(e) => onSubtitleBeChange(e.target.value)}
+                  placeholder={subtitlePlaceholder}
+                  className="min-h-[80px] resize-none"
+                />
+              </div>
+            </>
+          )}
           <div>
             <Label className="block text-sm font-medium mb-4">
               {t('main_content')} (BE)

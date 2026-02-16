@@ -360,6 +360,9 @@ model AeronauticalInfoCategory {
   pageType    String    @unique // Уникальный тип страницы (например: eaip, eaip-vfr, etod)
   isActive    Boolean   @default(true) // Активна ли категория
   sortOrder   Int       @default(0) // Порядок сортировки
+  parentId    Int?      // ID родительской категории (для подкатегорий)
+  parent      AeronauticalInfoCategory? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children    AeronauticalInfoCategory[] @relation("CategoryHierarchy")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }

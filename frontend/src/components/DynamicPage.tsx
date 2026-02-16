@@ -25,6 +25,14 @@ import SocialWorkPage from './SocialWorkPage';
 import VoluntaryReportForm from './VoluntaryReportForm';
 import ConsumerQuestionnaireForm from './ConsumerQuestionnaireForm';
 import { getRolePermissions } from '@/utils/roleUtils';
+import type { TableCellContent } from '@/types/branch';
+import { useLoginMutation } from '@/app/services/userApi';
+import { useDispatch } from 'react-redux';
+import { setCredentials } from '@/features/user/userSlice';
+import type { AppDispatch } from '@/store';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Mail, Lock } from 'lucide-react';
 
 interface DynamicPageProps {
   pageType: 'about' | 'aeronautical' | 'appeals' | 'social' | 'services';
@@ -53,6 +61,10 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
   const roleValue = user?.role;
   const roleName = (typeof roleValue === 'string' ? roleValue : roleValue?.name) ?? '';
   const permissions = getRolePermissions(roleName);
+  const dispatch = useDispatch<AppDispatch>();
+  const [login, { isLoading: isLoggingIn }] = useLoginMutation();
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   
   // Проверяем доступ в зависимости от типа страницы
   const isAdmin = (() => {
@@ -127,27 +139,15 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
   });
   const aboutCompanyCategories = (aboutCompanyCategoriesQuery?.data || []) as any[];
   
-  // Отладочная информация для категорий
+  // Отладочная информация для категорий (только при ошибках)
   useEffect(() => {
-    if (pageType === 'about') {
-      console.log('About Company Categories Debug:', {
-        isLoading: aboutCompanyCategoriesQuery?.isLoading,
-        isError: aboutCompanyCategoriesQuery?.isError,
+    if (pageType === 'about' && aboutCompanyCategoriesQuery?.isError) {
+      console.error('About Company Categories Error:', {
         error: aboutCompanyCategoriesQuery?.error,
-        data: aboutCompanyCategoriesQuery?.data,
-        categoriesCount: aboutCompanyCategories.length,
-        categories: aboutCompanyCategories.map((c: any) => ({
-          id: c.id,
-          name: c.name,
-          nameEn: c.nameEn,
-          nameBe: c.nameBe,
-          pageType: c.pageType
-        })),
-        urlPageType,
-        foundCategory: aboutCompanyCategories.find((cat: any) => cat.pageType === urlPageType)
+        urlPageType
       });
     }
-  }, [pageType, aboutCompanyCategoriesQuery, aboutCompanyCategories, urlPageType]);
+  }, [pageType, aboutCompanyCategoriesQuery?.isError, aboutCompanyCategoriesQuery?.error, urlPageType]);
 
   // Определяем какой API использовать в зависимости от типа страницы
   let pageContentQuery, updatePageContentMutation, createPageContentMutation, defaultTitle, defaultSubtitle, icon;
@@ -309,15 +309,19 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
   // Проверяем, что запрос выполнен или пропущен корректно
   // Если запрос был пропущен (skip: true), pageContentQuery может быть undefined
   // RTK Query всегда возвращает объект, даже когда skip: true
+  // Логируем ошибки только если это не 502 (Bad Gateway) - это означает, что сервер недоступен
   if (pageContentQuery && 'isError' in pageContentQuery && pageContentQuery.isError && !pageContentQuery.isLoading) {
-    console.error('Error loading page content:', {
-      error: pageContentQuery.error,
-      errorData: pageContentQuery.error?.data,
-      errorStatus: pageContentQuery.error?.status,
-      errorMessage: pageContentQuery.error?.data?.error || pageContentQuery.error?.message,
-      pageType,
-      urlPageType
-    });
+    const errorStatus = (pageContentQuery.error as any)?.status;
+    // Не логируем 502 ошибки постоянно, чтобы не засорять консоль
+    if (errorStatus !== 502) {
+      console.error('Error loading page content:', {
+        error: pageContentQuery.error,
+        errorStatus,
+        errorMessage: (pageContentQuery.error as any)?.data?.error || (pageContentQuery.error as any)?.message,
+        pageType,
+        urlPageType
+      });
+    }
   }
   
   // Находим категорию услуги по pageType для получения названия
@@ -409,28 +413,20 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
     return defaultSubtitle || t('information');
   }, [pageType, urlPageType, aboutCompanyCategory, serviceCategory, content, language, defaultSubtitle, t, aboutCompanyCategories]);
   
-  // Отладочная информация (раскомментируйте для отладки)
+  // Отладочная информация только при ошибках (не в production)
   useEffect(() => {
-    if (pageType === 'about') {
-      console.log('DynamicPage about debug:', {
-        pageType,
-        urlPageType,
-        aboutCompanyCategoriesLoading: aboutCompanyCategoriesQuery?.isLoading,
-        aboutCompanyCategoriesError: aboutCompanyCategoriesQuery?.error,
-        aboutCompanyCategories: aboutCompanyCategories.length,
-        aboutCompanyCategoriesData: aboutCompanyCategories.map((c: any) => ({ name: c.name, pageType: c.pageType, nameEn: c.nameEn, nameBe: c.nameBe })),
-        aboutCompanyCategory,
-        categoryName: aboutCompanyCategory ? getTranslatedField(aboutCompanyCategory, 'name', language) : null,
-        contentTitle: content ? getTranslatedField(content, 'title', language) : null,
-        pageTitle,
-        language
-      });
+    if (import.meta.env.DEV && pageType === 'about' && aboutCompanyCategoriesQuery?.isError) {
+      const errorStatus = (aboutCompanyCategoriesQuery.error as any)?.status;
+      if (errorStatus !== 502) {
+        console.error('DynamicPage about error:', {
+          pageType,
+          urlPageType,
+          error: aboutCompanyCategoriesQuery.error,
+          errorStatus
+        });
+      }
     }
-    // Отладочное логирование (раскомментируйте при необходимости)
-    // if (pageType === 'aeronautical' || pageType === 'appeals') {
-    //   console.log('DynamicPage debug:', { pageType, urlPageType, hasContent: !!content });
-    // }
-  }, [pageType, urlPageType, aboutCompanyCategories, aboutCompanyCategory, content, pageTitle, language, aboutCompanyCategoriesQuery, pageContentQuery]);
+  }, [pageType, urlPageType, aboutCompanyCategoriesQuery?.isError, aboutCompanyCategoriesQuery?.error]);
 
   const handleOpenContentEditor = () => {
     if (content) {
@@ -575,6 +571,66 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
       setIsContentEditorOpen(false);
     } catch (error: any) {
       toast.error(error.data?.error || 'Ошибка при сохранении контента');
+    }
+  };
+
+  // Функция для рендеринга содержимого ячейки таблицы
+  const renderTableCell = (cell: TableCellContent | string) => {
+    // Поддержка старого формата (строка) для обратной совместимости
+    if (typeof cell === 'string') {
+      return <span>{cell}</span>;
+    }
+
+    switch (cell.type) {
+      case 'text':
+        return <span>{cell.value}</span>;
+      case 'link':
+        return (
+          <a 
+            href={cell.href} 
+            target={cell.target || '_blank'}
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            {cell.text}
+          </a>
+        );
+      case 'image':
+        return (
+          <div className="flex justify-center">
+            <img 
+              src={cell.src} 
+              alt={cell.alt || ''}
+              className="max-w-full h-auto rounded object-contain"
+              style={{ maxHeight: '150px', maxWidth: '200px' }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+        );
+      case 'file':
+        const formatFileSize = (bytes: number) => {
+          if (bytes === 0) return '0 Bytes';
+          const k = 1024;
+          const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+          const i = Math.floor(Math.log(bytes) / Math.log(k));
+          return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        };
+        return (
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-gray-600" />
+            <a
+              href={cell.fileUrl}
+              download={cell.fileName}
+              className="text-blue-600 hover:text-blue-800 text-sm"
+            >
+              {cell.fileName} ({formatFileSize(cell.fileSize)})
+            </a>
+          </div>
+        );
+      default:
+        return <span>{typeof cell === 'string' ? cell : JSON.stringify(cell)}</span>;
     }
   };
 
@@ -757,9 +813,9 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
               <tbody>
                 {rows.map((row: any, rowIdx: number) => (
                   <tr key={row.id || rowIdx}>
-                    {row.cells.map((cell: string, cellIdx: number) => (
+                    {row.cells.map((cell: TableCellContent | string, cellIdx: number) => (
                       <td key={cellIdx} className="border border-gray-300 px-4 py-2">
-                        {cell}
+                        {renderTableCell(cell)}
                       </td>
                     ))}
                   </tr>
@@ -800,6 +856,34 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
             >
               Скачать
             </a>
+          </div>
+        );
+      case 'video':
+        if (!element.props?.videoSrc) return null;
+        // Если URL уже полный (начинается с http), используем как есть, иначе добавляем BASE_URL
+        const videoSrc = element.props.videoSrc.startsWith('http') 
+          ? element.props.videoSrc 
+          : `${BASE_URL}${element.props.videoSrc.startsWith('/') ? '' : '/'}${element.props.videoSrc}`;
+        return (
+          <div className="mb-6 flex flex-col items-center justify-center">
+            <div className="w-full max-w-full flex justify-center">
+              <video
+                src={videoSrc}
+                controls={element.props.controls !== false}
+                autoPlay={element.props.autoplay || false}
+                loop={element.props.loop || false}
+                muted={element.props.muted || false}
+                width={element.props.videoWidth || 800}
+                height={element.props.videoHeight || 450}
+                className="max-w-full h-auto rounded-lg mx-auto"
+                style={{ maxWidth: '100%', height: 'auto' }}
+              >
+                Ваш браузер не поддерживает видео.
+              </video>
+            </div>
+            {element.props.videoTitle && (
+              <p className="text-sm text-gray-500 mt-2 text-center">{element.props.videoTitle}</p>
+            )}
           </div>
         );
       default:
@@ -870,37 +954,132 @@ export default function DynamicPage({ pageType }: DynamicPageProps) {
             return hasContent ? (
             <div className="w-full mb-12">
               <div className="py-8">
-                  {translatedContent.map((element: any, index: number) => {
-                  // Проверяем, является ли блок приватным и авторизован ли пользователь
-                  if (element.isPrivate && !isAuthenticated) {
+                {(() => {
+                  // Проверяем, есть ли приватные блоки
+                  const hasPrivateContent = translatedContent.some((element: any) => {
+                    const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
+                    return isPrivate;
+                  });
+
+                  // Если есть приватный контент и пользователь не авторизован, показываем одну форму логина
+                  if (hasPrivateContent && !isAuthenticated) {
+                    const handleLoginSubmit = async (e: React.FormEvent) => {
+                      e.preventDefault();
+                      try {
+                        const result = await login({ email: loginEmail, password: loginPassword }).unwrap();
+                        if (result.token) {
+                          dispatch(setCredentials({
+                            user: result.user,
+                            token: result.token,
+                            mustChangePassword: (result as any).mustChangePassword || false
+                          }));
+                          toast.success(`Добро пожаловать, ${result.user.email}! 🎉`);
+                          setLoginEmail('');
+                          setLoginPassword('');
+                        }
+                      } catch (err: any) {
+                        toast.error(err.data?.error || 'Ошибка входа');
+                      }
+                    };
+
                     return (
-                      <div key={element.id || `private-${index}`} className="mb-4 p-6 bg-amber-50 border border-amber-200 rounded-lg">
-                        <div className="flex items-center gap-3 text-amber-800">
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                          </svg>
-                          <div>
-                            <p className="font-medium">Доступ ограничен</p>
-                            <p className="text-sm text-amber-700">
-                              {language === 'en' 
-                                ? 'This content is available only to authorized users. Please log in to view.' 
-                                : language === 'be' 
-                                ? 'Гэты кантэнт даступны толькі аўтарызаваным карыстальнікам. Калі ласка, увайдзіце ў сістэму для прагляду.'
-                                : 'Этот контент доступен только авторизованным пользователям. Пожалуйста, войдите в систему для просмотра.'
-                              }
-                            </p>
+                      <>
+                        {/* Показываем публичный контент */}
+                        {translatedContent.map((element: any, index: number) => {
+                          const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
+                          if (!isPrivate) {
+                            return (
+                              <div key={element.id || `content-${index}`}>
+                                {renderContentElement(element)}
+                              </div>
+                            );
+                          }
+                          return null;
+                        })}
+                        
+                        {/* Показываем одну форму логина для всех приватных блоков */}
+                        <div className="mb-4 p-6 bg-white border border-gray-300 rounded-lg shadow-sm">
+                          <div className="flex items-center gap-3 text-gray-800 mb-4">
+                            <svg className="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                            </svg>
+                            <div>
+                              <p className="font-medium text-lg">Доступ ограничен</p>
+                              <p className="text-sm text-gray-600">
+                                {language === 'en' 
+                                  ? 'This content is available only to authorized users. Please log in to view.' 
+                                  : language === 'be' 
+                                  ? 'Гэты кантэнт даступны толькі аўтарызаваным карыстальнікам. Калі ласка, увайдзіце ў сістэму для прагляду.'
+                                  : 'Этот контент доступен только авторизованным пользователям. Пожалуйста, войдите в систему для просмотра.'
+                                }
+                              </p>
+                            </div>
                           </div>
+                          
+                          <form onSubmit={handleLoginSubmit} className="space-y-4 mt-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="login-email" className="text-gray-700">
+                                Email
+                              </Label>
+                              <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+                                <Input
+                                  id="login-email"
+                                  type="email"
+                                  placeholder="Введите email"
+                                  value={loginEmail}
+                                  onChange={(e) => setLoginEmail(e.target.value)}
+                                  required
+                                  className="pl-10"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="login-password" className="text-gray-700">
+                                Пароль
+                              </Label>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+                                <Input
+                                  id="login-password"
+                                  type="password"
+                                  placeholder="Введите пароль"
+                                  value={loginPassword}
+                                  onChange={(e) => setLoginPassword(e.target.value)}
+                                  required
+                                  className="pl-10"
+                                />
+                              </div>
+                            </div>
+
+                            <Button
+                              type="submit"
+                              className="w-full bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                              disabled={isLoggingIn}
+                            >
+                              {isLoggingIn ? 'Вход...' : 'Войти'}
+                            </Button>
+                          </form>
                         </div>
-                      </div>
+                      </>
                     );
                   }
                   
-                  return (
-                    <div key={element.id || `content-${index}`}>
-                      {renderContentElement(element)}
-                    </div>
-                  );
-                })}
+                  // Если пользователь авторизован или нет приватного контента, показываем весь контент
+                  return translatedContent.map((element: any, index: number) => {
+                    const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
+                    // Показываем приватный контент только авторизованным пользователям
+                    if (isPrivate && !isAuthenticated) {
+                      return null;
+                    }
+                    return (
+                      <div key={element.id || `content-${index}`}>
+                        {renderContentElement(element)}
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             </div>
             ) : null;

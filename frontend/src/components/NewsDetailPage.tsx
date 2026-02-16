@@ -1,15 +1,29 @@
 import React, { useState, useRef } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
 import { useGetNewsByIdQuery } from '@/app/services/newsApi';
-import { ArrowLeft, Calendar, Tag, Image as ImageIcon, User, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, Image as ImageIcon, User, X, ChevronLeft, ChevronRight, FileText, Mail, Lock } from 'lucide-react';
 import { BASE_URL } from '@/constants';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslatedField } from '@/utils/translationHelpers';
+import type { ContentElement, TableCellContent } from '@/types/branch';
+import { useLoginMutation } from '@/app/services/userApi';
+import { setCredentials } from '@/features/user/userSlice';
+import type { AppDispatch } from '@/store';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 const NewsDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const newsId = id ? parseInt(id, 10) : null;
   const { language, t } = useLanguage();
+  const { isAuthenticated } = useSelector((state: any) => state.auth);
+  const dispatch = useDispatch<AppDispatch>();
+  const [login, { isLoading: isLoggingIn }] = useLoginMutation();
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -46,6 +60,229 @@ const NewsDetailPage: React.FC = () => {
     const newIndex = (selectedImageIndex + direction + images.length) % images.length;
     setSelectedImageIndex(newIndex);
     setSelectedImage(images[newIndex]);
+  };
+
+  // Функция для рендеринга содержимого ячейки таблицы
+  const renderTableCell = (cell: TableCellContent | string) => {
+    if (typeof cell === 'string') {
+      return <span>{cell}</span>;
+    }
+
+    switch (cell.type) {
+      case 'text':
+        return <span>{cell.value}</span>;
+      case 'link':
+        return (
+          <a 
+            href={cell.href} 
+            target={cell.target || '_blank'}
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            {cell.text}
+          </a>
+        );
+      case 'image':
+        return (
+          <div className="flex justify-center">
+            <img 
+              src={`${BASE_URL}${cell.src?.startsWith('/') ? '' : '/'}${cell.src}`}
+              alt={cell.alt || ''}
+              className="max-w-full h-auto rounded object-contain"
+              style={{ maxHeight: '150px', maxWidth: '200px' }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+        );
+      case 'file':
+        const formatFileSize = (bytes: number) => {
+          if (bytes === 0) return '0 Bytes';
+          const k = 1024;
+          const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+          const i = Math.floor(Math.log(bytes) / Math.log(k));
+          return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        };
+        return (
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-gray-600" />
+            <a
+              href={`${BASE_URL}${cell.fileUrl?.startsWith('/') ? '' : '/'}${cell.fileUrl}`}
+              download={cell.fileName}
+              className="text-blue-600 hover:text-blue-800 text-sm"
+            >
+              {cell.fileName} ({formatFileSize(cell.fileSize)})
+            </a>
+          </div>
+        );
+      default:
+        return <span>{typeof cell === 'string' ? cell : JSON.stringify(cell)}</span>;
+    }
+  };
+
+  // Функция для рендеринга элементов контента конструктора
+  const renderContentElement = (element: ContentElement) => {
+    switch (element.type) {
+      case 'heading':
+        const HeadingTag = `h${element.props?.level || 2}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+        const HeadingComponent = HeadingTag;
+        return (
+          <HeadingComponent 
+            className={`text-2xl font-bold text-gray-900 mb-4 break-words force-text-${element.props?.textAlign || 'left'}`}
+            style={{ 
+              color: element.props?.color || '#000000',
+              textAlign: element.props?.textAlign || 'left'
+            }}
+            data-align={element.props?.textAlign || 'left'}
+            data-color={element.props?.color || '#000000'}
+          >
+            {element.content}
+          </HeadingComponent>
+        );
+      case 'paragraph':
+        return (
+          <p 
+            className={`text-gray-700 mb-4 leading-relaxed break-words force-text-${element.props?.textAlign || 'left'}`}
+            style={{ 
+              textIndent: element.props?.textIndent ? '1.5em' : '0',
+              textAlign: element.props?.textAlign || 'left'
+            }}
+            data-align={element.props?.textAlign || 'left'}
+          >
+            {element.content}
+          </p>
+        );
+      case 'list':
+        const items = element.props?.items || [];
+        return (
+          <ul className="list-disc list-inside mb-4 space-y-2">
+            {items.map((item: string, idx: number) => (
+              <li key={idx} className="text-gray-700 break-words">{item}</li>
+            ))}
+          </ul>
+        );
+      case 'link':
+        return (
+          <a
+            href={element.props?.href}
+            target={element.props?.target || '_blank'}
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline mb-4 inline-block break-words"
+          >
+            {element.content}
+          </a>
+        );
+      case 'image':
+        return (
+          <div className="mb-6 flex flex-col items-center">
+            <img 
+              src={`${BASE_URL}${element.props?.src?.startsWith('/') ? '' : '/'}${element.props?.src}`}
+              alt={element.props?.alt || ''}
+              className="max-w-full h-auto rounded-lg object-contain"
+              style={{ maxWidth: '800px', maxHeight: '400px' }}
+              onError={(e) => {
+                console.error('Image failed to load:', element.props?.src);
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            {element.props?.alt && <p className="text-sm text-gray-500 mt-2 text-center">{element.props.alt}</p>}
+          </div>
+        );
+      case 'table':
+        const headers = element.props?.headers || [];
+        const rows = element.props?.rows || [];
+        return (
+          <div className="mb-6 overflow-x-auto">
+            <table className="min-w-full border border-gray-300 bg-white">
+              {headers.length > 0 && (
+                <thead>
+                  <tr>
+                    {headers.map((header: string, idx: number) => (
+                      <th key={idx} className="border border-gray-300 px-4 py-2 bg-gray-100 text-left font-medium">
+                        {header || `Колонка ${idx + 1}`}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+              )}
+              <tbody>
+                {rows.map((row: any, rowIdx: number) => (
+                  <tr key={row.id || rowIdx}>
+                    {row.cells.map((cell: TableCellContent | string, cellIdx: number) => (
+                      <td key={cellIdx} className="border border-gray-300 px-4 py-2">
+                        {renderTableCell(cell)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      case 'file':
+        if (!element.props?.fileUrl) return null;
+        const formatFileSize = (bytes: number) => {
+          if (bytes === 0) return '0 Bytes';
+          const k = 1024;
+          const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+          const i = Math.floor(Math.log(bytes) / Math.log(k));
+          return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        };
+        return (
+          <div className="mb-4 flex items-center gap-3 p-4 border border-gray-300 rounded-lg bg-gray-50">
+            <div className="flex-shrink-0">
+              <FileText className="w-8 h-8 text-gray-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 break-words">
+                {element.props.fileName || 'Неизвестный файл'}
+              </p>
+              <p className="text-xs text-gray-500">
+                {element.props.fileType && `${element.props.fileType} • `}
+                {element.props.fileSize && formatFileSize(element.props.fileSize)}
+              </p>
+            </div>
+            <a
+              href={`${BASE_URL}${element.props.fileUrl?.startsWith('/') ? '' : '/'}${element.props.fileUrl}`}
+              download={element.props.fileName}
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            >
+              Скачать
+            </a>
+          </div>
+        );
+      case 'video':
+        if (!element.props?.videoSrc) return null;
+        // Если URL уже полный (начинается с http), используем как есть, иначе добавляем BASE_URL
+        const videoSrc = element.props.videoSrc.startsWith('http') 
+          ? element.props.videoSrc 
+          : `${BASE_URL}${element.props.videoSrc.startsWith('/') ? '' : '/'}${element.props.videoSrc}`;
+        return (
+          <div className="mb-6 flex flex-col items-center justify-center">
+            <div className="w-full max-w-full flex justify-center">
+              <video
+                src={videoSrc}
+                controls={element.props.controls !== false}
+                autoPlay={element.props.autoplay || false}
+                loop={element.props.loop || false}
+                muted={element.props.muted || false}
+                width={element.props.videoWidth || 800}
+                height={element.props.videoHeight || 450}
+                className="max-w-full h-auto rounded-lg mx-auto"
+                style={{ maxWidth: '100%', height: 'auto' }}
+              >
+                Ваш браузер не поддерживает видео.
+              </video>
+            </div>
+            {element.props.videoTitle && (
+              <p className="text-sm text-gray-500 mt-2 text-center">{element.props.videoTitle}</p>
+            )}
+          </div>
+        );
+      default:
+        return null;
+    }
   };
 
   if (isLoading) {
@@ -174,10 +411,151 @@ const NewsDetailPage: React.FC = () => {
 
               {/* Содержание новости */}
               <div className="prose max-w-none sm:prose-md md:prose-lg [&_img]:max-w-full [&_img]:h-auto [&_table]:w-full [&_table]:block [&_table]:overflow-x-auto break-words">
-                <div
-                  className="text-gray-700 leading-relaxed whitespace-pre-wrap overflow-x-auto break-words [&_img]:max-w-full [&_img]:h-auto [&_table]:w-full [&_table]:block [&_table]:overflow-x-auto [&_td]:align-top"
-                  dangerouslySetInnerHTML={{ __html: translatedContent || t('no_data') }}
-                />
+                {(() => {
+                  // Пытаемся распарсить контент как JSON (конструктор контента)
+                  let contentElements: ContentElement[] | null = null;
+                  if (translatedContent) {
+                    try {
+                      const parsed = JSON.parse(translatedContent);
+                      if (Array.isArray(parsed)) {
+                        contentElements = parsed;
+                      }
+                    } catch {
+                      // Если не JSON, значит это старый формат (HTML/текст)
+                    }
+                  }
+                  
+                  if (contentElements && contentElements.length > 0) {
+                    // Проверяем, есть ли приватные блоки
+                    const hasPrivateContent = contentElements.some((element: any) => {
+                      const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
+                      return isPrivate;
+                    });
+
+                    // Рендерим контент из конструктора
+                    return (
+                      <div className="text-gray-700 leading-relaxed">
+                        {/* Если есть приватный контент и пользователь не авторизован, показываем одну форму логина */}
+                        {hasPrivateContent && !isAuthenticated ? (
+                          <>
+                            {/* Показываем публичный контент */}
+                            {contentElements.map((element, index) => {
+                              const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
+                              if (!isPrivate) {
+                                return (
+                                  <div key={element.id || index}>
+                                    {renderContentElement(element)}
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })}
+                            
+                            {/* Показываем одну форму логина для всех приватных блоков */}
+                            <div className="mb-4 p-6 bg-white border border-gray-300 rounded-lg shadow-sm">
+                              <div className="flex items-center gap-3 text-gray-800 mb-4">
+                                <svg className="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                                </svg>
+                                <div>
+                                  <p className="font-medium text-lg">Доступ ограничен</p>
+                                  <p className="text-sm text-gray-600">
+                                    Этот контент доступен только авторизованным пользователям. Пожалуйста, войдите в систему для просмотра.
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              <form onSubmit={async (e: React.FormEvent) => {
+                                e.preventDefault();
+                                try {
+                                  const result = await login({ email: loginEmail, password: loginPassword }).unwrap();
+                                  if (result.token) {
+                                    dispatch(setCredentials({
+                                      user: result.user,
+                                      token: result.token,
+                                      mustChangePassword: (result as any).mustChangePassword || false
+                                    }));
+                                    toast.success(`Добро пожаловать, ${result.user.email}! 🎉`);
+                                    setLoginEmail('');
+                                    setLoginPassword('');
+                                  }
+                                } catch (err: any) {
+                                  toast.error(err.data?.error || 'Ошибка входа');
+                                }
+                              }} className="space-y-4 mt-4">
+                                <div className="space-y-2">
+                                  <Label htmlFor="login-email" className="text-gray-700">
+                                    Email
+                                  </Label>
+                                  <div className="relative">
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+                                    <Input
+                                      id="login-email"
+                                      type="email"
+                                      placeholder="Введите email"
+                                      value={loginEmail}
+                                      onChange={(e) => setLoginEmail(e.target.value)}
+                                      required
+                                      className="pl-10"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label htmlFor="login-password" className="text-gray-700">
+                                    Пароль
+                                  </Label>
+                                  <div className="relative">
+                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+                                    <Input
+                                      id="login-password"
+                                      type="password"
+                                      placeholder="Введите пароль"
+                                      value={loginPassword}
+                                      onChange={(e) => setLoginPassword(e.target.value)}
+                                      required
+                                      className="pl-10"
+                                    />
+                                  </div>
+                                </div>
+
+                                <Button
+                                  type="submit"
+                                  className="w-full bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                                  disabled={isLoggingIn}
+                                >
+                                  {isLoggingIn ? 'Вход...' : 'Войти'}
+                                </Button>
+                              </form>
+                            </div>
+                          </>
+                        ) : (
+                          // Если пользователь авторизован или нет приватного контента, показываем весь контент
+                          contentElements.map((element, index) => {
+                            const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
+                            // Показываем приватный контент только авторизованным пользователям
+                            if (isPrivate && !isAuthenticated) {
+                              return null;
+                            }
+                            return (
+                              <div key={element.id || index}>
+                                {renderContentElement(element)}
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    );
+                  } else {
+                    // Рендерим старый формат (HTML/текст)
+                    return (
+                      <div
+                        className="text-gray-700 leading-relaxed whitespace-pre-wrap overflow-x-auto break-words [&_img]:max-w-full [&_img]:h-auto [&_table]:w-full [&_table]:block [&_table]:overflow-x-auto [&_td]:align-top"
+                        dangerouslySetInnerHTML={{ __html: translatedContent || t('no_data') }}
+                      />
+                    );
+                  }
+                })()}
               </div>
 
               {/* Дополнительная информация */}
@@ -185,7 +563,7 @@ const NewsDetailPage: React.FC = () => {
                 <div className="flex items-center justify-between text-sm text-gray-500">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span>{t('published_by_admin')}</span>
+                    {/*  <span>{t('published_by_admin')}</span>*/}
                   </div>
                   <div>
                     {t('updated')}: {new Date(news.updatedAt || news.createdAt).toLocaleDateString(

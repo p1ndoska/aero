@@ -12,6 +12,14 @@ import ContentConstructor from './admin/ContentConstructor';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getTranslatedField } from '../utils/translationHelpers';
 import { getRolePermissions } from '@/utils/roleUtils';
+import type { TableCellContent } from '@/types/branch';
+import { BASE_URL } from '@/constants';
+import { FileText, Mail, Lock } from 'lucide-react';
+import { useLoginMutation } from '@/app/services/userApi';
+import { useDispatch } from 'react-redux';
+import { setCredentials } from '@/features/user/userSlice';
+import type { AppDispatch } from '@/store';
+import { Label } from '@/components/ui/label';
 
 // Маппинг типов страниц на иконки и названия
 const PAGE_CONFIG = {
@@ -87,6 +95,10 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
   const [editableTitle, setEditableTitle] = useState('');
   const [editableSubtitle, setEditableSubtitle] = useState('');
   const [editableContent, setEditableContent] = useState<any[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
+  const [login, { isLoading: isLoggingIn }] = useLoginMutation();
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
 
   // Принудительное применение стилей выравнивания и цветов после рендеринга
   useEffect(() => {
@@ -241,6 +253,65 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
     }
   };
 
+  // Функция для рендеринга содержимого ячейки таблицы
+  const renderTableCell = (cell: TableCellContent | string) => {
+    if (typeof cell === 'string') {
+      return <span>{cell}</span>;
+    }
+
+    switch (cell.type) {
+      case 'text':
+        return <span>{cell.value}</span>;
+      case 'link':
+        return (
+          <a 
+            href={cell.href} 
+            target={cell.target || '_blank'}
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            {cell.text}
+          </a>
+        );
+      case 'image':
+        return (
+          <div className="flex justify-center">
+            <img 
+              src={cell.src} 
+              alt={cell.alt || ''}
+              className="max-w-full h-auto rounded object-contain"
+              style={{ maxHeight: '150px', maxWidth: '200px' }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+        );
+      case 'file':
+        const formatFileSize = (bytes: number) => {
+          if (bytes === 0) return '0 Bytes';
+          const k = 1024;
+          const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+          const i = Math.floor(Math.log(bytes) / Math.log(k));
+          return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        };
+        return (
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-gray-600" />
+            <a
+              href={cell.fileUrl}
+              download={cell.fileName}
+              className="text-blue-600 hover:text-blue-800 text-sm"
+            >
+              {cell.fileName} ({formatFileSize(cell.fileSize)})
+            </a>
+          </div>
+        );
+      default:
+        return <span>{typeof cell === 'string' ? cell : JSON.stringify(cell)}</span>;
+    }
+  };
+
   const renderContentElement = (element: any) => {
     switch (element.type) {
       case 'heading':
@@ -331,9 +402,9 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
               <tbody>
                 {rows.map((row: any, rowIdx: number) => (
                   <tr key={row.id || rowIdx}>
-                    {row.cells.map((cell: string, cellIdx: number) => (
+                    {row.cells.map((cell: TableCellContent | string, cellIdx: number) => (
                       <td key={cellIdx} className="border border-gray-300 px-4 py-2">
-                        {cell}
+                        {renderTableCell(cell)}
                       </td>
                     ))}
                   </tr>
@@ -376,6 +447,34 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
             </a>
           </div>
         );
+      case 'video':
+        if (!element.props?.videoSrc) return null;
+        // Если URL уже полный (начинается с http), используем как есть, иначе добавляем BASE_URL
+        const videoSrc = element.props.videoSrc.startsWith('http') 
+          ? element.props.videoSrc 
+          : `${BASE_URL}${element.props.videoSrc.startsWith('/') ? '' : '/'}${element.props.videoSrc}`;
+        return (
+          <div className="mb-6 flex flex-col items-center justify-center">
+            <div className="w-full max-w-full flex justify-center">
+              <video
+                src={videoSrc}
+                controls={element.props.controls !== false}
+                autoPlay={element.props.autoplay || false}
+                loop={element.props.loop || false}
+                muted={element.props.muted || false}
+                width={element.props.videoWidth || 800}
+                height={element.props.videoHeight || 450}
+                className="max-w-full h-auto rounded-lg mx-auto"
+                style={{ maxWidth: '100%', height: 'auto' }}
+              >
+                Ваш браузер не поддерживает видео.
+              </video>
+            </div>
+            {element.props.videoTitle && (
+              <p className="text-sm text-gray-500 mt-2 text-center">{element.props.videoTitle}</p>
+            )}
+          </div>
+        );
       default:
         return null;
     }
@@ -414,11 +513,133 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
           {pageContent?.content && Array.isArray(pageContent.content) && pageContent.content.length > 0 && (
             <div className="w-full mb-12">
               <div className="py-8">
-                {getTranslatedField(pageContent, 'content', language).map((element: any) => (
-                  <div key={element.id}>
-                    {renderContentElement(element)}
-                  </div>
-                ))}
+                {(() => {
+                  const translatedContent = getTranslatedField(pageContent, 'content', language);
+                  // Проверяем, есть ли приватные блоки
+                  const hasPrivateContent = translatedContent.some((element: any) => {
+                    const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
+                    return isPrivate;
+                  });
+
+                  // Если есть приватный контент и пользователь не авторизован, показываем одну форму логина
+                  if (hasPrivateContent && !isAuthenticated) {
+                    const handleLoginSubmit = async (e: React.FormEvent) => {
+                      e.preventDefault();
+                      try {
+                        const result = await login({ email: loginEmail, password: loginPassword }).unwrap();
+                        if (result.token) {
+                          dispatch(setCredentials({
+                            user: result.user,
+                            token: result.token,
+                            mustChangePassword: (result as any).mustChangePassword || false
+                          }));
+                          toast.success(`Добро пожаловать, ${result.user.email}! 🎉`);
+                          setLoginEmail('');
+                          setLoginPassword('');
+                        }
+                      } catch (err: any) {
+                        toast.error(err.data?.error || 'Ошибка входа');
+                      }
+                    };
+
+                    return (
+                      <>
+                        {/* Показываем публичный контент */}
+                        {translatedContent.map((element: any, index: number) => {
+                          const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
+                          if (!isPrivate) {
+                            return (
+                              <div key={element.id || `content-${index}`}>
+                                {renderContentElement(element)}
+                              </div>
+                            );
+                          }
+                          return null;
+                        })}
+                        
+                        {/* Показываем одну форму логина для всех приватных блоков */}
+                        <div className="mb-4 p-6 bg-white border border-gray-300 rounded-lg shadow-sm">
+                          <div className="flex items-center gap-3 text-gray-800 mb-4">
+                            <svg className="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                            </svg>
+                            <div>
+                              <p className="font-medium text-lg">Доступ ограничен</p>
+                              <p className="text-sm text-gray-600">
+                                {language === 'en' 
+                                  ? 'This content is available only to authorized users. Please log in to view.' 
+                                  : language === 'be' 
+                                  ? 'Гэты кантэнт даступны толькі аўтарызаваным карыстальнікам. Калі ласка, увайдзіце ў сістэму для прагляду.'
+                                  : 'Этот контент доступен только авторизованным пользователям. Пожалуйста, войдите в систему для просмотра.'
+                                }
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <form onSubmit={handleLoginSubmit} className="space-y-4 mt-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="login-email" className="text-gray-700">
+                                Email
+                              </Label>
+                              <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+                                <Input
+                                  id="login-email"
+                                  type="email"
+                                  placeholder="Введите email"
+                                  value={loginEmail}
+                                  onChange={(e) => setLoginEmail(e.target.value)}
+                                  required
+                                  className="pl-10"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="login-password" className="text-gray-700">
+                                Пароль
+                              </Label>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+                                <Input
+                                  id="login-password"
+                                  type="password"
+                                  placeholder="Введите пароль"
+                                  value={loginPassword}
+                                  onChange={(e) => setLoginPassword(e.target.value)}
+                                  required
+                                  className="pl-10"
+                                />
+                              </div>
+                            </div>
+
+                            <Button
+                              type="submit"
+                              className="w-full bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                              disabled={isLoggingIn}
+                            >
+                              {isLoggingIn ? 'Вход...' : 'Войти'}
+                            </Button>
+                          </form>
+                        </div>
+                      </>
+                    );
+                  }
+                  
+                  // Если пользователь авторизован или нет приватного контента, показываем весь контент
+                  return translatedContent.map((element: any, index: number) => {
+                    const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
+                    // Показываем приватный контент только авторизованным пользователям
+                    if (isPrivate && !isAuthenticated) {
+                      return null;
+                    }
+                    return (
+                      <div key={element.id || `content-${index}`}>
+                        {renderContentElement(element)}
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             </div>
           )}

@@ -1,8 +1,9 @@
 //@ts-nocheck
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, ChevronRight } from "lucide-react";
 import {
     FaPhone,
     FaEnvelope,
@@ -36,6 +37,17 @@ export const Sidebar = () => {
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [expandedAirNavCategories, setExpandedAirNavCategories] = useState<Set<number>>(new Set());
+    const [hoveredAirNavCategory, setHoveredAirNavCategory] = useState<number | null>(null);
+    const [childMenuPosition, setChildMenuPosition] = useState<{ top: number; left: number } | null>(null);
+    const [hoveredChildCategory, setHoveredChildCategory] = useState<number | null>(null);
+    const [childCategoryMenuPosition, setChildCategoryMenuPosition] = useState<{ top: number; left: number } | null>(null);
+    const [mainMenuPosition, setMainMenuPosition] = useState<{ top: number; left: number } | null>(null);
+    const categoryRefs = useRef<Map<number, HTMLElement>>(new Map());
+    const childCategoryRefs = useRef<Map<number, HTMLElement>>(new Map());
+    const menuItemRefs = useRef<Map<string, HTMLElement>>(new Map());
+    const closeMenuTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const closeChildMenuTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -121,16 +133,93 @@ export const Sidebar = () => {
             }))
         : [];
 
-    // Динамическое подменю "Аэронавигационная информация"
-    const airNavSubmenu = aeronauticalInfoCategories && Array.isArray(aeronauticalInfoCategories) && aeronauticalInfoCategories.length > 0
-        ? aeronauticalInfoCategories
-            .filter((c: any) => c.isActive)
-            .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
-            .map((category: any) => ({
-                name: getTranslatedField(category, 'name', language),
-                href: `/air-navigation/${category.pageType}`
-            }))
+    // Построение дерева категорий аэронавигационной информации
+    const buildAirNavTree = (categories: any[]) => {
+        if (!categories || !Array.isArray(categories)) return [];
+        
+        // Фильтруем только активные категории
+        const activeCategories = categories.filter((c: any) => c.isActive);
+        
+        const categoryMap = new Map();
+        const rootCategories: any[] = [];
+        
+        // Создаем карту всех активных категорий с пустым массивом children
+        activeCategories.forEach(cat => {
+            categoryMap.set(cat.id, { 
+                ...cat, 
+                children: [] // Инициализируем пустым массивом, будем заполнять ниже
+            });
+        });
+        
+        // Строим дерево - используем parentId для связи
+        activeCategories.forEach(cat => {
+            const category = categoryMap.get(cat.id);
+            if (!category) return; // Пропускаем, если категория не в карте
+            
+            if (cat.parentId && categoryMap.has(cat.parentId)) {
+                // Если есть родитель и он активен, добавляем к нему
+                const parent = categoryMap.get(cat.parentId);
+                if (parent && !parent.children.some((c: any) => c.id === category.id)) {
+                    parent.children.push(category);
+                }
+            } else if (!cat.parentId || cat.parentId === null) {
+                // Если нет parentId, это корневая категория
+                if (!rootCategories.some((c: any) => c.id === category.id)) {
+                    rootCategories.push(category);
+                }
+            }
+        });
+        
+        // Сортируем
+        const sortCategories = (cats: any[]) => {
+            cats.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+            cats.forEach(cat => {
+                if (cat.children && cat.children.length > 0) {
+                    sortCategories(cat.children);
+                }
+            });
+        };
+        
+        sortCategories(rootCategories);
+        return rootCategories;
+    };
+
+    const airNavTree = aeronauticalInfoCategories && Array.isArray(aeronauticalInfoCategories) && aeronauticalInfoCategories.length > 0
+        ? buildAirNavTree(aeronauticalInfoCategories)
         : [];
+
+    // Функция для рендеринга дерева категорий в подменю
+    const renderAirNavSubmenu = (categories: any[], level: number = 0): any[] => {
+        const result: any[] = [];
+        categories.forEach((category: any) => {
+            result.push({
+                name: getTranslatedField(category, 'name', language),
+                href: `/air-navigation/${category.pageType}`,
+                id: category.id,
+                hasChildren: category.children && category.children.length > 0,
+                level: level
+            });
+            if (category.children && category.children.length > 0) {
+                result.push(...renderAirNavSubmenu(category.children, level + 1));
+            }
+        });
+        return result;
+    };
+
+    // Динамическое подменю "Аэронавигационная информация" (для обратной совместимости)
+    const airNavSubmenu = renderAirNavSubmenu(airNavTree);
+
+    const toggleAirNavCategory = (categoryId: number) => {
+        setExpandedAirNavCategories(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(categoryId)) {
+                newSet.delete(categoryId);
+            } else {
+                newSet.add(categoryId);
+            }
+            return newSet;
+        });
+    };
 
     // Динамическое подменю "Обращения"
     const appealsSubmenu = appealsCategories && Array.isArray(appealsCategories) && appealsCategories.length > 0
@@ -255,14 +344,42 @@ export const Sidebar = () => {
                         </Link>
                     </div>
 
-                    <nav className="flex-1 px-3 py-3 relative capitalize">
+                    <nav className="flex-1 px-3 py-3 relative">
                         <ul className="space-y-2">
                             {menuItems.map((item) => (
                                 <li
                                     key={item.href}
                                     className="relative"
-                                    onMouseEnter={() => (item.submenu && Array.isArray(item.submenu) && item.submenu.length > 0) ? setActiveSubmenu(item.href) : undefined}
-                                    onMouseLeave={() => setActiveSubmenu(null)}
+                                    ref={(el) => {
+                                        if (el) {
+                                            menuItemRefs.current.set(item.href, el);
+                                        } else {
+                                            menuItemRefs.current.delete(item.href);
+                                        }
+                                    }}
+                                    onMouseEnter={() => {
+                                        // Отменяем таймер закрытия, если он есть
+                                        if (closeMenuTimerRef.current) {
+                                            clearTimeout(closeMenuTimerRef.current);
+                                            closeMenuTimerRef.current = null;
+                                        }
+                                        
+                                        if (item.submenu && Array.isArray(item.submenu) && item.submenu.length > 0) {
+                                            const element = menuItemRefs.current.get(item.href);
+                                            if (element) {
+                                                const rect = element.getBoundingClientRect();
+                                                setMainMenuPosition({
+                                                    top: 0,
+                                                    left: rect.right
+                                                });
+                                            }
+                                            setActiveSubmenu(item.href);
+                                        }
+                                    }}
+                                    onMouseLeave={() => {
+                                        // Не закрываем меню сразу - даем время перейти на выпадающий список
+                                        // Закрытие будет обработано выпадающим меню или переходной областью
+                                    }}
                                 >
                                     <Link
                                         to={item.href}
@@ -270,30 +387,276 @@ export const Sidebar = () => {
                                     >
                                         {item.name}
                                     </Link>
-                                    {item.submenu && Array.isArray(item.submenu) && item.submenu.length > 0 && activeSubmenu === item.href && (
-                                        <div className="absolute left-full top-0 ml-1 w-64 bg-[#eff6ff] border rounded-md shadow-lg z-50 py-2">
-                                            <ul>
-                                                {item.submenu.map((subItem: any) => (
-                                                    <li key={subItem.href}>
-                                                        {subItem.external ? (
-                                                            <a
-                                                                href={subItem.href}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="block px-4 py-2 text-[#213659] hover:bg-[#B1D1E0]"
-                                                            >
-                                                                {subItem.name}
-                                                            </a>
-                                                        ) : (
-                                                            <Link
-                                                                to={subItem.href}
-                                                                className="block px-4 py-2 text-[#213659] hover:bg-[#B1D1E0]"
-                                                            >
-                                                                {subItem.name}
-                                                            </Link>
-                                                        )}
-                                                    </li>
-                                                ))}
+                                </li>
+                            ))}
+                        </ul>
+                    </nav>
+                    
+                    {/* Выпадающее меню через портал (первое меню) */}
+                    {activeSubmenu && mainMenuPosition && typeof window !== 'undefined' && (() => {
+                        const item = menuItems.find(i => i.href === activeSubmenu);
+                        if (!item || !item.submenu || !Array.isArray(item.submenu) || item.submenu.length === 0) return null;
+                        
+                        return createPortal(
+                            <>
+                                {/* Невидимая область для плавного перехода от пункта меню к выпадающему списку */}
+                                <div
+                                    className="fixed z-40"
+                                    style={{
+                                        top: '0px',
+                                        left: `${mainMenuPosition.left - 60}px`,
+                                        width: '60px',
+                                        height: '100vh',
+                                        pointerEvents: 'auto'
+                                    }}
+                                    onMouseEnter={() => {
+                                        // Отменяем таймер закрытия
+                                        if (closeMenuTimerRef.current) {
+                                            clearTimeout(closeMenuTimerRef.current);
+                                            closeMenuTimerRef.current = null;
+                                        }
+                                    }}
+                                    onMouseLeave={() => {
+                                        // Закрываем первое меню только если второе меню не открыто
+                                        if (!hoveredAirNavCategory) {
+                                            closeMenuTimerRef.current = setTimeout(() => {
+                                                setActiveSubmenu(null);
+                                                setMainMenuPosition(null);
+                                                closeMenuTimerRef.current = null;
+                                            }, 150);
+                                        }
+                                    }}
+                                />
+                                <div 
+                                    className="fixed bg-[#eff6ff] border rounded-md shadow-lg z-50 py-2"
+                                    style={{
+                                        top: '0px',
+                                        left: `${mainMenuPosition.left}px`,
+                                        width: '256px',
+                                        height: '100vh',
+                                        overflowY: 'auto',
+                                        overflowX: 'visible'
+                                    }}
+                                    onMouseEnter={() => {
+                                        // Отменяем таймер закрытия
+                                        if (closeMenuTimerRef.current) {
+                                            clearTimeout(closeMenuTimerRef.current);
+                                            closeMenuTimerRef.current = null;
+                                        }
+                                        
+                                        // Обновляем позицию при наведении на меню
+                                        const element = menuItemRefs.current.get(activeSubmenu);
+                                        if (element) {
+                                            const rect = element.getBoundingClientRect();
+                                            setMainMenuPosition({
+                                                top: 0,
+                                                left: rect.right
+                                            });
+                                        }
+                                    }}
+                                    onMouseLeave={() => {
+                                        // Закрываем первое меню только если второе меню не открыто
+                                        if (!hoveredAirNavCategory) {
+                                            closeMenuTimerRef.current = setTimeout(() => {
+                                                setActiveSubmenu(null);
+                                                setMainMenuPosition(null);
+                                                closeMenuTimerRef.current = null;
+                                            }, 200);
+                                        }
+                                    }}
+                                >
+                                <ul className="relative">
+                                    {item.href === '/air-navigation' ? (
+                                        // Специальный рендеринг для аэронавигационной информации с иерархией
+                                        airNavTree.length > 0 ? (
+                                            airNavTree.map((category: any) => {
+                                                const renderCategory = (cat: any, depth: number = 0) => {
+                                                    const hasChildren = cat.children && Array.isArray(cat.children) && cat.children.length > 0;
+                                                    const indent = depth * 16;
+                                                    
+                                                    return (
+                                                        <li 
+                                                            key={cat.id} 
+                                                            className="relative"
+                                                            ref={(el) => {
+                                                                if (el) {
+                                                                    categoryRefs.current.set(cat.id, el);
+                                                                } else {
+                                                                    categoryRefs.current.delete(cat.id);
+                                                                }
+                                                            }}
+                                                            onMouseEnter={(e) => {
+                                                                // Отменяем таймер закрытия первого меню
+                                                                if (closeMenuTimerRef.current) {
+                                                                    clearTimeout(closeMenuTimerRef.current);
+                                                                    closeMenuTimerRef.current = null;
+                                                                }
+                                                                
+                                                                // Отменяем таймер закрытия второго меню, если он есть
+                                                                if (closeChildMenuTimerRef.current) {
+                                                                    clearTimeout(closeChildMenuTimerRef.current);
+                                                                    closeChildMenuTimerRef.current = null;
+                                                                }
+                                                                
+                                                                if (hasChildren) {
+                                                                    const element = categoryRefs.current.get(cat.id);
+                                                                    if (element) {
+                                                                        const rect = element.getBoundingClientRect();
+                                                                        setChildMenuPosition({
+                                                                            top: 0,
+                                                                            left: rect.right
+                                                                        });
+                                                                        setHoveredAirNavCategory(cat.id);
+                                                                    }
+                                                                }
+                                                            }}
+                                                            onMouseLeave={() => {
+                                                                // Не закрываем меню сразу - даем время перейти на выпадающий список
+                                                            }}
+                                                        >
+                                                            <div className="flex items-center">
+                                                                <div style={{ width: `${indent}px` }} />
+                                                                {hasChildren && (
+                                                                    <ChevronRight className="w-3 h-3 mr-1 flex-shrink-0 text-gray-500" />
+                                                                )}
+                                                                {!hasChildren && <div className="w-4 flex-shrink-0" />}
+                                                                <Link
+                                                                    to={`/air-navigation/${cat.pageType}`}
+                                                                    className="flex-1 block px-2 py-2 text-[#213659] hover:bg-[#B1D1E0]"
+                                                                    onClick={() => {
+                                                                        setActiveSubmenu(null);
+                                                                        setMainMenuPosition(null);
+                                                                    }}
+                                                                >
+                                                                    {getTranslatedField(cat, 'name', language)}
+                                                                </Link>
+                                                            </div>
+                                                        </li>
+                                                    );
+                                                };
+                                                return renderCategory(category);
+                                            })
+                                        ) : (
+                                            <li className="px-4 py-2 text-sm text-gray-500">Нет категорий</li>
+                                        )
+                                    ) : (
+                                        // Обычный рендеринг для других подменю
+                                        item.submenu.map((subItem: any) => (
+                                            <li key={subItem.href}>
+                                                {subItem.external ? (
+                                                    <a
+                                                        href={subItem.href}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="block px-4 py-2 text-[#213659] hover:bg-[#B1D1E0]"
+                                                    >
+                                                        {subItem.name}
+                                                    </a>
+                                                ) : (
+                                                    <Link
+                                                        to={subItem.href}
+                                                        className="block px-4 py-2 text-[#213659] hover:bg-[#B1D1E0]"
+                                                    >
+                                                        {subItem.name}
+                                                    </Link>
+                                                )}
+                                            </li>
+                                        ))
+                                    )}
+                                </ul>
+                            </div>
+                            </>,
+                            document.body
+                        );
+                    })()}
+                    
+                    {/* Старый код - удаляем дубликат */}
+                    {/* {item.submenu && Array.isArray(item.submenu) && item.submenu.length > 0 && activeSubmenu === item.href && (
+                                        <div className="fixed bg-[#eff6ff] border rounded-md shadow-lg z-50 py-2" style={{ top: '0px', left: `${(document.querySelector('aside')?.getBoundingClientRect().right || 260) + 4}px`, width: '256px', height: '100vh', overflowY: 'auto', overflowX: 'visible' }}>
+                                            <ul className="relative">
+                                                {item.href === '/air-navigation' ? (
+                                                    // Специальный рендеринг для аэронавигационной информации с иерархией
+                                                    airNavTree.length > 0 ? (
+                                                        airNavTree.map((category: any) => {
+                                                            const renderCategory = (cat: any, depth: number = 0) => {
+                                                                const hasChildren = cat.children && Array.isArray(cat.children) && cat.children.length > 0;
+                                                                const indent = depth * 16;
+                                                                
+                                                                return (
+                                                                    <li 
+                                                                        key={cat.id} 
+                                                                        className="relative"
+                                                                        ref={(el) => {
+                                                                            if (el) {
+                                                                                categoryRefs.current.set(cat.id, el);
+                                                                            } else {
+                                                                                categoryRefs.current.delete(cat.id);
+                                                                            }
+                                                                        }}
+                                                                        onMouseEnter={(e) => {
+                                                                            if (hasChildren) {
+                                                                                const element = categoryRefs.current.get(cat.id);
+                                                                                if (element) {
+                                                                                    const rect = element.getBoundingClientRect();
+                                                                                    setChildMenuPosition({
+                                                                                        top: rect.top,
+                                                                                        left: rect.right + 4
+                                                                                    });
+                                                                                    setHoveredAirNavCategory(cat.id);
+                                                                                }
+                                                                            }
+                                                                        }}
+                                                                        onMouseLeave={() => {
+                                                                            setHoveredAirNavCategory(null);
+                                                                            setChildMenuPosition(null);
+                                                                        }}
+                                                                    >
+                                                                        <div className="flex items-center">
+                                                                            <div style={{ width: `${indent}px` }} />
+                                                                            {hasChildren && (
+                                                                                <ChevronRight className="w-3 h-3 mr-1 flex-shrink-0 text-gray-500" />
+                                                                            )}
+                                                                            {!hasChildren && <div className="w-4 flex-shrink-0" />}
+                                                                            <Link
+                                                                                to={`/air-navigation/${cat.pageType}`}
+                                                                                className="flex-1 block px-2 py-2 text-[#213659] hover:bg-[#B1D1E0]"
+                                                                                onClick={() => setActiveSubmenu(null)}
+                                                                            >
+                                                                                {getTranslatedField(cat, 'name', language)}
+                                                                            </Link>
+                                                                        </div>
+                                                                    </li>
+                                                                );
+                                                            };
+                                                            return renderCategory(category);
+                                                        })
+                                                    ) : (
+                                                        <li className="px-4 py-2 text-sm text-gray-500">Нет категорий</li>
+                                                    )
+                                                ) : (
+                                                    // Обычный рендеринг для других подменю
+                                                    item.submenu.map((subItem: any) => (
+                                                        <li key={subItem.href}>
+                                                            {subItem.external ? (
+                                                                <a
+                                                                    href={subItem.href}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="block px-4 py-2 text-[#213659] hover:bg-[#B1D1E0]"
+                                                                >
+                                                                    {subItem.name}
+                                                                </a>
+                                                            ) : (
+                                                                <Link
+                                                                    to={subItem.href}
+                                                                    className="block px-4 py-2 text-[#213659] hover:bg-[#B1D1E0]"
+                                                                >
+                                                                    {subItem.name}
+                                                                </Link>
+                                                            )}
+                                                        </li>
+                                                    ))
+                                                )}
                                             </ul>
                                         </div>
                                     )}
@@ -301,6 +664,253 @@ export const Sidebar = () => {
                             ))}
                         </ul>
                     </nav>
+                    
+                    {/* Выпадающий список дочерних категорий через портал */}
+                    {hoveredAirNavCategory && childMenuPosition && typeof window !== 'undefined' && (() => {
+                        // Находим категорию в дереве
+                        const findCategoryInTree = (categories: any[], id: number): any => {
+                            for (const cat of categories) {
+                                if (cat.id === id) return cat;
+                                if (cat.children && cat.children.length > 0) {
+                                    const found = findCategoryInTree(cat.children, id);
+                                    if (found) return found;
+                                }
+                            }
+                            return null;
+                        };
+                        
+                        const category = findCategoryInTree(airNavTree, hoveredAirNavCategory);
+                        if (!category || !category.children || category.children.length === 0) return null;
+                        
+                        return createPortal(
+                            <>
+                                {/* Невидимая область для плавного перехода от первого меню ко второму */}
+                                <div
+                                    className="fixed z-[90]"
+                                    style={{
+                                        top: '0px',
+                                        left: `${childMenuPosition.left - 60}px`,
+                                        width: '60px',
+                                        height: '100vh',
+                                        pointerEvents: 'auto'
+                                    }}
+                                    onMouseEnter={() => {
+                                        // Отменяем таймер закрытия первого меню
+                                        if (closeMenuTimerRef.current) {
+                                            clearTimeout(closeMenuTimerRef.current);
+                                            closeMenuTimerRef.current = null;
+                                        }
+                                        
+                                        // Отменяем таймер закрытия второго меню
+                                        if (closeChildMenuTimerRef.current) {
+                                            clearTimeout(closeChildMenuTimerRef.current);
+                                            closeChildMenuTimerRef.current = null;
+                                        }
+                                    }}
+                                    onMouseLeave={() => {
+                                        // Устанавливаем таймер закрытия второго меню
+                                        closeChildMenuTimerRef.current = setTimeout(() => {
+                                            setHoveredAirNavCategory(null);
+                                            setChildMenuPosition(null);
+                                            setHoveredChildCategory(null);
+                                            setChildCategoryMenuPosition(null);
+                                            closeChildMenuTimerRef.current = null;
+                                            
+                                            // После закрытия второго меню закрываем и первое
+                                            closeMenuTimerRef.current = setTimeout(() => {
+                                                setActiveSubmenu(null);
+                                                setMainMenuPosition(null);
+                                                closeMenuTimerRef.current = null;
+                                            }, 100);
+                                        }, 150);
+                                    }}
+                                />
+                                <div 
+                                    className="fixed bg-[#eff6ff] border rounded-md shadow-lg z-[100] min-w-[250px]"
+                                    style={{
+                                        top: '0px',
+                                        left: `${childMenuPosition.left}px`,
+                                        height: '100vh',
+                                        overflowY: 'auto',
+                                        maxHeight: '100vh'
+                                    }}
+                                    onMouseEnter={() => {
+                                        // Отменяем таймер закрытия первого меню
+                                        if (closeMenuTimerRef.current) {
+                                            clearTimeout(closeMenuTimerRef.current);
+                                            closeMenuTimerRef.current = null;
+                                        }
+                                        
+                                        // Отменяем таймер закрытия второго меню
+                                        if (closeChildMenuTimerRef.current) {
+                                            clearTimeout(closeChildMenuTimerRef.current);
+                                            closeChildMenuTimerRef.current = null;
+                                        }
+                                        
+                                        // Обновляем позицию при наведении на меню
+                                        const element = categoryRefs.current.get(hoveredAirNavCategory);
+                                        if (element) {
+                                            const rect = element.getBoundingClientRect();
+                                            setChildMenuPosition({
+                                                top: 0,
+                                                left: rect.right
+                                            });
+                                        }
+                                    }}
+                                    onMouseLeave={() => {
+                                        // Устанавливаем таймер закрытия второго меню
+                                        closeChildMenuTimerRef.current = setTimeout(() => {
+                                            setHoveredAirNavCategory(null);
+                                            setChildMenuPosition(null);
+                                            setHoveredChildCategory(null);
+                                            setChildCategoryMenuPosition(null);
+                                            closeChildMenuTimerRef.current = null;
+                                            
+                                            // После закрытия второго меню закрываем и первое
+                                            closeMenuTimerRef.current = setTimeout(() => {
+                                                setActiveSubmenu(null);
+                                                setMainMenuPosition(null);
+                                                closeMenuTimerRef.current = null;
+                                            }, 100);
+                                        }, 150);
+                                    }}
+                                >
+                                <div className="py-2">
+                                    <ul>
+                                        {category.children.map((child: any) => {
+                                            const hasChildren = child.children && Array.isArray(child.children) && child.children.length > 0;
+                                            return (
+                                                <li 
+                                                    key={child.id}
+                                                    ref={(el) => {
+                                                        if (el) {
+                                                            childCategoryRefs.current.set(child.id, el);
+                                                        } else {
+                                                            childCategoryRefs.current.delete(child.id);
+                                                        }
+                                                    }}
+                                                    onMouseEnter={() => {
+                                                        // Отменяем таймер закрытия, если он есть
+                                                        if (closeChildMenuTimerRef.current) {
+                                                            clearTimeout(closeChildMenuTimerRef.current);
+                                                            closeChildMenuTimerRef.current = null;
+                                                        }
+                                                        
+                                                        if (hasChildren) {
+                                                            const element = childCategoryRefs.current.get(child.id);
+                                                            if (element) {
+                                                                const rect = element.getBoundingClientRect();
+                                                                setChildCategoryMenuPosition({
+                                                                    top: 0,
+                                                                    left: rect.right
+                                                                });
+                                                                setHoveredChildCategory(child.id);
+                                                            }
+                                                        }
+                                                    }}
+                                                    onMouseLeave={() => {
+                                                        // Не закрываем меню сразу - даем время перейти на выпадающий список
+                                                    }}
+                                                    className="relative"
+                                                >
+                                                    <Link
+                                                        to={`/air-navigation/${child.pageType}`}
+                                                        className="flex items-center block px-4 py-2 text-[#213659] hover:bg-[#B1D1E0]"
+                                                        onClick={() => {
+                                                            setActiveSubmenu(null);
+                                                            setHoveredAirNavCategory(null);
+                                                            setChildMenuPosition(null);
+                                                            setHoveredChildCategory(null);
+                                                            setChildCategoryMenuPosition(null);
+                                                        }}
+                                                    >
+                                                        <span className="flex-1">{getTranslatedField(child, 'name', language)}</span>
+                                                        {hasChildren && (
+                                                            <ChevronRight className="w-3 h-3 ml-2 flex-shrink-0 text-gray-500" />
+                                                        )}
+                                                    </Link>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                </div>
+                            </div>
+                            </>,
+                            document.body
+                        );
+                    })()}
+                    
+                    {/* Выпадающий список дочерних подкатегорий через портал (второй уровень) */}
+                    {hoveredChildCategory && childCategoryMenuPosition && typeof window !== 'undefined' && (() => {
+                        // Находим категорию в дереве
+                        const findCategoryInTree = (categories: any[], id: number): any => {
+                            for (const cat of categories) {
+                                if (cat.id === id) return cat;
+                                if (cat.children && cat.children.length > 0) {
+                                    const found = findCategoryInTree(cat.children, id);
+                                    if (found) return found;
+                                }
+                            }
+                            return null;
+                        };
+                        
+                        // Ищем в дочерних элементах первой категории
+                        const parentCategory = findCategoryInTree(airNavTree, hoveredAirNavCategory);
+                        if (!parentCategory) return null;
+                        
+                        const category = findCategoryInTree(parentCategory.children || [], hoveredChildCategory);
+                        if (!category || !category.children || category.children.length === 0) return null;
+                        
+                        return createPortal(
+                            <div 
+                                className="fixed bg-[#eff6ff] border rounded-md shadow-lg z-[110] min-w-[250px]"
+                                style={{
+                                    top: '0px',
+                                    left: `${childCategoryMenuPosition.left}px`,
+                                    height: '100vh',
+                                    overflowY: 'auto',
+                                    maxHeight: '100vh'
+                                }}
+                                onMouseEnter={() => {
+                                    const element = childCategoryRefs.current.get(hoveredChildCategory);
+                                    if (element) {
+                                        const rect = element.getBoundingClientRect();
+                                        setChildCategoryMenuPosition({
+                                            top: 0,
+                                            left: rect.right + 4
+                                        });
+                                    }
+                                }}
+                                onMouseLeave={() => {
+                                    setHoveredChildCategory(null);
+                                    setChildCategoryMenuPosition(null);
+                                }}
+                            >
+                                <div className="py-2">
+                                    <ul>
+                                        {category.children.map((child: any) => (
+                                            <li key={child.id}>
+                                                <Link
+                                                    to={`/air-navigation/${child.pageType}`}
+                                                    className="block px-4 py-2 text-[#213659] hover:bg-[#B1D1E0]"
+                                                    onClick={() => {
+                                                        setActiveSubmenu(null);
+                                                        setHoveredAirNavCategory(null);
+                                                        setChildMenuPosition(null);
+                                                        setHoveredChildCategory(null);
+                                                        setChildCategoryMenuPosition(null);
+                                                    }}
+                                                >
+                                                    {getTranslatedField(child, 'name', language)}
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>,
+                            document.body
+                        );
+                    })()}
 
                     <div className="px-3 py-2 border-b">
                         <form onSubmit={handleSearch} className="flex items-center mb-2">
@@ -414,27 +1024,88 @@ export const Sidebar = () => {
                                         </summary>
                                         {item.submenu && Array.isArray(item.submenu) && item.submenu.length > 0 && (
                                             <ul className="pl-4 space-y-1 mt-1">
-                                                {item.submenu.map((subItem: any) => (
-                                                    <li key={subItem.href}>
-                                                        {subItem.external ? (
-                                                            <a
-                                                                href={subItem.href}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="block px-3 py-1 text-sm text-[#213659] hover:bg-[#B1D1E0] rounded"
-                                                            >
-                                                                {subItem.name}
-                                                            </a>
-                                                        ) : (
-                                                            <Link
-                                                                to={subItem.href}
-                                                                className="block px-3 py-1 text-sm text-[#213659] hover:bg-[#B1D1E0] rounded"
-                                                            >
-                                                                {subItem.name}
-                                                            </Link>
-                                                        )}
-                                                    </li>
-                                                ))}
+                                                {item.href === '/air-navigation' ? (
+                                                    // Специальный рендеринг для аэронавигационной информации с иерархией
+                                                    airNavTree.length > 0 ? (
+                                                        airNavTree.map((category: any) => {
+                                                            const renderCategory = (cat: any, depth: number = 0) => {
+                                                                const hasChildren = cat.children && Array.isArray(cat.children) && cat.children.length > 0;
+                                                                const isExpanded = expandedAirNavCategories.has(cat.id);
+                                                                const indent = depth * 12;
+                                                                
+                                                                return (
+                                                                    <li key={cat.id}>
+                                                                        <div className="flex items-center">
+                                                                            <div style={{ width: `${indent}px` }} />
+                                                                            {hasChildren && (
+                                                                                <button
+                                                                                    onClick={(e) => {
+                                                                                        e.preventDefault();
+                                                                                        toggleAirNavCategory(cat.id);
+                                                                                    }}
+                                                                                    className="p-1 hover:bg-[#B1D1E0] rounded mr-1 flex-shrink-0"
+                                                                                >
+                                                                                    {isExpanded ? (
+                                                                                        <ChevronDown className="w-3 h-3" />
+                                                                                    ) : (
+                                                                                        <ChevronRight className="w-3 h-3" />
+                                                                                    )}
+                                                                                </button>
+                                                                            )}
+                                                                            {!hasChildren && <div className="w-4 flex-shrink-0" />}
+                                                                            <Link
+                                                                                to={`/air-navigation/${cat.pageType}`}
+                                                                                className="flex-1 block px-2 py-1 text-sm text-[#213659] hover:bg-[#B1D1E0] rounded"
+                                                                            >
+                                                                                {getTranslatedField(cat, 'name', language)}
+                                                                            </Link>
+                                                                        </div>
+                                                                        {hasChildren && isExpanded && (
+                                                                            <ul className="pl-4 space-y-1 mt-1">
+                                                                                {cat.children.map((child: any) => (
+                                                                                    <li key={child.id}>
+                                                                                        <Link
+                                                                                            to={`/air-navigation/${child.pageType}`}
+                                                                                            className="block px-2 py-1 text-sm text-[#213659] hover:bg-[#B1D1E0] rounded"
+                                                                                        >
+                                                                                            {getTranslatedField(child, 'name', language)}
+                                                                                        </Link>
+                                                                                    </li>
+                                                                                ))}
+                                                                            </ul>
+                                                                        )}
+                                                                    </li>
+                                                                );
+                                                            };
+                                                            return renderCategory(category);
+                                                        })
+                                                    ) : (
+                                                        <li className="px-3 py-1 text-sm text-gray-500">Нет категорий</li>
+                                                    )
+                                                ) : (
+                                                    // Обычный рендеринг для других подменю
+                                                    item.submenu.map((subItem: any) => (
+                                                        <li key={subItem.href}>
+                                                            {subItem.external ? (
+                                                                <a
+                                                                    href={subItem.href}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="block px-3 py-1 text-sm text-[#213659] hover:bg-[#B1D1E0] rounded"
+                                                                >
+                                                                    {subItem.name}
+                                                                </a>
+                                                            ) : (
+                                                                <Link
+                                                                    to={subItem.href}
+                                                                    className="block px-3 py-1 text-sm text-[#213659] hover:bg-[#B1D1E0] rounded"
+                                                                >
+                                                                    {subItem.name}
+                                                                </Link>
+                                                            )}
+                                                        </li>
+                                                    ))
+                                                )}
                                             </ul>
                                         )}
                                     </details>

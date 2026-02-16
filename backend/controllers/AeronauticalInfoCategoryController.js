@@ -5,6 +5,13 @@ const AeronauticalInfoCategoryController = {
         try {
             const categories = await prisma.aeronauticalInfoCategory.findMany({
                 where: { isActive: true },
+                include: {
+                    parent: true,
+                    children: {
+                        where: { isActive: true },
+                        orderBy: { sortOrder: 'asc' }
+                    }
+                },
                 orderBy: { sortOrder: 'asc' }
             });
             res.json(categories);
@@ -41,7 +48,8 @@ const AeronauticalInfoCategoryController = {
                 descriptionBe, 
                 pageType, 
                 isActive, 
-                sortOrder 
+                sortOrder,
+                parentId
             } = req.body;
 
             const existingCategory = await prisma.aeronauticalInfoCategory.findUnique({
@@ -49,6 +57,16 @@ const AeronauticalInfoCategoryController = {
             });
             if (existingCategory) {
                 return res.status(400).json({ error: 'Page type already exists' });
+            }
+
+            // Проверка, что parentId существует, если указан
+            if (parentId) {
+                const parentCategory = await prisma.aeronauticalInfoCategory.findUnique({
+                    where: { id: parseInt(parentId) }
+                });
+                if (!parentCategory) {
+                    return res.status(400).json({ error: 'Parent category not found' });
+                }
             }
 
             const category = await prisma.aeronauticalInfoCategory.create({
@@ -61,7 +79,8 @@ const AeronauticalInfoCategoryController = {
                     descriptionBe,
                     pageType,
                     isActive: isActive !== undefined ? isActive : true,
-                    sortOrder: sortOrder || 0
+                    sortOrder: sortOrder || 0,
+                    parentId: parentId ? parseInt(parentId) : null
                 }
             });
             // Автосоздание страницы контента для новой подкатегории АНИ
@@ -89,6 +108,7 @@ const AeronauticalInfoCategoryController = {
     updateAeronauticalInfoCategory: async (req, res) => {
         try {
             const { id } = req.params;
+            const categoryId = parseInt(id);
             const { 
                 name, 
                 nameEn, 
@@ -98,14 +118,15 @@ const AeronauticalInfoCategoryController = {
                 descriptionBe, 
                 pageType, 
                 isActive, 
-                sortOrder 
+                sortOrder,
+                parentId
             } = req.body;
 
             if (pageType) {
                 const existingCategory = await prisma.aeronauticalInfoCategory.findFirst({
                     where: { 
                         pageType,
-                        id: { not: parseInt(id) }
+                        id: { not: categoryId }
                     }
                 });
                 if (existingCategory) {
@@ -113,8 +134,36 @@ const AeronauticalInfoCategoryController = {
                 }
             }
 
+            // Проверка, что parentId не указывает на саму категорию или её потомков
+            if (parentId) {
+                if (parseInt(parentId) === categoryId) {
+                    return res.status(400).json({ error: 'Category cannot be its own parent' });
+                }
+                // Проверка на циклические зависимости
+                const checkCircular = async (checkId, targetParentId) => {
+                    if (checkId === targetParentId) return true;
+                    const category = await prisma.aeronauticalInfoCategory.findUnique({
+                        where: { id: checkId },
+                        select: { parentId: true }
+                    });
+                    if (category && category.parentId) {
+                        return await checkCircular(category.parentId, targetParentId);
+                    }
+                    return false;
+                };
+                if (await checkCircular(parseInt(parentId), categoryId)) {
+                    return res.status(400).json({ error: 'Circular dependency detected' });
+                }
+                const parentCategory = await prisma.aeronauticalInfoCategory.findUnique({
+                    where: { id: parseInt(parentId) }
+                });
+                if (!parentCategory) {
+                    return res.status(400).json({ error: 'Parent category not found' });
+                }
+            }
+
             const category = await prisma.aeronauticalInfoCategory.update({
-                where: { id: parseInt(id) },
+                where: { id: categoryId },
                 data: {
                     name,
                     nameEn,
@@ -124,7 +173,8 @@ const AeronauticalInfoCategoryController = {
                     descriptionBe,
                     pageType,
                     isActive,
-                    sortOrder
+                    sortOrder,
+                    parentId: parentId !== undefined ? (parentId ? parseInt(parentId) : null) : undefined
                 }
             });
             res.json(category);

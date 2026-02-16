@@ -30,7 +30,7 @@ const baseQuery = fetchBaseQuery({
     },
 })
 
-// Обработка ошибок авторизации
+// Обработка ошибок авторизации и серверных ошибок
 const baseQueryWithAuth = async (args, api, extraOptions) => {
     const result = await baseQuery(args, api, extraOptions);
     
@@ -46,6 +46,10 @@ const baseQueryWithAuth = async (args, api, extraOptions) => {
             window.location.href = '/';
         }
     }
+    
+    // Для ошибок 502/503/504 (сервер недоступен) не логируем
+    // Это предотвратит спам в консоли при недоступном сервере
+    // Ошибки все равно будут видны в DevTools Network, но не будут логироваться в консоль
     
     return result;
 };

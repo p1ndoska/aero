@@ -5,12 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Building2, Settings } from 'lucide-react';
+import { Building2, Settings, FileText } from 'lucide-react';
+import type { TableCellContent } from '@/types/branch';
 import { toast } from 'sonner';
 import { useGetAboutCompanyPageContentQuery, useUpdateAboutCompanyPageContentMutation } from '@/app/services/aboutCompanyPageContentApi';
 import ContentConstructor from './admin/ContentConstructor';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getTranslatedField } from '../utils/translationHelpers';
+import { BASE_URL } from '@/constants';
 
 export default function AboutCompanyPage() {
   const { language, t } = useLanguage();
@@ -69,6 +71,65 @@ export default function AboutCompanyPage() {
       setIsContentEditorOpen(false);
     } catch (error: any) {
       toast.error(error.data?.error || t('error_saving_content'));
+    }
+  };
+
+  // Функция для рендеринга содержимого ячейки таблицы
+  const renderTableCell = (cell: TableCellContent | string) => {
+    if (typeof cell === 'string') {
+      return <span>{cell}</span>;
+    }
+
+    switch (cell.type) {
+      case 'text':
+        return <span>{cell.value}</span>;
+      case 'link':
+        return (
+          <a 
+            href={cell.href} 
+            target={cell.target || '_blank'}
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            {cell.text}
+          </a>
+        );
+      case 'image':
+        return (
+          <div className="flex justify-center">
+            <img 
+              src={cell.src} 
+              alt={cell.alt || ''}
+              className="max-w-full h-auto rounded object-contain"
+              style={{ maxHeight: '150px', maxWidth: '200px' }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+        );
+      case 'file':
+        const formatFileSize = (bytes: number) => {
+          if (bytes === 0) return '0 Bytes';
+          const k = 1024;
+          const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+          const i = Math.floor(Math.log(bytes) / Math.log(k));
+          return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        };
+        return (
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-gray-600" />
+            <a
+              href={cell.fileUrl}
+              download={cell.fileName}
+              className="text-blue-600 hover:text-blue-800 text-sm"
+            >
+              {cell.fileName} ({formatFileSize(cell.fileSize)})
+            </a>
+          </div>
+        );
+      default:
+        return <span>{typeof cell === 'string' ? cell : JSON.stringify(cell)}</span>;
     }
   };
 
@@ -153,9 +214,9 @@ export default function AboutCompanyPage() {
               <tbody>
                 {rows.map((row: any, rowIdx: number) => (
                   <tr key={row.id || rowIdx}>
-                    {row.cells.map((cell: string, cellIdx: number) => (
+                    {row.cells.map((cell: TableCellContent | string, cellIdx: number) => (
                       <td key={cellIdx} className="border border-gray-300 px-4 py-2">
-                        {cell}
+                        {renderTableCell(cell)}
                       </td>
                     ))}
                   </tr>
@@ -196,6 +257,34 @@ export default function AboutCompanyPage() {
             >
               {t('download')}
             </a>
+          </div>
+        );
+      case 'video':
+        if (!element.props?.videoSrc) return null;
+        // Если URL уже полный (начинается с http), используем как есть, иначе добавляем BASE_URL
+        const videoSrc = element.props.videoSrc.startsWith('http') 
+          ? element.props.videoSrc 
+          : `${BASE_URL}${element.props.videoSrc.startsWith('/') ? '' : '/'}${element.props.videoSrc}`;
+        return (
+          <div className="mb-6 flex flex-col items-center justify-center">
+            <div className="w-full max-w-full flex justify-center">
+              <video
+                src={videoSrc}
+                controls={element.props.controls !== false}
+                autoPlay={element.props.autoplay || false}
+                loop={element.props.loop || false}
+                muted={element.props.muted || false}
+                width={element.props.videoWidth || 800}
+                height={element.props.videoHeight || 450}
+                className="max-w-full h-auto rounded-lg mx-auto"
+                style={{ maxWidth: '100%', height: 'auto' }}
+              >
+                Ваш браузер не поддерживает видео.
+              </video>
+            </div>
+            {element.props.videoTitle && (
+              <p className="text-sm text-gray-500 mt-2 text-center">{element.props.videoTitle}</p>
+            )}
           </div>
         );
       default:

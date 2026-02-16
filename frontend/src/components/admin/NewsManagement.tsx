@@ -11,14 +11,16 @@ import { useGetAllNewsQuery, useCreateNewsMutation, useUpdateNewsMutation, useDe
 import { useGetCategoriesQuery } from '@/app/services/categoryApi';
 import type { NewsItem } from '@/types/News';
 import { BASE_URL } from '@/constants';
+import MultilingualContentEditor from './MultilingualContentEditor';
+import type { ContentElement } from '@/types/branch';
 
 interface CreateNewsRequest {
   name: string;
   nameEn?: string;
   nameBe?: string;
-  content?: string;
-  contentEn?: string;
-  contentBe?: string;
+  content?: ContentElement[] | string;
+  contentEn?: ContentElement[] | string;
+  contentBe?: ContentElement[] | string;
   photo?: File | null;
   images?: File[];
   categoryId: number;
@@ -45,9 +47,9 @@ export default function NewsManagement() {
     name: '',
     nameEn: '',
     nameBe: '',
-    content: '',
-    contentEn: '',
-    contentBe: '',
+    content: [],
+    contentEn: [],
+    contentBe: [],
     photo: null,
     images: [],
     categoryId: 0
@@ -58,9 +60,9 @@ export default function NewsManagement() {
       name: '',
       nameEn: '',
       nameBe: '',
-      content: '',
-      contentEn: '',
-      contentBe: '',
+      content: [],
+      contentEn: [],
+      contentBe: [],
       photo: null,
       images: [],
       categoryId: 0
@@ -103,9 +105,13 @@ export default function NewsManagement() {
       formDataToSend.append('name', formData.name);
       formDataToSend.append('nameEn', formData.nameEn || '');
       formDataToSend.append('nameBe', formData.nameBe || '');
-      formDataToSend.append('content', formData.content || '');
-      formDataToSend.append('contentEn', formData.contentEn || '');
-      formDataToSend.append('contentBe', formData.contentBe || '');
+      // Конвертируем массив контента в JSON строку
+      const contentRu = Array.isArray(formData.content) ? JSON.stringify(formData.content) : (formData.content || '');
+      const contentEn = Array.isArray(formData.contentEn) ? JSON.stringify(formData.contentEn) : (formData.contentEn || '');
+      const contentBe = Array.isArray(formData.contentBe) ? JSON.stringify(formData.contentBe) : (formData.contentBe || '');
+      formDataToSend.append('content', contentRu);
+      formDataToSend.append('contentEn', contentEn);
+      formDataToSend.append('contentBe', contentBe);
       formDataToSend.append('categoryId', formData.categoryId.toString());
       if (formData.photo) {
         formDataToSend.append('photo', formData.photo);
@@ -128,14 +134,47 @@ export default function NewsManagement() {
 
   const handleEdit = (newsItem: NewsItem) => {
     setEditingNews(newsItem);
+    // Парсим контент из JSON строки, если это массив конструктора
+    let contentRu: ContentElement[] | string = [];
+    let contentEn: ContentElement[] | string = [];
+    let contentBe: ContentElement[] | string = [];
+    
+    if (newsItem.content) {
+      try {
+        const parsed = JSON.parse(newsItem.content);
+        contentRu = Array.isArray(parsed) ? parsed : newsItem.content;
+      } catch {
+        contentRu = newsItem.content;
+      }
+    }
+    
+    if (newsItem.contentEn) {
+      try {
+        const parsed = JSON.parse(newsItem.contentEn);
+        contentEn = Array.isArray(parsed) ? parsed : newsItem.contentEn;
+      } catch {
+        contentEn = newsItem.contentEn;
+      }
+    }
+    
+    if (newsItem.contentBe) {
+      try {
+        const parsed = JSON.parse(newsItem.contentBe);
+        contentBe = Array.isArray(parsed) ? parsed : newsItem.contentBe;
+      } catch {
+        contentBe = newsItem.contentBe;
+      }
+    }
+    
     setFormData({
       name: newsItem.name,
       nameEn: newsItem.nameEn || '',
       nameBe: newsItem.nameBe || '',
-      content: newsItem.content || '',
-      contentEn: newsItem.contentEn || '',
-      contentBe: newsItem.contentBe || '',
+      content: contentRu,
+      contentEn: contentEn,
+      contentBe: contentBe,
       photo: null,
+      images: [],
       categoryId: newsItem.categoryId
     });
     setIsEditDialogOpen(true);
@@ -151,9 +190,13 @@ export default function NewsManagement() {
       formDataToSend.append('name', formData.name);
       formDataToSend.append('nameEn', formData.nameEn || '');
       formDataToSend.append('nameBe', formData.nameBe || '');
-      formDataToSend.append('content', formData.content || '');
-      formDataToSend.append('contentEn', formData.contentEn || '');
-      formDataToSend.append('contentBe', formData.contentBe || '');
+      // Конвертируем массив контента в JSON строку
+      const contentRu = Array.isArray(formData.content) ? JSON.stringify(formData.content) : (formData.content || '');
+      const contentEn = Array.isArray(formData.contentEn) ? JSON.stringify(formData.contentEn) : (formData.contentEn || '');
+      const contentBe = Array.isArray(formData.contentBe) ? JSON.stringify(formData.contentBe) : (formData.contentBe || '');
+      formDataToSend.append('content', contentRu);
+      formDataToSend.append('contentEn', contentEn);
+      formDataToSend.append('contentBe', contentBe);
       formDataToSend.append('categoryId', formData.categoryId.toString());
       if (formData.photo) {
         formDataToSend.append('photo', formData.photo);
@@ -252,37 +295,31 @@ export default function NewsManagement() {
           </Select>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="content">Содержание (RU)</Label>
-            <textarea
-              id="content"
-              value={formData.content || ''}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-              placeholder="Введите содержание новости"
-              className="w-full min-h-[300px] p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#213659] focus:border-[#213659] resize-vertical text-base"
-            />
-          </div>
-          <div>
-            <Label htmlFor="contentEn">Содержание (EN)</Label>
-            <textarea
-              id="contentEn"
-              value={formData.contentEn || ''}
-              onChange={(e) => setFormData({ ...formData, contentEn: e.target.value })}
-              placeholder="Enter news content"
-              className="w-full min-h-[300px] p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#213659] focus:border-[#213659] resize-vertical text-base"
-            />
-          </div>
-          <div>
-            <Label htmlFor="contentBe">Содержание (BE)</Label>
-            <textarea
-              id="contentBe"
-              value={formData.contentBe || ''}
-              onChange={(e) => setFormData({ ...formData, contentBe: e.target.value })}
-              placeholder="Увядзіце змест навіны"
-              className="w-full min-h-[300px] p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#213659] focus:border-[#213659] resize-vertical text-base"
-            />
-          </div>
+        <div>
+          <Label className="block text-sm font-medium mb-4">Содержание новости</Label>
+          <MultilingualContentEditor
+            titleRu=""
+            subtitleRu=""
+            contentRu={Array.isArray(formData.content) ? formData.content : []}
+            titleEn=""
+            subtitleEn=""
+            contentEn={Array.isArray(formData.contentEn) ? formData.contentEn : []}
+            titleBe=""
+            subtitleBe=""
+            contentBe={Array.isArray(formData.contentBe) ? formData.contentBe : []}
+            onTitleRuChange={() => {}}
+            onSubtitleRuChange={() => {}}
+            onContentRuChange={(content) => setFormData({ ...formData, content })}
+            onTitleEnChange={() => {}}
+            onSubtitleEnChange={() => {}}
+            onContentEnChange={(content) => setFormData({ ...formData, contentEn: content })}
+            onTitleBeChange={() => {}}
+            onSubtitleBeChange={() => {}}
+            onContentBeChange={(content) => setFormData({ ...formData, contentBe: content })}
+            titlePlaceholder=""
+            subtitlePlaceholder=""
+            hideTitleSubtitle={true}
+          />
         </div>
 
       <div>
@@ -376,7 +413,7 @@ export default function NewsManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full overflow-hidden">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-[#213659] mb-2 flex items-center justify-center gap-3">
           <Newspaper className="w-6 h-6" />
@@ -430,32 +467,37 @@ export default function NewsManagement() {
         ) : (
           <div className="grid gap-4">
             {news.map((newsItem) => (
-              <div key={newsItem.id} className="border border-gray-200 rounded-lg p-6 bg-white hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <h4 className="text-xl font-bold text-[#213659] mb-2">{newsItem.name}</h4>
+              <div key={newsItem.id} className="border border-gray-200 rounded-lg p-6 bg-white hover:shadow-md transition-shadow overflow-hidden">
+                <div className="flex justify-between items-start mb-4 gap-4">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xl font-bold text-[#213659] mb-2 break-words">{newsItem.name}</h4>
                     <div className="space-y-1">
-                      <p className="text-gray-600 flex items-center gap-2">
-                        <span className="font-medium">Категория:</span>
-                        {newsItem.newsCategory?.name || 'Не назначена'}
+                      <p className="text-gray-600 flex items-center gap-2 break-words">
+                        <span className="font-medium flex-shrink-0">Категория:</span>
+                        <span className="break-words">{newsItem.newsCategory?.name || 'Не назначена'}</span>
                       </p>
                       <p className="text-gray-600 flex items-center gap-2">
-                        <span className="font-medium">Дата создания:</span>
-                        {new Date(newsItem.createdAt).toLocaleDateString('ru-RU')}
+                        <span className="font-medium flex-shrink-0">Дата создания:</span>
+                        <span>{new Date(newsItem.createdAt).toLocaleDateString('ru-RU')}</span>
                       </p>
                       {newsItem.content && (
-                        <p className="text-gray-600">
+                        <p className="text-gray-600 break-words">
                           <span className="font-medium">Содержание:</span>
-                          <span className="ml-2">
-                            {newsItem.content.length > 100 
-                              ? `${newsItem.content.substring(0, 100)}...` 
-                              : newsItem.content}
+                          <span className="ml-2 break-words">
+                            {(() => {
+                              const contentStr = typeof newsItem.content === 'string' 
+                                ? newsItem.content 
+                                : JSON.stringify(newsItem.content);
+                              return contentStr.length > 100 
+                                ? `${contentStr.substring(0, 100)}...` 
+                                : contentStr;
+                            })()}
                           </span>
                         </p>
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-shrink-0">
                     <Button
                       variant="outline"
                       size="sm"

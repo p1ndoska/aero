@@ -5,8 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Briefcase, MapPin, Clock, FileText, Settings, Type, Heading, Image as ImageIcon, List, Mail } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Briefcase, MapPin, Clock, FileText, Settings, Type, Heading, Image as ImageIcon, List, Mail, Lock } from 'lucide-react';
+import { useLoginMutation } from '@/app/services/userApi';
+import { useDispatch } from 'react-redux';
+import { setCredentials } from '@/features/user/userSlice';
+import type { AppDispatch } from '@/store';
+import { Label } from '@/components/ui/label';
+import type { TableCellContent } from '@/types/branch';
 import { toast } from 'sonner';
 import { useGetAllVacanciesQuery } from '@/app/services/vacancyApi';
 import { useGetVacancyPageContentQuery, useUpdateVacancyPageContentMutation } from '@/app/services/vacancyPageContentApi';
@@ -14,9 +20,10 @@ import { useGetAllAboutCompanyCategoriesQuery } from '@/app/services/aboutCompan
 import { useLanguage } from '../contexts/LanguageContext';
 import { getTranslatedField } from '../utils/translationHelpers';
 import type { Vacancy } from '@/types/vacancy';
+import { BASE_URL } from '@/constants';
 import VacancyApplicationForm from './VacancyApplicationForm';
 import ResumeUploadForm from './ResumeUploadForm';
-import ContentConstructor from './admin/ContentConstructor';
+import MultilingualContentEditor from './admin/MultilingualContentEditor';
 
 export default function VacanciesPage() {
   const HR_EMAIL = 'office@ban.by';
@@ -92,9 +99,20 @@ export default function VacanciesPage() {
   const [isResumeUploadFormOpen, setIsResumeUploadFormOpen] = useState(false);
   const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
   
-  const [editableTitle, setEditableTitle] = useState('');
-  const [editableSubtitle, setEditableSubtitle] = useState('');
-  const [editableContent, setEditableContent] = useState([]);
+  // Состояния для русского языка
+  const [editableTitleRu, setEditableTitleRu] = useState('');
+  const [editableSubtitleRu, setEditableSubtitleRu] = useState('');
+  const [editableContentRu, setEditableContentRu] = useState<any[]>([]);
+  
+  // Состояния для английского языка
+  const [editableTitleEn, setEditableTitleEn] = useState('');
+  const [editableSubtitleEn, setEditableSubtitleEn] = useState('');
+  const [editableContentEn, setEditableContentEn] = useState<any[]>([]);
+  
+  // Состояния для белорусского языка
+  const [editableTitleBe, setEditableTitleBe] = useState('');
+  const [editableSubtitleBe, setEditableSubtitleBe] = useState('');
+  const [editableContentBe, setEditableContentBe] = useState<any[]>([]);
 
   const handleViewDetails = (vacancy: Vacancy) => {
     setSelectedVacancy(vacancy);
@@ -114,44 +132,75 @@ export default function VacanciesPage() {
 
   const handleOpenContentEditor = () => {
     if (pageContent) {
-      // Используем переведенное название категории, если доступно
-      const categoryTitle = vacanciesCategory ? getTranslatedField(vacanciesCategory, 'name', language) : null;
-      const contentTitle = getTranslatedField(pageContent, 'title', language);
-      const contentSubtitle = getTranslatedField(pageContent, 'subtitle', language);
-      const content = getTranslatedField(pageContent, 'content', language);
-      setEditableTitle(contentTitle || categoryTitle || 'Открытые вакансии');
-      setEditableSubtitle(contentSubtitle || '');
-      setEditableContent(Array.isArray(content) ? content : []);
+      // Загружаем данные для всех трех языков
+      setEditableTitleRu(pageContent.title || '');
+      setEditableSubtitleRu(pageContent.subtitle || '');
+      setEditableContentRu(Array.isArray(pageContent.content) ? pageContent.content : []);
+      
+      setEditableTitleEn(pageContent.titleEn || '');
+      setEditableSubtitleEn(pageContent.subtitleEn || '');
+      setEditableContentEn(Array.isArray(pageContent.contentEn) ? pageContent.contentEn : []);
+      
+      setEditableTitleBe(pageContent.titleBe || '');
+      setEditableSubtitleBe(pageContent.subtitleBe || '');
+      setEditableContentBe(Array.isArray(pageContent.contentBe) ? pageContent.contentBe : []);
+      
+      // Если заголовки пустые, используем название категории
+      if (!pageContent.title && !pageContent.titleEn && !pageContent.titleBe) {
+        if (vacanciesCategory) {
+          setEditableTitleRu(vacanciesCategory.name || 'Открытые вакансии');
+          setEditableTitleEn(vacanciesCategory.nameEn || '');
+          setEditableTitleBe(vacanciesCategory.nameBe || '');
+        } else {
+          setEditableTitleRu('Открытые вакансии');
+        }
+      }
+      
+      if (!pageContent.subtitle && !pageContent.subtitleEn && !pageContent.subtitleBe) {
+        if (vacanciesCategory) {
+          setEditableSubtitleRu(vacanciesCategory.description || '');
+          setEditableSubtitleEn(vacanciesCategory.descriptionEn || '');
+          setEditableSubtitleBe(vacanciesCategory.descriptionBe || '');
+        }
+      }
     } else {
-      // Используем переведенное название категории, если доступно
-      const categoryTitle = vacanciesCategory ? getTranslatedField(vacanciesCategory, 'name', language) : null;
-      setEditableTitle(categoryTitle || 'Открытые вакансии');
-      setEditableSubtitle('');
-      setEditableContent([]);
+      // Если контент не создан, используем название категории
+      if (vacanciesCategory) {
+        setEditableTitleRu(vacanciesCategory.name || 'Открытые вакансии');
+        setEditableTitleEn(vacanciesCategory.nameEn || '');
+        setEditableTitleBe(vacanciesCategory.nameBe || '');
+        setEditableSubtitleRu(vacanciesCategory.description || '');
+        setEditableSubtitleEn(vacanciesCategory.descriptionEn || '');
+        setEditableSubtitleBe(vacanciesCategory.descriptionBe || '');
+      } else {
+        setEditableTitleRu('Открытые вакансии');
+        setEditableTitleEn('');
+        setEditableTitleBe('');
+      }
+      setEditableSubtitleRu('');
+      setEditableSubtitleEn('');
+      setEditableSubtitleBe('');
+      setEditableContentRu([]);
+      setEditableContentEn([]);
+      setEditableContentBe([]);
     }
     setIsContentEditorOpen(true);
   };
 
   const handleSaveContent = async () => {
     try {
-      // Сохраняем переводы в зависимости от текущего языка
+      // Сохраняем все три языка
       const updateData: any = {
-        content: editableContent,
+        title: editableTitleRu,
+        titleEn: editableTitleEn,
+        titleBe: editableTitleBe,
+        subtitle: editableSubtitleRu,
+        subtitleEn: editableSubtitleEn,
+        subtitleBe: editableSubtitleBe,
+        content: editableContentRu,
+        contentEn: editableContentEn,
+        contentBe: editableContentBe,
       };
-
-      if (language === 'en') {
-        updateData.titleEn = editableTitle;
-        updateData.subtitleEn = editableSubtitle;
-        updateData.contentEn = editableContent;
-      } else if (language === 'be') {
-        updateData.titleBe = editableTitle;
-        updateData.subtitleBe = editableSubtitle;
-        updateData.contentBe = editableContent;
-      } else {
-        updateData.title = editableTitle;
-        updateData.subtitle = editableSubtitle;
-        updateData.content = editableContent;
-      }
 
       await updatePageContent(updateData).unwrap();
       toast.success(t('content_updated_successfully'));
@@ -159,6 +208,65 @@ export default function VacanciesPage() {
       setIsContentEditorOpen(false);
     } catch (error: any) {
       toast.error(error.data?.error || t('error_saving_content'));
+    }
+  };
+
+  // Функция для рендеринга содержимого ячейки таблицы
+  const renderTableCell = (cell: TableCellContent | string) => {
+    if (typeof cell === 'string') {
+      return <span>{cell}</span>;
+    }
+
+    switch (cell.type) {
+      case 'text':
+        return <span>{cell.value}</span>;
+      case 'link':
+        return (
+          <a 
+            href={cell.href} 
+            target={cell.target || '_blank'}
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            {cell.text}
+          </a>
+        );
+      case 'image':
+        return (
+          <div className="flex justify-center">
+            <img 
+              src={cell.src} 
+              alt={cell.alt || ''}
+              className="max-w-full h-auto rounded object-contain"
+              style={{ maxHeight: '150px', maxWidth: '200px' }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+        );
+      case 'file':
+        const formatFileSize = (bytes: number) => {
+          if (bytes === 0) return '0 Bytes';
+          const k = 1024;
+          const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+          const i = Math.floor(Math.log(bytes) / Math.log(k));
+          return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        };
+        return (
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-gray-600" />
+            <a
+              href={cell.fileUrl}
+              download={cell.fileName}
+              className="text-blue-600 hover:text-blue-800 text-sm"
+            >
+              {cell.fileName} ({formatFileSize(cell.fileSize)})
+            </a>
+          </div>
+        );
+      default:
+        return <span>{typeof cell === 'string' ? cell : JSON.stringify(cell)}</span>;
     }
   };
 
@@ -245,9 +353,9 @@ export default function VacanciesPage() {
               <tbody>
                 {rows.map((row: any, rowIdx: number) => (
                   <tr key={row.id || rowIdx}>
-                    {row.cells.map((cell: string, cellIdx: number) => (
+                    {row.cells.map((cell: TableCellContent | string, cellIdx: number) => (
                       <td key={cellIdx} className="border border-gray-300 px-4 py-2">
-                        {cell}
+                        {renderTableCell(cell)}
                       </td>
                     ))}
                   </tr>
@@ -288,6 +396,34 @@ export default function VacanciesPage() {
             >
               Скачать
             </a>
+          </div>
+        );
+      case 'video':
+        if (!element.props?.videoSrc) return null;
+        // Если URL уже полный (начинается с http), используем как есть, иначе добавляем BASE_URL
+        const videoSrc = element.props.videoSrc.startsWith('http') 
+          ? element.props.videoSrc 
+          : `${BASE_URL}${element.props.videoSrc.startsWith('/') ? '' : '/'}${element.props.videoSrc}`;
+        return (
+          <div className="mb-6 flex flex-col items-center justify-center">
+            <div className="w-full max-w-full flex justify-center">
+              <video
+                src={videoSrc}
+                controls={element.props.controls !== false}
+                autoPlay={element.props.autoplay || false}
+                loop={element.props.loop || false}
+                muted={element.props.muted || false}
+                width={element.props.videoWidth || 800}
+                height={element.props.videoHeight || 450}
+                className="max-w-full h-auto rounded-lg mx-auto"
+                style={{ maxWidth: '100%', height: 'auto' }}
+              >
+                Ваш браузер не поддерживает видео.
+              </video>
+            </div>
+            {element.props.videoTitle && (
+              <p className="text-sm text-gray-500 mt-2 text-center">{element.props.videoTitle}</p>
+            )}
           </div>
         );
       default:
@@ -344,17 +480,136 @@ export default function VacanciesPage() {
         {/* Дополнительный контент */}
         {(() => {
           const translatedContent = pageContent ? getTranslatedField(pageContent, 'content', language) : null;
-          return translatedContent && Array.isArray(translatedContent) && translatedContent.length > 0 ? (
+          if (!translatedContent || !Array.isArray(translatedContent) || translatedContent.length === 0) {
+            return null;
+          }
+
+          // Проверяем, есть ли приватные блоки
+          const hasPrivateContent = translatedContent.some((element: any) => {
+            const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
+            return isPrivate;
+          });
+
+          return (
             <div className="w-full mb-12">
               <div className="py-8">
-                {translatedContent.map((element: any) => (
-                  <div key={element.id}>
-                    {renderContentElement(element)}
-                  </div>
-                ))}
+                {/* Если есть приватный контент и пользователь не авторизован, показываем одну форму логина */}
+                {hasPrivateContent && !isAuthenticated ? (
+                  <>
+                    {/* Показываем публичный контент */}
+                    {translatedContent.map((element: any, index: number) => {
+                      const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
+                      if (!isPrivate) {
+                        return (
+                          <div key={element.id || `content-${index}`}>
+                            {renderContentElement(element)}
+                          </div>
+                        );
+                      }
+                      return null;
+                    })}
+                    
+                    {/* Показываем одну форму логина для всех приватных блоков */}
+                    <div className="mb-4 p-6 bg-white border border-gray-300 rounded-lg shadow-sm">
+                      <div className="flex items-center gap-3 text-gray-800 mb-4">
+                        <svg className="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                        </svg>
+                        <div>
+                          <p className="font-medium text-lg">Доступ ограничен</p>
+                          <p className="text-sm text-gray-600">
+                            {language === 'en' 
+                              ? 'This content is available only to authorized users. Please log in to view.' 
+                              : language === 'be' 
+                              ? 'Гэты кантэнт даступны толькі аўтарызаваным карыстальнікам. Калі ласка, увайдзіце ў сістэму для прагляду.'
+                              : 'Этот контент доступен только авторизованным пользователям. Пожалуйста, войдите в систему для просмотра.'
+                            }
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <form onSubmit={async (e: React.FormEvent) => {
+                        e.preventDefault();
+                        try {
+                          const result = await login({ email: loginEmail, password: loginPassword }).unwrap();
+                          if (result.token) {
+                            dispatch(setCredentials({
+                              user: result.user,
+                              token: result.token,
+                              mustChangePassword: (result as any).mustChangePassword || false
+                            }));
+                            toast.success(`Добро пожаловать, ${result.user.email}! 🎉`);
+                            setLoginEmail('');
+                            setLoginPassword('');
+                          }
+                        } catch (err: any) {
+                          toast.error(err.data?.error || 'Ошибка входа');
+                        }
+                      }} className="space-y-4 mt-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="login-email" className="text-gray-700">
+                            Email
+                          </Label>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+                            <Input
+                              id="login-email"
+                              type="email"
+                              placeholder="Введите email"
+                              value={loginEmail}
+                              onChange={(e) => setLoginEmail(e.target.value)}
+                              required
+                              className="pl-10"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="login-password" className="text-gray-700">
+                            Пароль
+                          </Label>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+                            <Input
+                              id="login-password"
+                              type="password"
+                              placeholder="Введите пароль"
+                              value={loginPassword}
+                              onChange={(e) => setLoginPassword(e.target.value)}
+                              required
+                              className="pl-10"
+                            />
+                          </div>
+                        </div>
+
+                        <Button
+                          type="submit"
+                          className="w-full bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                          disabled={isLoggingIn}
+                        >
+                          {isLoggingIn ? 'Вход...' : 'Войти'}
+                        </Button>
+                      </form>
+                    </div>
+                  </>
+                ) : (
+                  // Если пользователь авторизован или нет приватного контента, показываем весь контент
+                  translatedContent.map((element: any, index: number) => {
+                    const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
+                    // Показываем приватный контент только авторизованным пользователям
+                    if (isPrivate && !isAuthenticated) {
+                      return null;
+                    }
+                    return (
+                      <div key={element.id || `content-${index}`}>
+                        {renderContentElement(element)}
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
-          ) : null;
+          );
         })()}
 
         {/* Список вакансий */}
@@ -579,32 +834,33 @@ export default function VacanciesPage() {
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-white min-w-0 dialog-content">
           <DialogHeader>
             <DialogTitle>{t('manage_vacancies_page_content')}</DialogTitle>
+            <DialogDescription>
+              {t('edit_page_content_description') || 'Редактируйте заголовок, подзаголовок и основной контент страницы на трех языках.'}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">{t('page_title')}</label>
-              <Input
-                value={editableTitle}
-                onChange={(e) => setEditableTitle(e.target.value)}
-                placeholder={t('open_vacancies')}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">{t('subtitle')}</label>
-              <Textarea
-                value={editableSubtitle}
-                onChange={(e) => setEditableSubtitle(e.target.value)}
-                placeholder={t('join_our_team_placeholder')}
-                className="min-h-[80px] resize-none"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-4">{t('additional_content')}</label>
-              <ContentConstructor
-                content={editableContent}
-                onChange={setEditableContent}
-              />
-            </div>
+            <MultilingualContentEditor
+              titleRu={editableTitleRu}
+              subtitleRu={editableSubtitleRu}
+              contentRu={editableContentRu}
+              titleEn={editableTitleEn}
+              subtitleEn={editableSubtitleEn}
+              contentEn={editableContentEn}
+              titleBe={editableTitleBe}
+              subtitleBe={editableSubtitleBe}
+              contentBe={editableContentBe}
+              onTitleRuChange={setEditableTitleRu}
+              onSubtitleRuChange={setEditableSubtitleRu}
+              onContentRuChange={setEditableContentRu}
+              onTitleEnChange={setEditableTitleEn}
+              onSubtitleEnChange={setEditableSubtitleEn}
+              onContentEnChange={setEditableContentEn}
+              onTitleBeChange={setEditableTitleBe}
+              onSubtitleBeChange={setEditableSubtitleBe}
+              onContentBeChange={setEditableContentBe}
+              titlePlaceholder={t('open_vacancies') || 'Открытые вакансии'}
+              subtitlePlaceholder={t('join_our_team_placeholder') || 'Присоединяйтесь к нашей команде профессионалов...'}
+            />
             <div className="flex justify-end gap-3 pt-4 border-t">
               <Button variant="outline" onClick={() => setIsContentEditorOpen(false)}>
                 {t('cancel')}

@@ -3,6 +3,38 @@ import {BASE_URL} from "@/constants";
 import { useLanguage } from "../contexts/LanguageContext";
 import { getTranslatedField } from "../utils/translationHelpers";
 import { Link } from "react-router-dom";
+import type { ContentElement } from "@/types/branch";
+
+// Функция для извлечения текста из контента конструктора
+const extractTextFromContent = (content: string | null | undefined): string => {
+    if (!content) return '';
+    
+    // Пытаемся распарсить как JSON
+    try {
+        const parsed = JSON.parse(content);
+        if (Array.isArray(parsed)) {
+            // Это массив элементов конструктора
+            const textParts: string[] = [];
+            parsed.forEach((element: ContentElement) => {
+                // Игнорируем видео и изображения, берем только текстовые элементы
+                if (element.type === 'paragraph' || element.type === 'heading') {
+                    if (element.content) {
+                        textParts.push(element.content);
+                    }
+                } else if (element.type === 'list' && element.props?.items) {
+                    // Для списков берем элементы
+                    textParts.push(...element.props.items);
+                }
+            });
+            return textParts.join(' ').trim();
+        }
+    } catch (e) {
+        // Не JSON, возвращаем как есть
+    }
+    
+    // Если это не JSON или не массив, возвращаем как строку
+    return typeof content === 'string' ? content : '';
+};
 
 export const NewsCard = ({news}:{news:NewsItem})=>{
     const { language, t } = useLanguage();
@@ -21,6 +53,9 @@ export const NewsCard = ({news}:{news:NewsItem})=>{
     // Получаем переведенные поля
     const translatedName = getTranslatedField(news, 'name', language);
     const translatedContent = getTranslatedField(news, 'content', language);
+    
+    // Извлекаем текст из контента, исключая видео и другие не-текстовые элементы
+    const displayContent = extractTextFromContent(translatedContent);
 
     return(
         <Link to={`/news/${news.id}`} className="block hover:shadow-lg transition-shadow duration-300">
@@ -45,7 +80,7 @@ export const NewsCard = ({news}:{news:NewsItem})=>{
                         {translatedName}
                     </h3>
                     <p className='text-[#213659] text-sm mb-3 line-clamp-2'>
-                        {translatedContent || t('no_data')}
+                        {displayContent || t('no_data')}
                     </p>
                 </div>
             </div>
