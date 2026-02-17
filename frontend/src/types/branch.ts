@@ -1,7 +1,7 @@
 // Типы для элементов конструктора контента
 export interface ContentElement {
   id: string;
-  type: 'paragraph' | 'heading' | 'link' | 'image' | 'list' | 'table' | 'file' | 'video';
+  type: 'paragraph' | 'heading' | 'link' | 'image' | 'list' | 'table' | 'file' | 'video' | 'page-link';
   content: string;
   isPrivate?: boolean; // Только для авторизованных пользователей
   props?: {
@@ -11,6 +11,10 @@ export interface ContentElement {
     textIndent?: boolean; // Красная строка для абзаца
     href?: string; // Для ссылок
     target?: string; // Для ссылок
+    pageId?: number; // ID внутренней страницы (для page-link)
+    pageSlug?: string; // Slug внутренней страницы (для page-link)
+    pageTitle?: string; // Название страницы (для page-link) - заголовок новой страницы
+    linkText?: string; // Текст ссылки (для page-link) - что отображается на текущей странице
     alt?: string; // Для изображений
     src?: string; // Для изображений
     items?: string[]; // Для списков

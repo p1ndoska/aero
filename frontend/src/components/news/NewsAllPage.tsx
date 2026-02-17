@@ -299,6 +299,7 @@ export const NewsAllPage: React.FC = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
+            <div className="bg-blue-50 backdrop-blur-sm rounded-2xl shadow-lg p-8">
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-3xl font-bold text-[#213659]">{t('all_news')}</h1>
                 {isAdmin && (
@@ -762,6 +763,7 @@ export const NewsAllPage: React.FC = () => {
                     <p className="text-gray-500">{t('create_first_news')}</p>
                 </div>
             )}
+            </div>
         </div>
     );
 };

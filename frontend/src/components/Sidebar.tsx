@@ -428,7 +428,7 @@ export const Sidebar = () => {
                                     }}
                                 />
                                 <div 
-                                    className="fixed bg-[#eff6ff] border rounded-md shadow-lg z-50 py-2"
+                                    className="fixed bg-[#eff6ff] border shadow-lg z-50 py-2"
                                     style={{
                                         top: '0px',
                                         left: `${mainMenuPosition.left}px`,
@@ -636,25 +636,25 @@ export const Sidebar = () => {
                                                 ) : (
                                                     // Обычный рендеринг для других подменю
                                                     item.submenu.map((subItem: any) => (
-                                                        <li key={subItem.href}>
-                                                            {subItem.external ? (
-                                                                <a
-                                                                    href={subItem.href}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="block px-4 py-2 text-[#213659] hover:bg-[#B1D1E0]"
-                                                                >
-                                                                    {subItem.name}
-                                                                </a>
-                                                            ) : (
-                                                                <Link
-                                                                    to={subItem.href}
-                                                                    className="block px-4 py-2 text-[#213659] hover:bg-[#B1D1E0]"
-                                                                >
-                                                                    {subItem.name}
-                                                                </Link>
-                                                            )}
-                                                        </li>
+                                                    <li key={subItem.href}>
+                                                        {subItem.external ? (
+                                                            <a
+                                                                href={subItem.href}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="block px-4 py-2 text-[#213659] hover:bg-[#B1D1E0]"
+                                                            >
+                                                                {subItem.name}
+                                                            </a>
+                                                        ) : (
+                                                            <Link
+                                                                to={subItem.href}
+                                                                className="block px-4 py-2 text-[#213659] hover:bg-[#B1D1E0]"
+                                                            >
+                                                                {subItem.name}
+                                                            </Link>
+                                                        )}
+                                                    </li>
                                                     ))
                                                 )}
                                             </ul>
@@ -1085,25 +1085,25 @@ export const Sidebar = () => {
                                                 ) : (
                                                     // Обычный рендеринг для других подменю
                                                     item.submenu.map((subItem: any) => (
-                                                        <li key={subItem.href}>
-                                                            {subItem.external ? (
-                                                                <a
-                                                                    href={subItem.href}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="block px-3 py-1 text-sm text-[#213659] hover:bg-[#B1D1E0] rounded"
-                                                                >
-                                                                    {subItem.name}
-                                                                </a>
-                                                            ) : (
-                                                                <Link
-                                                                    to={subItem.href}
-                                                                    className="block px-3 py-1 text-sm text-[#213659] hover:bg-[#B1D1E0] rounded"
-                                                                >
-                                                                    {subItem.name}
-                                                                </Link>
-                                                            )}
-                                                        </li>
+                                                    <li key={subItem.href}>
+                                                        {subItem.external ? (
+                                                            <a
+                                                                href={subItem.href}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="block px-3 py-1 text-sm text-[#213659] hover:bg-[#B1D1E0] rounded"
+                                                            >
+                                                                {subItem.name}
+                                                            </a>
+                                                        ) : (
+                                                            <Link
+                                                                to={subItem.href}
+                                                                className="block px-3 py-1 text-sm text-[#213659] hover:bg-[#B1D1E0] rounded"
+                                                            >
+                                                                {subItem.name}
+                                                            </Link>
+                                                        )}
+                                                    </li>
                                                     ))
                                                 )}
                                             </ul>

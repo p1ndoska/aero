@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Trash2, MoveUp, MoveDown, Type, Heading, Link, Image, Upload, List, Table, FileText, Lock, Video } from 'lucide-react';
+import { Plus, Trash2, MoveUp, MoveDown, Type, Heading, Link, Image, Upload, List, Table, FileText, Lock, Video, FileStack } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUploadImageMutation, useUploadFileMutation } from '@/app/services/uploadApi';
 import type { ContentElement, TableCellContent, TableRow } from '@/types/branch';
@@ -21,7 +21,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set());
   const [editingCell, setEditingCell] = useState<{elementId: string; rowIndex: number; cellIndex: number} | null>(null);
-  const [activeTab, setActiveTab] = useState<'content' | 'form'>('content');
+  const [activeTab, setActiveTab] = useState<'content' | 'form' | 'pages'>('content');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cellFileInputRef = useRef<HTMLInputElement>(null);
   const [uploadImage] = useUploadImageMutation();
@@ -98,6 +98,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
              type === 'table' ? { headers: [], rows: [] } :
              type === 'file' ? { fileName: '', fileUrl: '', fileType: '', fileSize: 0 } :
              type === 'video' ? { videoSrc: '', videoTitle: '', videoWidth: 800, videoHeight: 450, controls: true, autoplay: false, loop: false, muted: false } :
+             type === 'page-link' ? { pageId: undefined, pageSlug: '', pageTitle: '', linkText: '' } :
              type === 'paragraph' ? { textIndent: false, textAlign: 'left' } : {}
     };
     
@@ -624,6 +625,34 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
               )}
             </div>
           );
+        case 'page-link':
+          if (!element.content && !element.props?.linkText) {
+            return (
+              <div className="p-4 border-2 border-dashed border-gray-300 rounded">
+                <p className="text-gray-500 text-sm">Ссылка на страницу не настроена</p>
+              </div>
+            );
+          }
+          const linkText = element.content || element.props?.linkText || 'Ссылка на страницу';
+          const pageTitle = element.props?.pageTitle || '';
+          const pageSlug = element.props?.pageSlug || (pageTitle ? pageTitle.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : '');
+          return (
+            <div className="p-3 border border-gray-300 rounded bg-blue-50">
+              <a 
+                href={`/page/${pageSlug}`}
+                className="text-blue-600 hover:text-blue-800 underline flex items-center gap-2"
+              >
+                <FileStack className="w-4 h-4" />
+                {linkText}
+              </a>
+              {pageTitle && (
+                <p className="text-xs text-gray-500 mt-1">Название страницы: {pageTitle}</p>
+              )}
+              {pageSlug && (
+                <p className="text-xs text-gray-500 mt-1">URL: /page/{pageSlug}</p>
+              )}
+            </div>
+          );
         default:
           return (
             <div className="p-4 border-2 border-dashed border-gray-300 rounded">
@@ -651,6 +680,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
               {element.type === 'table' && <Table className="w-4 h-4" />}
               {element.type === 'file' && <FileText className="w-4 h-4" />}
               {element.type === 'video' && <Video className="w-4 h-4" />}
+              {element.type === 'page-link' && <FileStack className="w-4 h-4" />}
               {element.type === 'heading' ? `Заголовок H${element.props?.level || 2}` : 
                element.type === 'paragraph' ? 'Абзац' :
                element.type === 'link' ? 'Ссылка' : 
@@ -658,7 +688,8 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                element.type === 'list' ? 'Список' :
                element.type === 'table' ? 'Таблица' :
                element.type === 'file' ? 'Файл' :
-               element.type === 'video' ? 'Видео' : 'Неизвестный'}
+               element.type === 'video' ? 'Видео' :
+               element.type === 'page-link' ? 'Ссылка на страницу' : 'Неизвестный'}
             </CardTitle>
             <div className="flex gap-1">
               <Button
@@ -703,33 +734,57 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
           {isEditing ? (
             <div className="space-y-3">
               {/* Основной контент */}
-              <div>
-                <Label htmlFor={`content-${element.id}`}>
-                  {element.type === 'heading' ? 'Текст заголовка' :
-                   element.type === 'paragraph' ? 'Текст абзаца' :
-                   element.type === 'link' ? 'Текст ссылки' : 'Описание изображения'}
-                </Label>
-                {element.type === 'paragraph' ? (
-                  <Textarea
-                    id={`content-${element.id}`}
-                    value={element.content}
-                    onChange={(e) => updateElement(element.id, { content: e.target.value })}
-                    placeholder="Введите текст абзаца"
-                    className="min-h-[100px] resize-none break-words"
-                  />
-                ) : (
+              {element.type !== 'page-link' && (
+                <div>
+                  <Label htmlFor={`content-${element.id}`}>
+                    {element.type === 'heading' ? 'Текст заголовка' :
+                     element.type === 'paragraph' ? 'Текст абзаца' :
+                     element.type === 'link' ? 'Текст ссылки' : 'Описание изображения'}
+                  </Label>
+                  {element.type === 'paragraph' ? (
+                    <Textarea
+                      id={`content-${element.id}`}
+                      value={element.content}
+                      onChange={(e) => updateElement(element.id, { content: e.target.value })}
+                      placeholder="Введите текст абзаца"
+                      className="min-h-[100px] resize-none break-words"
+                    />
+                  ) : (
+                    <Input
+                      id={`content-${element.id}`}
+                      value={element.content}
+                      onChange={(e) => updateElement(element.id, { content: e.target.value })}
+                      placeholder={
+                        element.type === 'heading' ? 'Введите заголовок' :
+                        element.type === 'link' ? 'Введите текст ссылки' : 'Введите описание изображения'
+                      }
+                      className="break-words min-w-0 force-break"
+                    />
+                  )}
+                </div>
+              )}
+              
+              {element.type === 'page-link' && (
+                <div>
+                  <Label htmlFor={`content-${element.id}`}>Текст ссылки</Label>
                   <Input
                     id={`content-${element.id}`}
                     value={element.content}
-                    onChange={(e) => updateElement(element.id, { content: e.target.value })}
-                    placeholder={
-                      element.type === 'heading' ? 'Введите заголовок' :
-                      element.type === 'link' ? 'Введите текст ссылки' : 'Введите описание изображения'
-                    }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      updateElement(element.id, { 
+                        content: value,
+                        props: { ...element.props, linkText: value }
+                      });
+                    }}
+                    placeholder="Введите текст ссылки (что будет отображаться на странице)"
                     className="break-words min-w-0 force-break"
                   />
-                )}
-              </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Этот текст будет отображаться как ссылка на текущей странице
+                  </p>
+                </div>
+              )}
 
               {/* Специфичные настройки для каждого типа */}
               {element.type === 'heading' && (
@@ -1581,6 +1636,50 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                 </div>
               )}
 
+              {element.type === 'page-link' && (
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor={`pageTitle-${element.id}`}>Название страницы</Label>
+                    <Input
+                      id={`pageTitle-${element.id}`}
+                      value={element.content || ''}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        updateElement(element.id, { 
+                          content: value, // Сохраняем в content (текст ссылки)
+                          props: { ...element.props, pageTitle: value }
+                        });
+                      }}
+                      placeholder="Введите название страницы (будет заголовком новой страницы)"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Это название будет заголовком создаваемой страницы и текстом ссылки
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor={`pageSlug-${element.id}`}>URL страницы (slug)</Label>
+                    <Input
+                      id={`pageSlug-${element.id}`}
+                      value={element.props?.pageSlug || ''}
+                      onChange={(e) => updateElement(element.id, { 
+                        props: { ...element.props, pageSlug: e.target.value }
+                      })}
+                      placeholder="например: new-page"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Если оставить пустым, будет создан автоматически на основе названия
+                    </p>
+                  </div>
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded">
+                    <p className="text-sm text-blue-800">
+                      <strong>Примечание:</strong> При сохранении страницы будет создана новая динамическая страница 
+                      с указанным названием и URL. Новая страница будет иметь конструктор контента для редактирования.
+                      Логика создания будет реализована позже.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Настройка приватности блока */}
               <div className="border-t pt-4 mt-4">
                 <div className="flex items-center space-x-2">
@@ -1622,7 +1721,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
 
   return (
     <div className="space-y-4 content-constructor-container">
-      {/* Вкладки конструктора: Контент / Форма */}
+      {/* Вкладки конструктора: Контент / Форма / Внутренние страницы */}
       <div className="sticky top-0 z-10 bg-white border-b pb-2 pt-2 -mx-4 px-4">
         <div className="flex gap-4">
           <button
@@ -1646,6 +1745,17 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
             onClick={() => setActiveTab('form')}
           >
             Форма
+          </button>
+          <button
+            type="button"
+            className={`text-sm pb-1 border-b-2 transition-colors ${
+              activeTab === 'pages'
+                ? 'border-[#213659] text-[#213659] font-semibold'
+                : 'border-transparent text-gray-500 hover:text-[#213659]'
+            }`}
+            onClick={() => setActiveTab('pages')}
+          >
+            Внутренние страницы
           </button>
         </div>
       </div>
@@ -1768,6 +1878,16 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
         >
           <Video className="w-4 h-4" />
           Видео
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => addElement('page-link')}
+          className="flex items-center gap-2"
+        >
+          <FileStack className="w-4 h-4" />
+          Ссылка на страницу
         </Button>
         </div>
       </div>

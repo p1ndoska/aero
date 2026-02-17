@@ -189,7 +189,7 @@ export default function AboutCompanyCategoryManagement() {
                     size="sm"
                     onClick={() => handleDelete(category.id)}
                     disabled={isDeleting}
-                    className="bg-red-600 hover:bg-red-700 text-white"
+                    className="bg-red-600 hover:bg-red-700 text-white border border-solid border-white"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>

@@ -386,7 +386,7 @@ export default function NewsManagement() {
                   />
                   <Button
                     type="button"
-                    variant="destructive"
+                    variant="outline"
                     size="sm"
                     className="absolute -top-2 -right-2 w-6 h-6 p-0"
                     onClick={() => removeImage(index)}

@@ -442,7 +442,7 @@ const ServiceRequestManagement: React.FC = () => {
                         {getServiceNameByType(request.serviceType)}
                       </div>
                     </TableCell>
-                    <TableCell className="max-w-xs truncate">{request.subject}</TableCell>
+                    <TableCell className="max-w-[280px] truncate">{request.subject}</TableCell>
                     <TableCell>
                       <Badge className={getPriorityColor(request.priority)}>
                         {getPriorityText(request.priority)}
@@ -586,10 +586,10 @@ const ServiceRequestManagement: React.FC = () => {
                     <Label>Услуга</Label>
                     <div className="font-medium">{getServiceNameByType(selectedRequest.serviceType)}</div>
                   </div>
-                  <div>
-                    <Label>Тема</Label>
-                    <div className="font-medium">{selectedRequest.subject}</div>
-                  </div>
+                    <div>
+                      <Label>Тема</Label>
+                      <div className="font-medium">{selectedRequest.subject}</div>
+                    </div>
                   <div>
                     <Label>Приоритет</Label>
                     <Badge className={getPriorityColor(selectedRequest.priority)}>

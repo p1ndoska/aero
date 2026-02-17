@@ -31,7 +31,7 @@ export default function CategoryListPage<TCategory extends Record<string, any>>(
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       <div className="container mx-auto px-4 py-12">
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-8">
+        <div className="bg-blue-50 backdrop-blur-sm rounded-2xl shadow-lg p-8">
           <div className="text-center mb-10">
             <h1 className="text-4xl font-bold text-gray-900 mb-2">{title}</h1>
             {subtitle && (
@@ -55,7 +55,7 @@ export default function CategoryListPage<TCategory extends Record<string, any>>(
                   const description = getTranslatedField(category, 'description', language) || category.description;
                   const slug = String(category[slugField]);
                   return (
-                    <Card key={slug} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-blue-50 border border-gray-200">
+                    <Card key={slug} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white border border-gray-200">
                       <CardHeader>
                         <CardTitle className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
                           {name}

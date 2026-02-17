@@ -475,6 +475,22 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
             )}
           </div>
         );
+      case 'page-link':
+        const linkText = element.content || element.props?.linkText;
+        if (!linkText) return null;
+        const pageTitle = element.props?.pageTitle || '';
+        const pageSlug = element.props?.pageSlug || (pageTitle ? pageTitle.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : '');
+        if (!pageSlug) return null;
+        return (
+          <div className="mb-6">
+            <a 
+              href={`/page/${pageSlug}`}
+              className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-2"
+            >
+              {linkText}
+            </a>
+          </div>
+        );
       default:
         return null;
     }

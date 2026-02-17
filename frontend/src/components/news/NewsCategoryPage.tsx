@@ -296,7 +296,7 @@ export const NewsCategoryPage: React.FC<Props> = ({ title, categoryName }) => {
                                     <Edit className="w-4 h-4 mr-1" />
                                     Редактировать
                                 </Button>
-                                <Button variant="destructive" size="sm" onClick={() => handleDeleteClick(news)}>
+                                <Button variant="outline" size="sm" onClick={() => handleDeleteClick(news)}>
                                     <Trash2 className="w-4 h-4" />
                                 </Button>
                             </div>

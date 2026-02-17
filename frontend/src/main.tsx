@@ -116,6 +116,7 @@ const router = createBrowserRouter([
             { path: "/appeals/:pageType", element: <DynamicPage pageType="appeals" /> },
             { path: "/appeals/voluntary-report", element: <VoluntaryReportForm /> },
             { path: "/services/:pageType", element: <DynamicPage pageType="services" /> },
+            { path: "/page/:pageSlug", element: <DynamicPage /> },
             { path: "/search", element: <SearchResults /> },
             { path: "/cookie-policy", element: <CookiePolicyPage /> },
             { path: "/profile", element: <UserProfile /> },

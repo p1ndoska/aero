@@ -236,7 +236,7 @@ const CategoriesAdminPage = () => {
                                                         onClick={() => handleDelete(c.id, c.name)} 
                                                         disabled={isDeleting}
                                                         title={`Удалить категорию "${c.name}"`}
-                                                        className="bg-red-600 hover:bg-red-700 text-white border border-red-600 px-3 py-1 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px] flex items-center justify-center gap-1"
+                                                        className="bg-white hover:bg-gray-50 text-red-600 border border-solid border-red-600 px-3 py-1 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px] flex items-center justify-center gap-1"
                                                     >
                                                         <Trash2 className="w-4 h-4" /> Удалить
                                                     </button>
