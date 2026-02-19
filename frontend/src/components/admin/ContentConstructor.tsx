@@ -735,33 +735,33 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
             <div className="space-y-3">
               {/* Основной контент */}
               {element.type !== 'page-link' && (
-                <div>
-                  <Label htmlFor={`content-${element.id}`}>
-                    {element.type === 'heading' ? 'Текст заголовка' :
-                     element.type === 'paragraph' ? 'Текст абзаца' :
-                     element.type === 'link' ? 'Текст ссылки' : 'Описание изображения'}
-                  </Label>
-                  {element.type === 'paragraph' ? (
-                    <Textarea
-                      id={`content-${element.id}`}
-                      value={element.content}
-                      onChange={(e) => updateElement(element.id, { content: e.target.value })}
-                      placeholder="Введите текст абзаца"
-                      className="min-h-[100px] resize-none break-words"
-                    />
-                  ) : (
-                    <Input
-                      id={`content-${element.id}`}
-                      value={element.content}
-                      onChange={(e) => updateElement(element.id, { content: e.target.value })}
-                      placeholder={
-                        element.type === 'heading' ? 'Введите заголовок' :
-                        element.type === 'link' ? 'Введите текст ссылки' : 'Введите описание изображения'
-                      }
-                      className="break-words min-w-0 force-break"
-                    />
-                  )}
-                </div>
+              <div>
+                <Label htmlFor={`content-${element.id}`}>
+                  {element.type === 'heading' ? 'Текст заголовка' :
+                   element.type === 'paragraph' ? 'Текст абзаца' :
+                   element.type === 'link' ? 'Текст ссылки' : 'Описание изображения'}
+                </Label>
+                {element.type === 'paragraph' ? (
+                  <Textarea
+                    id={`content-${element.id}`}
+                    value={element.content}
+                    onChange={(e) => updateElement(element.id, { content: e.target.value })}
+                    placeholder="Введите текст абзаца"
+                    className="min-h-[100px] resize-none break-words"
+                  />
+                ) : (
+                  <Input
+                    id={`content-${element.id}`}
+                    value={element.content}
+                    onChange={(e) => updateElement(element.id, { content: e.target.value })}
+                    placeholder={
+                      element.type === 'heading' ? 'Введите заголовок' :
+                      element.type === 'link' ? 'Введите текст ссылки' : 'Введите описание изображения'
+                    }
+                    className="break-words min-w-0 force-break"
+                  />
+                )}
+              </div>
               )}
               
               {element.type === 'page-link' && (
@@ -1798,7 +1798,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
       />
 
       <div className="sticky top-[60px] z-10 bg-white py-2 -mx-4 px-4 border-b">
-        <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-wrap">
         <Button
           type="button"
           variant="outline"

@@ -455,6 +455,9 @@ router.get('/statistics', authenticationToken, checkRole(['SUPER_ADMIN']), Stati
 //questionnaire routes
 router.use('/questionnaire', require('./questionnaire'));
 
+//SAI questionnaire routes
+router.use('/sai-questionnaire', require('./saiQuestionnaire'));
+
 //voluntary report routes
 router.use('/voluntary-report', require('./voluntaryReport'));
 

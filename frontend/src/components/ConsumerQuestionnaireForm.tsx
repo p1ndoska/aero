@@ -43,7 +43,6 @@ const ConsumerQuestionnaireForm: React.FC = () => {
 
   const { t } = useLanguage();
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [antispamCode, setAntispamCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -51,15 +50,14 @@ const ConsumerQuestionnaireForm: React.FC = () => {
       ...prev,
       [field]: value
     }));
-  };
-
-  const generateNewCaptcha = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < 7; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    // Очищаем ошибку для этого поля
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
-    setCaptchaCode(result);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -75,8 +73,9 @@ const ConsumerQuestionnaireForm: React.FC = () => {
     }
 
     // Проверка капчи
-    if (formData.antispamCode !== captchaCode) {
-      toast.error(t('invalid_security_code'));
+    if (!validateCaptcha(formData.antispamCode)) {
+      toast.error(t('invalid_security_code') || 'Неверный код безопасности');
+      setErrors({ antispamCode: t('invalid_security_code') || 'Неверный код безопасности' });
       return;
     }
 
@@ -119,7 +118,7 @@ const ConsumerQuestionnaireForm: React.FC = () => {
         completionDate: '',
         antispamCode: ''
       });
-      generateNewCaptcha();
+      setErrors({});
       
     } catch (error) {
       console.error('Ошибка отправки анкеты:', error);
@@ -138,9 +137,10 @@ const ConsumerQuestionnaireForm: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <Card className="bg-white rounded-lg shadow-lg">
-        <CardContent className="p-8">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12">
+      <div className="container mx-auto px-4 max-w-4xl">
+        <Card className="bg-white rounded-lg shadow-lg">
+          <CardContent className="p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-[#213659] mb-4">
               {t('consumer_questionnaire_title')}
@@ -371,17 +371,14 @@ const ConsumerQuestionnaireForm: React.FC = () => {
                 />
               </div>
               {/* Капча */}
-              <Captcha
-                  value={antispamCode}
-                  onChange={(value) => {
-                    setAntispamCode(value);
-                    if (errors.captcha) {
-                      setErrors({ ...errors, captcha: '' });
-                    }
-                  }}
-                  error={errors.captcha}
+              <div className="space-y-2">
+                <Captcha
+                  value={formData.antispamCode}
+                  onChange={(value) => handleInputChange('antispamCode', value)}
+                  error={errors.antispamCode}
                   required
-              />
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -402,8 +399,9 @@ const ConsumerQuestionnaireForm: React.FC = () => {
           {t('required_fields_note')}
         </div>
       </form>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

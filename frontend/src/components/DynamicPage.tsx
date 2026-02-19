@@ -24,6 +24,8 @@ import { BASE_URL } from '@/constants';
 import SocialWorkPage from './SocialWorkPage';
 import VoluntaryReportForm from './VoluntaryReportForm';
 import ConsumerQuestionnaireForm from './ConsumerQuestionnaireForm';
+import SAIConsumerQuestionnaireForm from './SAIConsumerQuestionnaireForm';
+import QuestionnaireOfTheConsumerOfAirNavigationServices from './QuestionnaireOfTheConsumerOfAirNavigationServices';
 import { getRolePermissions } from '@/utils/roleUtils';
 import type { TableCellContent } from '@/types/branch';
 import { useLoginMutation } from '@/app/services/userApi';
@@ -59,6 +61,16 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
   // Для анкеты потребителя аэронавигационных услуг используем специальную форму
   if (actualPageType === 'appeals' && (actualUrlPageType === 'consumer-questionnaire' || actualUrlPageType === 'customer-questionnaire')) {
     return <ConsumerQuestionnaireForm />;
+  }
+  
+  // Для анкеты потребителя САИ используем специальную форму
+  if (actualPageType === 'aeronautical' && actualUrlPageType === 'quality-questionnaire-sai') {
+    return <SAIConsumerQuestionnaireForm />;
+  }
+  
+  // Для анкеты потребителя аэронавигационных услуг Республики Беларусь
+  if (actualPageType === 'aeronautical' && actualUrlPageType === 'quality-questionnaire-aeronautical') {
+    return <QuestionnaireOfTheConsumerOfAirNavigationServices />;
   }
   
   const { isAuthenticated, user } = useSelector((state: any) => state.auth);
