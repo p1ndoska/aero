@@ -61,8 +61,11 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       secretKey: ${secretKey:-}
     ports:
-      - "8080:80"
-      - "8443:443"
+      # ВАЖНО: Для работы по DNS на стандартных портах используйте 80:80 и 443:443
+      # Если порты 80/443 заняты на Windows, используйте 8080:80 и 8443:443
+      # и открывайте сайт как http://aero.ban.by:8080
+      - "80:80"
+      - "443:443"
       - "${BACKEND_PORT:-3000}:3000"
     volumes:
       - ./backend/uploads:/app/backend/uploads
