@@ -42,7 +42,7 @@ const generateDomainUrls = (domain) => {
   urls.push(`http://${domain}`);
   urls.push(`https://${domain}`);
   // Добавляем с портами 80, 443, 8080, 8443
-  urls.push(`http://${domain}/:80`);
+  urls.push(`http://${domain}:80`);
   urls.push(`https://${domain}:443`);
   urls.push(`http://${domain}:8080`);
   urls.push(`https://${domain}:8443`);
