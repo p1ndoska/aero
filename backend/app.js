@@ -11,7 +11,7 @@ const { initializeDatabase } = require('./scripts/initialize-db');
 const app = express();
 
 // CORS middleware
-// Разрешаем запросы с локального dev сервера и Docker
+// Разрешаем запросы с локального dev сервера, Docker и доменного имени
 const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 
 // Базовый список разрешенных origins
@@ -23,18 +23,49 @@ const baseOrigins = [
   'http://192.168.1.39:8443',
 ];
 
+// Функция для извлечения домена из URL
+const extractDomain = (url) => {
+  if (!url) return null;
+  try {
+    const urlObj = new URL(url);
+    return urlObj.hostname;
+  } catch (e) {
+    return null;
+  }
+};
+
+// Функция для генерации всех возможных вариантов URL для домена
+const generateDomainUrls = (domain) => {
+  if (!domain) return [];
+  const urls = [];
+  // Добавляем HTTP и HTTPS варианты
+  urls.push(`http://${domain}`);
+  urls.push(`https://${domain}`);
+  // Добавляем с портами 80, 443, 8080, 8443
+  urls.push(`http://${domain}:80`);
+  urls.push(`https://${domain}:443`);
+  urls.push(`http://${domain}:8080`);
+  urls.push(`https://${domain}:8443`);
+  return urls;
+};
+
+// Извлекаем домен из FRONTEND_URL
+const frontendDomain = extractDomain(process.env.FRONTEND_URL);
+const domainUrls = frontendDomain ? generateDomainUrls(frontendDomain) : [];
+
 // В development режиме добавляем FRONTEND_URL только если он не https://localhost:8443
-// В production используем FRONTEND_URL как есть
+// В production используем FRONTEND_URL и все варианты домена
 const allowedOrigins = isDevelopment
-  ? [...baseOrigins, process.env.FRONTEND_URL].filter(url => 
+  ? [...baseOrigins, process.env.FRONTEND_URL, ...domainUrls].filter(url => 
       url && url !== 'https://localhost:8443' // Исключаем Docker URL в dev режиме
     )
-  : [...baseOrigins, process.env.FRONTEND_URL].filter(Boolean);
+  : [...baseOrigins, process.env.FRONTEND_URL, ...domainUrls].filter(Boolean);
 
 // Логируем разрешенные origins при запуске
 console.log('🌐 CORS настроен. Разрешенные origins:', allowedOrigins);
 console.log('🌐 NODE_ENV:', process.env.NODE_ENV || 'не установлен (считается development)');
 console.log('🌐 FRONTEND_URL:', process.env.FRONTEND_URL || 'не установлен');
+console.log('🌐 Frontend Domain:', frontendDomain || 'не определен');
 console.log('🌐 isDevelopment:', isDevelopment);
 
 app.use(cors({
@@ -61,12 +92,28 @@ app.use(cors({
       console.log(` CORS: Origin разрешен из списка: ${origin}`);
       // ВАЖНО: Возвращаем сам origin, а не true
       return callback(null, origin);
-    } else {
-      // Логируем отклоненные запросы
-      console.log(` CORS: Запрос отклонен от origin: ${origin}`);
-      console.log(`   Разрешенные origins: ${allowedOrigins.join(', ')}`);
-      callback(new Error('Not allowed by CORS'));
     }
+    
+    // Проверяем, соответствует ли origin домену из FRONTEND_URL
+    if (frontendDomain) {
+      try {
+        const originUrl = new URL(origin);
+        const originDomain = originUrl.hostname;
+        
+        // Разрешаем запросы с того же домена (без учета поддоменов для основного домена)
+        if (originDomain === frontendDomain || originDomain.endsWith('.' + frontendDomain)) {
+          console.log(` CORS: Origin разрешен по домену: ${origin} (домен: ${originDomain})`);
+          return callback(null, origin);
+        }
+      } catch (e) {
+        // Если не удалось распарсить URL, продолжаем проверку
+      }
+    }
+    
+    // Логируем отклоненные запросы
+    console.log(` CORS: Запрос отклонен от origin: ${origin}`);
+    console.log(`   Разрешенные origins: ${allowedOrigins.join(', ')}`);
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
