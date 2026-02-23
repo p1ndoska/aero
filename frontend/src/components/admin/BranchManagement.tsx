@@ -7,11 +7,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Edit, Trash2, X, Building2, Upload, FolderOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGetAllBranchesQuery, useCreateBranchMutation, useUpdateBranchMutation, useDeleteBranchMutation } from '@/app/services/branchApi';
+import { useUploadImageMutation } from '@/app/services/uploadApi';
 import ContentConstructor from './ContentConstructor';
 import type { Branch, CreateBranchRequest } from '@/types/branch';
 import { useSelector } from 'react-redux';
 import { BASE_URL } from '@/constants';
-import { fetchWithAuth } from '@/utils/apiHelpers';
 
 type PhoneItem = { 
   label: string; 
@@ -726,7 +726,7 @@ export default function BranchManagement() {
   }
 
   async function uploadImages(files: File[]): Promise<string[]> {
-    const urls: string[] = [];
+    const uploadedUrls: string[] = [];
     const maxSize = 20 * 1024 * 1024; // 20MB
     
     for (const file of files) {
@@ -736,46 +736,21 @@ export default function BranchManagement() {
         continue;
       }
       
-      const fd = new FormData();
-      fd.append('image', file);
+      const formData = new FormData();
+      formData.append('image', file);
+      
       try {
-        // Используем BASE_URL для консистентности с остальным приложением
-        const resp = await fetchWithAuth(`${BASE_URL}/api/upload`, {
-          method: 'POST',
-          body: fd,
-        });
-        if (resp.ok) {
-          const json = await resp.json();
-          urls.push(json.url);
-        } else {
-          let errorMessage = 'Не удалось загрузить изображение';
-          try {
-            const errorData = await resp.json();
-            if (errorData.error) {
-              errorMessage = errorData.error;
-            }
-          } catch {
-            // Если не удалось распарсить JSON, используем текст ответа
-            const text = await resp.text().catch(() => '');
-            if (text.includes('File too large')) {
-              errorMessage = 'Файл слишком большой. Максимальный размер: 20MB';
-            } else if (text.includes('MulterError')) {
-              errorMessage = 'Ошибка загрузки файла';
-            }
-          }
-          console.error('Ошибка загрузки изображения:', file.name, errorMessage);
-          toast.error(errorMessage);
-        }
-      } catch (err: any) {
-        // Не показываем ошибку, если это 401 (уже выполнен logout и перенаправление)
-        if (err?.message?.includes('Unauthorized')) {
-          return urls;
-        }
-        console.error('Ошибка загрузки изображения:', err);
-        toast.error('Ошибка соединения при загрузке изображения');
+        const result = await uploadImage(formData).unwrap();
+        uploadedUrls.push(result.url);
+      } catch (error: any) {
+        console.error('Ошибка загрузки изображения:', file.name, error);
+        toast.error(error.data?.error || 'Не удалось загрузить изображение');
+        // Выбрасываем ошибку, чтобы остановить процесс обновления
+        throw error;
       }
     }
-    return urls;
+    
+    return uploadedUrls;
   }
 
   // Функции для прокрутки стрелками
