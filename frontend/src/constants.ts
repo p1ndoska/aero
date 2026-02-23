@@ -7,29 +7,17 @@ const getApiUrl = () => {
     return import.meta.env.VITE_API_URL || 'http://localhost:3000';
   }
   
-  // В production:
-  // 1. Если указан VITE_API_URL - используем его (для случаев, когда API на другом домене)
-  // 2. Иначе используем window.location.origin (тот же домен, с которого загружен frontend)
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-  
-  // Используем тот же домен, с которого загружен frontend
-  // Это работает для случаев, когда frontend и backend на одном домене
+  // В production всегда используем window.location.origin для автоматического определения домена
+  // Это позволяет работать как по IP, так и по DNS без пересборки
   if (typeof window !== 'undefined') {
-    // Если используется нестандартный порт (8443), добавляем его
-    const origin = window.location.origin;
-    const port = window.location.port;
-    // Если порт 8443 (HTTPS) или 80/443 (стандартные), используем origin как есть
-    // Иначе добавляем порт
-    if (port && port !== '80' && port !== '443' && port !== '') {
-      return `${window.location.protocol}//${window.location.hostname}:${port}`;
-    }
-    return origin;
+    // window.location.origin уже включает протокол, хост и порт (если нестандартный)
+    // Например: https://aero.ban.by:8443 или https://192.168.1.100:8443
+    return window.location.origin;
   }
   
   // Fallback для SSR (если будет использоваться)
-  return 'https://localhost:8443';
+  // Используем VITE_API_URL только как fallback, если window недоступен
+  return import.meta.env.VITE_API_URL || 'https://localhost:8443';
 };
 
 export const BASE_URL = getApiUrl();

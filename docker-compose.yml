@@ -71,8 +71,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # Укажите тут ваш домен для сборки Vite
-        VITE_API_URL: ${VITE_API_URL:-https://aero.ban.by:8443}
+        # VITE_API_URL используется только для dev режима или как fallback
+        # В production используется window.location.origin для автоматического определения домена
+        # Это позволяет работать как по IP, так и по DNS без пересборки
+        VITE_API_URL: ${VITE_API_URL:-}
     container_name: aero-frontend
     environment:
       # Пути для Nginx (настраиваются через переменные окружения)
