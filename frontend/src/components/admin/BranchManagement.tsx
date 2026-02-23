@@ -234,12 +234,21 @@ export default function BranchManagement() {
           return;
         }
       }
+      // Объединяем существующие изображения (которые остались после удаления) и новые загруженные
+      // formData.images уже содержит только те изображения, которые не были удалены пользователем
+      let allImages = [...(formData.images || []), ...uploadedImages];
+      
       // Перемещаем главное изображение в начало массива
-      if (uploadedImages.length > 0 && mainImageIndex < uploadedImages.length) {
-        const mainImg = uploadedImages[mainImageIndex];
-        uploadedImages = uploadedImages.filter((_, idx) => idx !== mainImageIndex);
-        uploadedImages.unshift(mainImg);
+      // mainImageIndex учитывает как существующие, так и новые изображения
+      const existingImagesCount = (formData.images || []).length;
+      if (allImages.length > 0 && mainImageIndex >= 0 && mainImageIndex < allImages.length) {
+        const mainImg = allImages[mainImageIndex];
+        // Удаляем главное изображение из текущей позиции
+        allImages = allImages.filter((_, idx) => idx !== mainImageIndex);
+        // Ставим его в начало
+        allImages.unshift(mainImg);
       }
+      
       // Преобразуем content в JSON строку для отправки
       // Всегда отправляем контент, даже если массив пустой
       const dataToSend = {
@@ -248,7 +257,7 @@ export default function BranchManagement() {
         contentEn: formData.contentEn ? JSON.stringify(formData.contentEn) : JSON.stringify([]),
         contentBe: formData.contentBe ? JSON.stringify(formData.contentBe) : JSON.stringify([]),
         services: { phones: normalizedPhones },
-        images: [...(formData.images || []), ...uploadedImages]
+        images: allImages
       } as any;
       
       await updateBranch({ id: editingBranch.id, branchData: dataToSend }).unwrap();
