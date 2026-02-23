@@ -1,4 +1,5 @@
 const prisma = require('../prisma/prisma-client');
+const { normalizeUploadPath } = require('../config/paths');
 
 const BranchController = {
     // Получить все филиалы
@@ -103,6 +104,17 @@ const BranchController = {
         }
 
         try {
+            // Нормализуем пути к изображениям при создании
+            let normalizedImages = [];
+            if (images !== undefined && Array.isArray(images)) {
+                normalizedImages = images.map(img => {
+                    if (typeof img === 'string' && img) {
+                        return normalizeUploadPath(img) || img;
+                    }
+                    return img;
+                }).filter(img => img !== null && img !== undefined);
+            }
+
             const newBranch = await prisma.branch.create({
                 data: {
                     name,
@@ -119,7 +131,7 @@ const BranchController = {
                     workHours: workHours !== undefined ? workHours : null,
                     services: services !== undefined ? services : null,
                     coordinates: coordinates !== undefined ? coordinates : null,
-                    images: images !== undefined ? images : [],
+                    images: normalizedImages,
                     // Для контента: если передана строка (JSON), парсим её; если null или undefined, сохраняем null
                     content: content !== undefined ? (typeof content === 'string' ? JSON.parse(content) : content) : null,
                     contentEn: contentEn !== undefined ? (typeof contentEn === 'string' ? JSON.parse(contentEn) : contentEn) : null,
@@ -163,6 +175,29 @@ const BranchController = {
                 return res.status(404).json({ error: 'Филиал не найден' });
             }
 
+            // Нормализуем пути к изображениям, если они переданы
+            let normalizedImages = existingBranch.images || [];
+            if (images !== undefined) {
+                if (Array.isArray(images)) {
+                    normalizedImages = images.map(img => {
+                        if (typeof img === 'string' && img.trim()) {
+                            const normalized = normalizeUploadPath(img);
+                            return normalized || img;
+                        }
+                        return img;
+                    }).filter(img => {
+                        // Фильтруем только null, undefined и пустые строки
+                        return img !== null && img !== undefined && img !== '';
+                    });
+                } else if (images === null) {
+                    // Если явно передано null, очищаем массив
+                    normalizedImages = [];
+                } else {
+                    // Если не массив и не null, оставляем существующие
+                    normalizedImages = existingBranch.images || [];
+                }
+            }
+
             const updatedBranch = await prisma.branch.update({
                 where: { id: branchId },
                 data: {
@@ -180,7 +215,7 @@ const BranchController = {
                     workHours: workHours !== undefined ? workHours : existingBranch.workHours,
                     services: services !== undefined ? services : existingBranch.services,
                     coordinates: coordinates !== undefined ? coordinates : existingBranch.coordinates,
-                    images: images !== undefined ? images : existingBranch.images,
+                    images: normalizedImages,
                     // Для контента: если передана строка (JSON), парсим её; если null, сохраняем null; если undefined, оставляем старое значение
                     content: content !== undefined ? (typeof content === 'string' ? JSON.parse(content) : content) : existingBranch.content,
                     contentEn: contentEn !== undefined ? (typeof contentEn === 'string' ? JSON.parse(contentEn) : contentEn) : existingBranch.contentEn,

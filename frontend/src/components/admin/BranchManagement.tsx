@@ -222,6 +222,11 @@ export default function BranchManagement() {
       let uploadedImages: string[] = [];
       if (selectedImages.length > 0) {
         uploadedImages = await uploadImages(selectedImages);
+        // Проверяем, что все изображения загружены успешно
+        if (uploadedImages.length !== selectedImages.length) {
+          toast.error('Не все изображения были загружены. Проверьте подключение к серверу.');
+          return;
+        }
       }
       // Перемещаем главное изображение в начало массива
       if (uploadedImages.length > 0 && mainImageIndex < uploadedImages.length) {
@@ -734,10 +739,8 @@ export default function BranchManagement() {
       const fd = new FormData();
       fd.append('image', file);
       try {
-        const apiUrl =
-          import.meta.env.VITE_API_URL ||
-          (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin);
-        const resp = await fetchWithAuth(`${apiUrl}/api/upload`, {
+        // Используем BASE_URL для консистентности с остальным приложением
+        const resp = await fetchWithAuth(`${BASE_URL}/api/upload`, {
           method: 'POST',
           body: fd,
         });

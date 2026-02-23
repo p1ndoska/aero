@@ -8,6 +8,7 @@ import { Plus, Edit, Trash2, Users, Upload, X, Image as ImageIcon, Calendar, Che
 import { toast } from 'sonner';
 import { useGetAllManagersQuery, useCreateManagerMutation, useUpdateManagerMutation, useDeleteManagerMutation, useUpdateManagersOrderMutation } from '@/app/services/managementApi';
 import { useUploadImageMutation } from '@/app/services/uploadApi';
+import { BASE_URL } from '@/constants';
 import ReceptionScheduleCalendar from './ReceptionScheduleCalendar';
 import type { Management, CreateManagementRequest } from '@/types/management';
 
@@ -170,11 +171,16 @@ export default function ManagementManagement() {
       let uploadedImages: string[] = [];
       if (selectedImages.length > 0) {
         uploadedImages = await uploadImages(selectedImages);
+        // Проверяем, что все изображения загружены успешно
+        if (uploadedImages.length !== selectedImages.length) {
+          toast.error('Не все изображения были загружены. Проверьте подключение к серверу.');
+          return;
+        }
       }
 
       const dataToSend = {
         ...formData,
-        images: [...formData.images, ...uploadedImages]
+        images: [...(formData.images || []), ...uploadedImages]
       };
 
       await updateManager({ id: editingManager.id, managerData: dataToSend }).unwrap();
@@ -184,6 +190,7 @@ export default function ManagementManagement() {
       resetForm();
       refetch();
     } catch (error: any) {
+      console.error('Ошибка обновления руководителя:', error);
       toast.error(error.data?.error || 'Ошибка при обновлении руководителя');
     }
   };
@@ -688,22 +695,28 @@ export default function ManagementManagement() {
                   <div>
                     <span className="font-medium text-[#213659]">Изображения:</span>
                     <div className="flex gap-2 mt-2">
-                      {manager.images.slice(0, 3).map((image, index) => (
-                        <img
-                          key={index}
-                          src={image}
-                          alt={`Изображение ${index + 1}`}
-                          className="w-16 h-16 object-cover rounded border"
-                          onError={(e) => {
-                            console.error('Ошибка загрузки изображения руководителя:', image);
-                            console.error('Статус:', e.currentTarget.src);
-                            e.currentTarget.style.display = 'none';
-                          }}
-                          onLoad={() => {
-                            console.log('Изображение руководителя загружено успешно:', image);
-                          }}
-                        />
-                      ))}
+                      {manager.images.slice(0, 3).map((image, index) => {
+                        // Обрабатываем как относительные пути, так и полные URL
+                        const imageUrl = image && image.startsWith('http') 
+                          ? image 
+                          : `${BASE_URL}${image?.startsWith('/') ? '' : '/'}${image}`;
+                        return (
+                          <img
+                            key={index}
+                            src={imageUrl}
+                            alt={`Изображение ${index + 1}`}
+                            className="w-16 h-16 object-cover rounded border"
+                            onError={(e) => {
+                              console.error('Ошибка загрузки изображения руководителя:', image);
+                              console.error('Статус:', e.currentTarget.src);
+                              e.currentTarget.style.display = 'none';
+                            }}
+                            onLoad={() => {
+                              console.log('Изображение руководителя загружено успешно:', image);
+                            }}
+                          />
+                        );
+                      })}
                       {manager.images.length > 3 && (
                         <div className="w-16 h-16 bg-gray-100 rounded border flex items-center justify-center text-xs text-gray-500">
                           +{manager.images.length - 3}

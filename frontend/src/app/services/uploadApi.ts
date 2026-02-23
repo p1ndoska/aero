@@ -13,11 +13,10 @@ export const uploadApi = createApi({
         body: formData,
       }),
       transformResponse: (response: any) => {
-        // Если URL уже содержит полный путь, используем его как есть
-        const finalUrl = response.url.startsWith('http') ? response.url : `${BASE_URL}${response.url}`;
+        // Возвращаем относительный путь как есть (например, /uploads/image.jpg)
+        // BASE_URL будет добавляться при отображении изображений
         console.log('Upload response:', response);
-        console.log('Final URL:', finalUrl);
-        return { url: finalUrl };
+        return { url: response.url };
       },
     }),
     uploadFile: builder.mutation<{ url: string }, FormData>({
@@ -27,11 +26,10 @@ export const uploadApi = createApi({
         body: formData,
       }),
       transformResponse: (response: any) => {
-        // Если URL уже содержит полный путь, используем его как есть
-        const finalUrl = response.url.startsWith('http') ? response.url : `${BASE_URL}${response.url}`;
+        // Возвращаем относительный путь как есть (например, /uploads/file.pdf)
+        // BASE_URL будет добавляться при отображении файлов
         console.log('File upload response:', response);
-        console.log('Final URL:', finalUrl);
-        return { url: finalUrl };
+        return { url: response.url };
       },
     }),
   }),

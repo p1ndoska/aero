@@ -1,5 +1,6 @@
 const prisma = require('../prisma/prisma-client');
 const ScheduleParser = require('../utils/scheduleParser');
+const { normalizeUploadPath } = require('../config/paths');
 
 const ManagementController = {
     // Получить всех руководителей
@@ -90,6 +91,17 @@ const ManagementController = {
                 managerOrder = maxOrderManager ? maxOrderManager.order + 1 : 0;
             }
 
+            // Нормализуем пути к изображениям при создании
+            let normalizedImages = [];
+            if (images && Array.isArray(images)) {
+                normalizedImages = images.map(img => {
+                    if (typeof img === 'string' && img) {
+                        return normalizeUploadPath(img) || img;
+                    }
+                    return img;
+                }).filter(img => img !== null && img !== undefined);
+            }
+
             const newManager = await prisma.management.create({
                 data: {
                     name,
@@ -105,7 +117,7 @@ const ManagementController = {
                     receptionSchedule,
                     receptionScheduleEn: receptionScheduleEn || null,
                     receptionScheduleBe: receptionScheduleBe || null,
-                    images: images || [],
+                    images: normalizedImages,
                     order: managerOrder
                 }
             });
@@ -130,7 +142,8 @@ const ManagementController = {
             phone, 
             offices, officesEn, officesBe,
             receptionSchedule, receptionScheduleEn, receptionScheduleBe, 
-            images 
+            images,
+            order
         } = req.body;
 
         if (isNaN(managerId)) {
@@ -144,6 +157,29 @@ const ManagementController = {
 
             if (!existingManager) {
                 return res.status(404).json({ error: 'Руководитель не найден' });
+            }
+
+            // Нормализуем пути к изображениям, если они переданы
+            let normalizedImages = existingManager.images || [];
+            if (images !== undefined) {
+                if (Array.isArray(images)) {
+                    normalizedImages = images.map(img => {
+                        if (typeof img === 'string' && img.trim()) {
+                            const normalized = normalizeUploadPath(img);
+                            return normalized || img;
+                        }
+                        return img;
+                    }).filter(img => {
+                        // Фильтруем только null, undefined и пустые строки
+                        return img !== null && img !== undefined && img !== '';
+                    });
+                } else if (images === null) {
+                    // Если явно передано null, очищаем массив
+                    normalizedImages = [];
+                } else {
+                    // Если не массив и не null, оставляем существующие
+                    normalizedImages = existingManager.images || [];
+                }
             }
 
             const updatedManager = await prisma.management.update({
@@ -162,7 +198,7 @@ const ManagementController = {
                     receptionSchedule: receptionSchedule !== undefined ? receptionSchedule : existingManager.receptionSchedule,
                     receptionScheduleEn: receptionScheduleEn !== undefined ? receptionScheduleEn : existingManager.receptionScheduleEn,
                     receptionScheduleBe: receptionScheduleBe !== undefined ? receptionScheduleBe : existingManager.receptionScheduleBe,
-                    images: images !== undefined ? images : existingManager.images,
+                    images: normalizedImages,
                     order: order !== undefined ? order : existingManager.order
                 }
             });

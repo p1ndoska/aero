@@ -41,6 +41,29 @@ module.exports = {
     if (!rawPath) return null;
     const normalized = rawPath.replace(/\\/g, '/');
     
+    // Если путь уже содержит полный URL (http:// или https://), извлекаем относительный путь
+    if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
+      // Извлекаем путь после домена (например, из https://localhost:8443/uploads/image.jpg получаем /uploads/image.jpg)
+      try {
+        const url = new URL(normalized);
+        const path = url.pathname;
+        // Если путь уже начинается с UPLOADS_URL_PREFIX, возвращаем как есть
+        if (path.startsWith(UPLOADS_URL_PREFIX)) {
+          return path;
+        }
+        // Иначе добавляем префикс
+        return `${UPLOADS_URL_PREFIX}${path.startsWith('/') ? path : '/' + path}`;
+      } catch (e) {
+        // Если не удалось распарсить URL, пытаемся извлечь путь вручную
+        const match = normalized.match(/\/uploads\/[^\/]+/);
+        if (match) {
+          return match[0];
+        }
+        // Если не нашли, возвращаем как есть, но это не должно происходить
+        return normalized;
+      }
+    }
+    
     // Если путь уже содержит полный путь к uploads, извлекаем относительный путь
     const uploadsDirNormalized = UPLOADS_DIR.replace(/\\/g, '/');
     if (normalized.includes(uploadsDirNormalized)) {
