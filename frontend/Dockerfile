@@ -1,39 +1,29 @@
-# Build stage
+# ЭТАП 1: Сборка
 FROM node:20-alpine AS builder
-
 WORKDIR /app
-
-# Copy package files
 COPY package*.json ./
-
-# Install dependencies
-RUN npm ci
-
-# Copy source code
+# Игнорируем конфликты React 19
+RUN npm ci --legacy-peer-deps
 COPY . .
-
-# Build the application with environment variables
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine
+# ЭТАП 2: Раздача (Nginx)
+FROM nginx:stable-alpine
 
-# Copy built files from builder
+# Копируем собранный фронтенд
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
+# ВАЖНО: Удаляем дефолтный конфиг и кладем свой в conf.d
+# Мы НЕ заменяем основной /etc/nginx/nginx.conf, чтобы не ломать $PATH
+RUN rm -f /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Remove default nginx configuration to avoid conflicts
-RUN rm -rf /etc/nginx/conf.d/default.conf
-
-# Create SSL directory
+# Создаем папку SSL
 RUN mkdir -p /etc/nginx/ssl
-# SSL certificates will be mounted as volume in docker-compose
 
 EXPOSE 80 443
 
+# Запуск
 CMD ["nginx", "-g", "daemon off;"]
-
