@@ -48,10 +48,16 @@ services:
       SUPER_ADMIN_PASSWORD: ${SUPER_ADMIN_PASSWORD}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       secretKey: ${secretKey:-}
+      # Пути к файлам и директориям (настраиваются через переменные окружения)
+      UPLOADS_DIR: ${UPLOADS_DIR:-/app/uploads}
+      UPLOADS_URL_PREFIX: ${UPLOADS_URL_PREFIX:-/uploads}
+      HERO_IMAGES_DIR: ${HERO_IMAGES_DIR:-}
+      DOCUMENTS_DIR: ${DOCUMENTS_DIR:-}
+      HERO_IMAGE_FILENAME: ${HERO_IMAGE_FILENAME:-hero-bg.jpg}
     ports:
       - "${BACKEND_PORT:-3000}:3000"
     volumes:
-      - ./backend/uploads:/app/uploads # Бэкенд пишет сюда
+      - ./backend/uploads:${UPLOADS_DIR:-/app/uploads} # Бэкенд пишет сюда
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,15 +74,25 @@ services:
         # Укажите тут ваш домен для сборки Vite
         VITE_API_URL: ${VITE_API_URL:-https://aero.ban.by:8443}
     container_name: aero-frontend
+    environment:
+      # Пути для Nginx (настраиваются через переменные окружения)
+      NGINX_ERROR_LOG: ${NGINX_ERROR_LOG:-/var/log/nginx/error.log}
+      NGINX_PID_FILE: ${NGINX_PID_FILE:-/var/run/nginx.pid}
+      NGINX_MIME_TYPES: ${NGINX_MIME_TYPES:-/etc/nginx/mime.types}
+      NGINX_SSL_CERT: ${NGINX_SSL_CERT:-/etc/nginx/ssl/cert.pem}
+      NGINX_SSL_KEY: ${NGINX_SSL_KEY:-/etc/nginx/ssl/key.pem}
+      NGINX_ROOT: ${NGINX_ROOT:-/usr/share/nginx/html}
+      UPLOADS_URL_PREFIX: ${UPLOADS_URL_PREFIX:-/uploads}
+      UPLOADS_DIR: ${UPLOADS_DIR:-/app/uploads}
     ports:
       - "80:80"        # Стандартный HTTP
       - "8443:443"     # Ваш HTTPS порт
     volumes:
-      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/ssl:${NGINX_SSL_DIR:-/etc/nginx/ssl}:ro
       # ДОБАВЛЕНО: Пробрасываем конфиг, чтобы Nginx знал про домен и прокси
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       # ДОБАВЛЕНО: Пробрасываем папку с картинками, чтобы Nginx их видел
-      - ./backend/uploads:/app/uploads:ro
+      - ./backend/uploads:${UPLOADS_DIR:-/app/uploads}:ro
     depends_on:
       - backend
     restart: unless-stopped

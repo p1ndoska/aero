@@ -1,6 +1,7 @@
 const prisma = require('../prisma/prisma-client');
 const path = require('path');
 const fs = require('fs');
+const { UPLOADS_URL_PREFIX } = require('../config/paths');
 
 // Загрузка резюме
 const uploadResume = async (req, res) => {
@@ -29,7 +30,7 @@ const uploadResume = async (req, res) => {
         fullName,
         email,
         phone: phone || null,
-        fileUrl: `/uploads/${req.file.filename}`,
+        fileUrl: `${UPLOADS_URL_PREFIX}/${req.file.filename}`,
         fileName: req.file.originalname,
         status: 'NEW',
       },
@@ -186,7 +187,10 @@ const deleteResume = async (req, res) => {
     }
 
     // Удаляем файл
-    const filePath = path.join(__dirname, '..', resume.fileUrl);
+    const { UPLOADS_DIR } = require('../config/paths');
+    // Убираем префикс URL для получения относительного пути
+    const relativePath = resume.fileUrl.replace(/^\/uploads\//, '').replace(/^uploads\//, '');
+    const filePath = path.join(UPLOADS_DIR, relativePath);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }

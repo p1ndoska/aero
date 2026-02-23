@@ -6,6 +6,7 @@ const fs = require('fs');
 const {UserController, AdminController, NewsController, CategoryController, RoleController, ManagementController, IncidentReportController, BranchController, VacancyController, VacancyPageContentController, HistoryPageContentController, AboutCompanyPageContentController, SecurityPolicyPageContentController, SocialWorkPageContentController, OrganizationLogoController, SocialWorkCategoryController, AboutCompanyCategoryController, AeronauticalInfoCategoryController, AppealsCategoryController, ServicesCategoryController, ReceptionSlotController, UserProfileController, AeronauticalInfoPageContentController, AppealsPageContentController, ServicesPageContentController, ServiceRequestController, StatisticsController, ResumeController} = require("../controllers");
 const {authenticationToken} = require("../middleware/auth");
 const checkRole = require('../middleware/checkRole');
+const { UPLOADS_DIR, UPLOADS_URL_PREFIX, DOCUMENTS_DIR, normalizeUploadPath } = require('../config/paths');
 
 // Проверка загрузки StatisticsController
 if (!StatisticsController || typeof StatisticsController.getStatistics !== 'function') {
@@ -15,7 +16,11 @@ if (!StatisticsController || typeof StatisticsController.getStatistics !== 'func
 // Настройка multer для загрузки файлов
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'uploads/'); // Папка для загрузки файлов
+        // Используем конфигурируемый путь к папке uploads
+        if (!fs.existsSync(UPLOADS_DIR)) {
+            fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+        }
+        cb(null, UPLOADS_DIR);
     },
     filename: function (req, file, cb) {
         // Генерируем уникальное имя файла
@@ -124,7 +129,7 @@ router.post('/upload', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADM
         }
         
         console.log('File uploaded:', req.file);
-        const fileUrl = `/uploads/${req.file.filename}`;
+        const fileUrl = `${UPLOADS_URL_PREFIX}/${req.file.filename}`;
         console.log('File URL:', fileUrl);
         res.json({ url: fileUrl });
     });
@@ -148,7 +153,7 @@ router.post('/upload-file', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOU
         }
         
         console.log('Any file uploaded:', req.file);
-        const fileUrl = `/uploads/${req.file.filename}`;
+        const fileUrl = `${UPLOADS_URL_PREFIX}/${req.file.filename}`;
         console.log('File URL:', fileUrl);
         res.json({ url: fileUrl });
     });
@@ -349,11 +354,11 @@ const ELTDocumentController = require('../controllers/ELTDocumentController');
 // Настройка multer для загрузки документов ELT (PDF, DOCX)
 const eltDocumentStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const uploadsDir = path.join(__dirname, '../uploads/documents');
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
+    // Используем конфигурируемый путь к папке документов
+    if (!fs.existsSync(DOCUMENTS_DIR)) {
+      fs.mkdirSync(DOCUMENTS_DIR, { recursive: true });
     }
-    cb(null, uploadsDir);
+    cb(null, DOCUMENTS_DIR);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);

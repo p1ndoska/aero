@@ -132,22 +132,21 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 // Настройка раздачи статических файлов uploads
-// Используем абсолютный путь для надежности в Docker
-const uploadsPath = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsPath)) {
-  fs.mkdirSync(uploadsPath, { recursive: true });
-  console.log('📁 Created uploads directory:', uploadsPath);
+const { UPLOADS_DIR, UPLOADS_URL_PREFIX } = require('./config/paths');
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  console.log('📁 Created uploads directory:', UPLOADS_DIR);
 } else {
-  console.log('📁 Uploads directory exists:', uploadsPath);
+  console.log('📁 Uploads directory exists:', UPLOADS_DIR);
   // Проверяем содержимое папки
   try {
-    const files = fs.readdirSync(uploadsPath);
+    const files = fs.readdirSync(UPLOADS_DIR);
     console.log('📁 Files in uploads directory:', files.slice(0, 10), files.length > 10 ? `... (${files.length} total)` : '');
   } catch (err) {
     console.error(' Error reading uploads directory:', err.message);
   }
 }
-app.use('/uploads', express.static(uploadsPath, {
+app.use(UPLOADS_URL_PREFIX, express.static(UPLOADS_DIR, {
   etag: true,
   lastModified: true,
   maxAge: 0, // Отключаем кэширование для uploads
@@ -159,7 +158,8 @@ app.use('/uploads', express.static(uploadsPath, {
     res.setHeader('Expires', '0');
   }
 }));
-console.log('📁 Static files (uploads) served from:', uploadsPath);
+console.log('📁 Static files (uploads) served from:', UPLOADS_DIR);
+console.log('📁 Uploads URL prefix:', UPLOADS_URL_PREFIX);
 console.log('📁 __dirname:', __dirname);
 
 // Инициализация базы данных при запуске

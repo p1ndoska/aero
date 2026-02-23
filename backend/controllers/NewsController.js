@@ -1,4 +1,5 @@
 const prisma = require ('../prisma/prisma-client');
+const { normalizeUploadPath, UPLOADS_URL_PREFIX } = require('../config/paths');
 
 const NewsController = {
     createNews: async (req, res) => {
@@ -15,8 +16,7 @@ const NewsController = {
             // Multer возвращает путь типа 'uploads/photo-123.png' (относительный)
             // Нужно преобразовать в '/uploads/photo-123.png' для использования в URL
             const rawPath = req.files.photo[0].path.replace(/\\/g, '/');
-            // Если путь начинается с 'uploads/', заменяем на '/uploads/'
-            filePath = rawPath.startsWith('uploads/') ? `/${rawPath}` : (rawPath.startsWith('/') ? rawPath : `/uploads/${rawPath}`);
+            filePath = normalizeUploadPath(rawPath);
             console.log('Photo path normalized:', { raw: req.files.photo[0].path, normalized: filePath });
         }
 
@@ -27,14 +27,12 @@ const NewsController = {
                 if (Array.isArray(req.files.images)) {
                     additionalImages = req.files.images.map(file => {
                         const rawPath = file.path.replace(/\\/g, '/');
-                        // Если путь начинается с 'uploads/', заменяем на '/uploads/'
-                        return rawPath.startsWith('uploads/') ? `/${rawPath}` : (rawPath.startsWith('/') ? rawPath : `/uploads/${rawPath}`);
+                        return normalizeUploadPath(rawPath);
                     });
                 } else {
                     // Если это не массив, создаем массив из одного элемента
                     const rawPath = req.files.images.path.replace(/\\/g, '/');
-                    const normalizedPath = rawPath.startsWith('uploads/') ? `/${rawPath}` : (rawPath.startsWith('/') ? rawPath : `/uploads/${rawPath}`);
-                    additionalImages = [normalizedPath];
+                    additionalImages = [normalizeUploadPath(rawPath)];
                 }
                 console.log('Additional images processed:', additionalImages);
             } catch (error) {
@@ -148,7 +146,7 @@ const NewsController = {
                 // Multer возвращает путь типа 'uploads/photo-123.png' (относительный)
                 // Нужно преобразовать в '/uploads/photo-123.png' для использования в URL
                 const rawPath = req.files.photo[0].path.replace(/\\/g, '/');
-                updateData.photo = rawPath.startsWith('uploads/') ? `/${rawPath}` : (rawPath.startsWith('/') ? rawPath : `/uploads/${rawPath}`);
+                updateData.photo = normalizeUploadPath(rawPath);
                 console.log('Update photo path normalized:', { raw: req.files.photo[0].path, normalized: updateData.photo });
             } else if (req.body.photo !== undefined) {
                 // Если photo передано как текст (например, URL)
@@ -160,8 +158,7 @@ const NewsController = {
             if (req.files && req.files.images) {
                 additionalImages = req.files.images.map(file => {
                     const rawPath = file.path.replace(/\\/g, '/');
-                    // Если путь начинается с 'uploads/', заменяем на '/uploads/'
-                    return rawPath.startsWith('uploads/') ? `/${rawPath}` : (rawPath.startsWith('/') ? rawPath : `/uploads/${rawPath}`);
+                    return normalizeUploadPath(rawPath);
                 });
                 updateData.images = additionalImages; // Добавляем дополнительные изображения
                 console.log('Update additional images processed:', additionalImages);

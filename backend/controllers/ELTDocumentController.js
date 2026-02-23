@@ -1,6 +1,7 @@
 const prisma = require('../prisma/prisma-client');
 const path = require('path');
 const fs = require('fs');
+const { UPLOADS_URL_PREFIX, UPLOADS_DIR } = require('../config/paths');
 
 const ELTDocumentController = {
   // Загрузить документ договора ELT
@@ -12,7 +13,7 @@ const ELTDocumentController = {
         return res.status(400).json({ error: 'Файл не был загружен' });
       }
 
-      const fileUrl = `/uploads/documents/${req.file.filename}`;
+      const fileUrl = `${UPLOADS_URL_PREFIX}/documents/${req.file.filename}`;
       // Убеждаемся, что путь правильный для статических файлов
       const fileName = req.file.originalname;
 
@@ -86,7 +87,9 @@ const ELTDocumentController = {
       }
 
       // Удаляем файл с диска
-      const filePath = path.join(__dirname, '..', pageContent.documentUrl);
+      // Убираем префикс URL для получения относительного пути
+      const relativePath = pageContent.documentUrl.replace(new RegExp(`^${UPLOADS_URL_PREFIX}/`), '');
+      const filePath = path.join(UPLOADS_DIR, relativePath);
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
@@ -116,7 +119,7 @@ const ELTDocumentController = {
         return res.status(400).json({ error: 'Файл не был загружен' });
       }
 
-      const fileUrl = `/uploads/documents/${req.file.filename}`;
+      const fileUrl = `${UPLOADS_URL_PREFIX}/documents/${req.file.filename}`;
       const fileName = req.file.originalname;
 
       // Обновляем или создаем запись страницы контента
@@ -188,7 +191,9 @@ const ELTDocumentController = {
       }
 
       // Удаляем файл с диска
-      const filePath = path.join(__dirname, '..', pageContent.instructionUrl);
+      // Убираем префикс URL для получения относительного пути
+      const relativePath = pageContent.instructionUrl.replace(new RegExp(`^${UPLOADS_URL_PREFIX}/`), '');
+      const filePath = path.join(UPLOADS_DIR, relativePath);
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }

@@ -4,6 +4,7 @@ const ExcelJS = require('exceljs');
 const emailService = require('../utils/emailService');
 const path = require('path');
 const fs = require('fs');
+const { UPLOADS_DIR } = require('../config/paths');
 
 // Функция для создания Excel файла из данных формы
 async function createELTExcelFile(formData) {
@@ -172,13 +173,12 @@ async function createELTExcelFile(formData) {
   }
 
   // Сохраняем файл во временную директорию
-  const uploadsDir = path.join(__dirname, '../uploads');
-  if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
+  if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
   }
 
   const fileName = `elt-registration-${Date.now()}.xlsx`;
-  const filePath = path.join(uploadsDir, fileName);
+  const filePath = path.join(UPLOADS_DIR, fileName);
   
   await workbook.xlsx.writeFile(filePath);
   

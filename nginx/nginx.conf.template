@@ -1,17 +1,14 @@
 user nginx;
 worker_processes auto;
-# Путь к логу ошибок (можно изменить через volume mount в docker-compose.yml)
-error_log /var/log/nginx/error.log warn;
-# Путь к PID файлу (можно изменить через volume mount в docker-compose.yml)
-pid /var/run/nginx.pid;
+error_log ${NGINX_ERROR_LOG:-/var/log/nginx/error.log} warn;
+pid ${NGINX_PID_FILE:-/var/run/nginx.pid};
 
 events {
     worker_connections 1024;
 }
 
 http {
-    # Путь к mime.types (можно изменить через volume mount в docker-compose.yml)
-    include /etc/nginx/mime.types;
+    include ${NGINX_MIME_TYPES:-/etc/nginx/mime.types};
     default_type application/octet-stream;
     sendfile on;
     tcp_nopush on;
@@ -32,10 +29,8 @@ http {
         http2 on;
         server_name aero.ban.by www.aero.ban.by;
 
-        # Путь к SSL сертификату (настраивается через переменную UPLOADS_DIR в docker-compose.yml, volume: ./nginx/ssl)
-        ssl_certificate /etc/nginx/ssl/cert.pem;
-        # Путь к SSL ключу (настраивается через переменную UPLOADS_DIR в docker-compose.yml, volume: ./nginx/ssl)
-        ssl_certificate_key /etc/nginx/ssl/key.pem;
+        ssl_certificate ${NGINX_SSL_CERT:-/etc/nginx/ssl/cert.pem};
+        ssl_certificate_key ${NGINX_SSL_KEY:-/etc/nginx/ssl/key.pem};
 
         # Фикс для ошибки 497 (HTTP на HTTPS порту)
         error_page 497 https://$host:8443$request_uri;
@@ -44,16 +39,12 @@ http {
             return 301 https://$host$request_uri;
         }
 
-        # Корневая директория фронтенда (можно изменить через переменную NGINX_ROOT в docker-compose.yml)
-        root /usr/share/nginx/html;
+        root ${NGINX_ROOT:-/usr/share/nginx/html};
         index index.html;
 
         # 1. КАРТИНКИ (Приоритетный блок)
-        # URL префикс /uploads/ и путь /app/uploads/ настраиваются через переменные окружения
-        # UPLOADS_URL_PREFIX и UPLOADS_DIR в docker-compose.yml
-        # Для изменения пути к uploads измените volume mount в docker-compose.yml: ./backend/uploads:/app/uploads
-        location ^~ /uploads/ {
-            alias /app/uploads/; 
+        location ^~ ${UPLOADS_URL_PREFIX:-/uploads}/ {
+            alias ${UPLOADS_DIR:-/app/uploads}/; 
             access_log off;
             expires 30d;
             add_header Cache-Control "public";
@@ -78,3 +69,4 @@ http {
         }
     }
 }
+

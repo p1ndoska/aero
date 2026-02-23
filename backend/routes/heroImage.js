@@ -5,19 +5,20 @@ const fs = require('fs');
 const router = express.Router();
 const {authenticationToken} = require('../middleware/auth');
 const checkRole = require('../middleware/checkRole');
+const { HERO_IMAGES_DIR, HERO_IMAGE_FILENAME, getHeroImagePath, getHeroImageUrl } = require('../config/paths');
 
 // Настройка multer для загрузки изображений
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const uploadPath = path.join(__dirname, '../uploads/hero');
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
+    // Используем конфигурируемый путь к папке hero изображений
+    if (!fs.existsSync(HERO_IMAGES_DIR)) {
+      fs.mkdirSync(HERO_IMAGES_DIR, { recursive: true });
     }
-    cb(null, uploadPath);
+    cb(null, HERO_IMAGES_DIR);
   },
   filename: function (req, file, cb) {
-    // Сохраняем с фиксированным именем
-    cb(null, 'hero-bg.jpg');
+    // Используем конфигурируемое имя файла
+    cb(null, HERO_IMAGE_FILENAME);
   }
 });
 
@@ -38,12 +39,12 @@ const upload = multer({
 // Получить текущее изображение
 router.get('/current', (req, res) => {
   try {
-    const imagePath = path.join(__dirname, '../uploads/hero/hero-bg.jpg');
+    const imagePath = getHeroImagePath();
     
     if (fs.existsSync(imagePath)) {
       res.json({ 
         success: true, 
-        imageUrl: `/uploads/hero/hero-bg.jpg`,
+        imageUrl: getHeroImageUrl(),
         hasImage: true 
       });
     } else {
@@ -72,7 +73,7 @@ router.post('/upload', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADM
       });
     }
 
-    const imagePath = path.join(__dirname, '../uploads/hero/hero-bg.jpg');
+    const imagePath = getHeroImagePath();
     
     // Проверяем, что файл действительно сохранился
     if (!fs.existsSync(imagePath)) {
@@ -89,7 +90,7 @@ router.post('/upload', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADM
     res.json({ 
       success: true, 
       message: 'Изображение успешно загружено',
-      imageUrl: `/uploads/hero/hero-bg.jpg`
+      imageUrl: getHeroImageUrl()
     });
   } catch (error) {
     console.error('Ошибка при загрузке изображения:', error);
@@ -103,7 +104,7 @@ router.post('/upload', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADM
 // Удалить текущее изображение
 router.delete('/remove', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), (req, res) => {
   try {
-    const imagePath = path.join(__dirname, '../uploads/hero/hero-bg.jpg');
+    const imagePath = getHeroImagePath();
     
     if (fs.existsSync(imagePath)) {
       fs.unlinkSync(imagePath);
