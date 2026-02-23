@@ -104,9 +104,9 @@ export default function BranchDetailsPage() {
       if (e.key === 'Escape') {
         setSelectedImage(null);
       } else if (e.key === 'ArrowLeft') {
-        navigateImage(-1, (data?.branch?.images || []).map(img => `${BASE_URL}${img.startsWith('/') ? '' : '/'}${img}`));
+        navigateImage(-1, (data?.branch?.images || []).map(img => img && img.startsWith('http') ? img : `${BASE_URL}${img?.startsWith('/') ? '' : '/'}${img}`));
       } else if (e.key === 'ArrowRight') {
-        navigateImage(1, (data?.branch?.images || []).map(img => `${BASE_URL}${img.startsWith('/') ? '' : '/'}${img}`));
+        navigateImage(1, (data?.branch?.images || []).map(img => img && img.startsWith('http') ? img : `${BASE_URL}${img?.startsWith('/') ? '' : '/'}${img}`));
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -169,11 +169,12 @@ export default function BranchDetailsPage() {
         {mainImage ? (
           <div className="flex justify-center mb-6">
             <img
-              src={`${BASE_URL}${mainImage.startsWith('/') ? '' : '/'}${mainImage}`}
+              src={mainImage && mainImage.startsWith('http') ? mainImage : `${BASE_URL}${mainImage?.startsWith('/') ? '' : '/'}${mainImage}`}
               alt={getTranslatedField(branch, 'name', language)}
               className="w-full max-w-2xl h-80 md:h-96 lg:h-[28rem] rounded-xl object-cover object-center border-2 border-[#213659] cursor-pointer hover:opacity-90 transition-opacity"
               onClick={() => {
-                setSelectedImage(`${BASE_URL}${mainImage.startsWith('/') ? '' : '/'}${mainImage}`);
+                const imageUrl = mainImage && mainImage.startsWith('http') ? mainImage : `${BASE_URL}${mainImage?.startsWith('/') ? '' : '/'}${mainImage}`;
+                setSelectedImage(imageUrl);
                 setSelectedImageIndex(0);
               }}
               onError={(e) => {
@@ -344,7 +345,7 @@ export default function BranchDetailsPage() {
                           return (
                             <div key={index} className="flex justify-center mb-4">
                               <img
-                                src={`${BASE_URL}${element.props?.src?.startsWith('/') ? '' : '/'}${element.props?.src}`}
+                                src={element.props?.src && element.props.src.startsWith('http') ? element.props.src : `${BASE_URL}${element.props?.src?.startsWith('/') ? '' : '/'}${element.props?.src}`}
                                 alt={element.props?.alt || (t('image') || 'Изображение')}
                                 className="max-w-full h-auto rounded-lg border branch-content-image"
                                 onError={(e) => {
@@ -419,7 +420,7 @@ export default function BranchDetailsPage() {
                                 return (
                                   <div className="flex justify-center">
                                     <img 
-                                      src={`${BASE_URL}${cell.src?.startsWith('/') ? '' : '/'}${cell.src}`}
+                                      src={cell.src && cell.src.startsWith('http') ? cell.src : `${BASE_URL}${cell.src?.startsWith('/') ? '' : '/'}${cell.src}`}
                                       alt={cell.alt || ''}
                                       className="max-w-full h-auto rounded object-contain"
                                       style={{ maxHeight: '150px', maxWidth: '200px' }}
@@ -587,25 +588,28 @@ export default function BranchDetailsPage() {
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 <div className="flex gap-4 pb-2" style={{ minWidth: 'max-content' }}>
-                  {additionalImages.map((image, index) => (
-                    <img
-                      key={index}
-                      src={`${BASE_URL}${image.startsWith('/') ? '' : '/'}${image}`}
-                      alt={`${getTranslatedField(branch, 'name', language)} - фото ${index + 2}`}
-                      className="w-64 h-48 object-cover rounded-lg border hover:shadow-md transition-shadow cursor-pointer hover:opacity-90 flex-shrink-0"
-                      onClick={() => {
-                        setSelectedImage(`${BASE_URL}${image.startsWith('/') ? '' : '/'}${image}`);
-                        setSelectedImageIndex(index + 1); // +1 because main image is at index 0
-                      }}
-                      onError={(e) => {
-                        console.error(' Ошибка загрузки дополнительного изображения филиала:', image);
-                        e.currentTarget.style.display = 'none';
-                      }}
-                      onLoad={() => {
-                        console.log(' Дополнительное изображение филиала загружено:', image);
-                      }}
-                    />
-                  ))}
+                  {additionalImages.map((image, index) => {
+                    const imageUrl = image && image.startsWith('http') ? image : `${BASE_URL}${image?.startsWith('/') ? '' : '/'}${image}`;
+                    return (
+                      <img
+                        key={index}
+                        src={imageUrl}
+                        alt={`${getTranslatedField(branch, 'name', language)} - фото ${index + 2}`}
+                        className="w-64 h-48 object-cover rounded-lg border hover:shadow-md transition-shadow cursor-pointer hover:opacity-90 flex-shrink-0"
+                        onClick={() => {
+                          setSelectedImage(imageUrl);
+                          setSelectedImageIndex(index + 1); // +1 because main image is at index 0
+                        }}
+                        onError={(e) => {
+                          console.error(' Ошибка загрузки дополнительного изображения филиала:', image);
+                          e.currentTarget.style.display = 'none';
+                        }}
+                        onLoad={() => {
+                          console.log(' Дополнительное изображение филиала загружено:', image);
+                        }}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             </div>

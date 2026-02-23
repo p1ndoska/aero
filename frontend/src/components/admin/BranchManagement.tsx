@@ -928,21 +928,28 @@ export default function BranchManagement() {
                   <div>
                     <span className="font-medium text-[#213659]">Изображения:</span>
                     <div className="flex gap-2 mt-2">
-                      {branch.images.slice(0, 3).map((image, index) => (
-                        <img
-                          key={index}
-                          src={`${BASE_URL}${image.startsWith('/') ? '' : '/'}${image}`}
-                          alt={`Изображение ${index + 1}`}
-                          className="w-16 h-16 object-cover rounded border"
-                          onError={(e) => {
-                            console.error(' Ошибка загрузки изображения филиала:', image);
-                            e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect width="64" height="64" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-size="10"%3EОшибка%3C/text%3E%3C/svg%3E';
-                          }}
-                          onLoad={() => {
-                            console.log(' Изображение филиала загружено:', image);
-                          }}
-                        />
-                      ))}
+                      {branch.images.slice(0, 3).map((image, index) => {
+                        // Обрабатываем как относительные пути, так и полные URL
+                        const imageUrl = image && image.startsWith('http') 
+                          ? image 
+                          : `${BASE_URL}${image?.startsWith('/') ? '' : '/'}${image}`;
+                        return (
+                          <img
+                            key={index}
+                            src={imageUrl}
+                            alt={`Изображение ${index + 1}`}
+                            className="w-16 h-16 object-cover rounded border"
+                            onError={(e) => {
+                              console.error(' Ошибка загрузки изображения филиала:', image);
+                              console.error(' Полный URL:', imageUrl);
+                              e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect width="64" height="64" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-size="10"%3EОшибка%3C/text%3E%3C/svg%3E';
+                            }}
+                            onLoad={() => {
+                              console.log(' Изображение филиала загружено:', image);
+                            }}
+                          />
+                        );
+                      })}
                       {branch.images.length > 3 && (
                         <div className="w-16 h-16 bg-gray-100 rounded border flex items-center justify-center text-xs text-gray-500">
                           +{branch.images.length - 3}

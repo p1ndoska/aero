@@ -139,7 +139,7 @@ export default function BranchesCarousel() {
                   <div className="flex-1 min-h-[120px] relative overflow-hidden rounded-t-lg bg-gradient-to-br from-blue-50 to-blue-100">
                     {mainImage ? (
                       <img
-                        src={`${BASE_URL}${mainImage.startsWith('/') ? '' : '/'}${mainImage}`}
+                        src={mainImage && mainImage.startsWith('http') ? mainImage : `${BASE_URL}${mainImage?.startsWith('/') ? '' : '/'}${mainImage}`}
                         alt={getTranslatedField(branch, 'name', language)}
                         className="w-full h-full object-cover"
                         onError={(e) => {
