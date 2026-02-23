@@ -85,12 +85,13 @@ services:
       UPLOADS_URL_PREFIX: ${UPLOADS_URL_PREFIX:-/uploads}
       UPLOADS_DIR: ${UPLOADS_DIR:-/app/uploads}
     ports:
-      - "80:80"        # Стандартный HTTP
+      # - "80:80"        # Стандартный HTTP (закомментировано, порт занят)
       - "8443:443"     # Ваш HTTPS порт
     volumes:
       - ./nginx/ssl:${NGINX_SSL_DIR:-/etc/nginx/ssl}:ro
-      # ДОБАВЛЕНО: Пробрасываем конфиг, чтобы Nginx знал про домен и прокси
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # ДОБАВЛЕНО: Пробрасываем конфиг из frontend, чтобы Nginx знал про домен и прокси
+      # Используем конфиг из frontend/nginx.conf, который уже скопирован в контейнер
+      # - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro  # Отключено, используем конфиг из frontend/nginx.conf
       # ДОБАВЛЕНО: Пробрасываем папку с картинками, чтобы Nginx их видел
       # ВАЖНО: Путь должен совпадать с UPLOADS_DIR в backend и nginx.conf
       - ./backend/uploads:/app/uploads:ro
