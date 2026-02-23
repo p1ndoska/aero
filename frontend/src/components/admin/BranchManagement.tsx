@@ -253,7 +253,13 @@ export default function BranchManagement() {
       refetch();
     } catch (error: any) {
       console.error('Ошибка обновления филиала:', error);
-      toast.error(error.data?.error || 'Ошибка при обновлении филиала');
+      // Показываем более детальное сообщение об ошибке
+      const errorMessage = error.data?.error || error.data?.details || error.message || 'Ошибка при обновлении филиала';
+      toast.error(errorMessage);
+      // Если это ошибка загрузки изображений, не закрываем диалог
+      if (error.message?.includes('upload') || error.message?.includes('image')) {
+        return; // Не закрываем диалог, чтобы пользователь мог попробовать снова
+      }
     }
   };
 
