@@ -1,0 +1,45 @@
+═══════════════════════════════════════════════════════════════
+  БЫСТРОЕ ИСПРАВЛЕНИЕ ЗАГРУЗКИ КАРТИНОК НА UBUNTU СЕРВЕРЕ
+═══════════════════════════════════════════════════════════════
+
+ПРОБЛЕМА: Картинки не загружаются при доступе по DNS
+
+РЕШЕНИЕ (выполните на Ubuntu сервере):
+
+1. Обновите файлы на сервере (скопируйте с этого компьютера):
+   - frontend/src/constants.ts
+   - frontend/nginx.conf  
+   - docker-compose.yml
+
+2. Пересоберите frontend контейнер (ОБЯЗАТЕЛЬНО!):
+   cd /path/to/aero
+   docker-compose stop frontend
+   docker-compose build --no-cache frontend
+   docker-compose up -d frontend
+
+3. Проверьте:
+   docker ps --filter "name=aero-frontend"
+   docker exec aero-frontend cat /etc/nginx/conf.d/default.conf | grep -A 5 "uploads"
+
+4. Очистите кэш браузера (Ctrl+F5) и проверьте сайт
+
+═══════════════════════════════════════════════════════════════
+
+АВТОМАТИЧЕСКОЕ ИСПРАВЛЕНИЕ:
+
+1. Скопируйте fix-uploads-ubuntu.sh на сервер
+2. chmod +x fix-uploads-ubuntu.sh
+3. ./fix-uploads-ubuntu.sh
+
+═══════════════════════════════════════════════════════════════
+
+ПРОВЕРКА В БРАУЗЕРЕ:
+
+1. Откройте консоль (F12) → Network
+2. Обновите страницу (Ctrl+F5)
+3. Найдите запросы к /uploads/...
+4. URL должен быть: https://ваш-домен:8443/uploads/...
+5. НЕ должен быть: https://localhost:8443/uploads/...
+
+═══════════════════════════════════════════════════════════════
+
