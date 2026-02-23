@@ -12,6 +12,19 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+# Определение команды docker compose (docker compose или docker-compose)
+if command -v docker &> /dev/null && docker compose version &> /dev/null; then
+    DOCKER_COMPOSE="docker compose"
+elif command -v docker-compose &> /dev/null; then
+    DOCKER_COMPOSE="docker-compose"
+else
+    echo -e "${RED}Ошибка: docker compose или docker-compose не найден!${NC}"
+    exit 1
+fi
+
+echo "Используется команда: $DOCKER_COMPOSE"
+echo ""
+
 # Проверка, что мы в правильной директории
 if [ ! -f "docker-compose.yml" ]; then
     echo -e "${RED}Ошибка: docker-compose.yml не найден. Запустите скрипт из корневой директории проекта.${NC}"
@@ -19,15 +32,15 @@ if [ ! -f "docker-compose.yml" ]; then
 fi
 
 echo "1. Остановка контейнеров..."
-docker-compose stop frontend
+$DOCKER_COMPOSE stop frontend
 
 echo ""
 echo "2. Пересборка frontend контейнера..."
-docker-compose build frontend
+$DOCKER_COMPOSE build frontend
 
 echo ""
 echo "3. Запуск контейнеров..."
-docker-compose up -d frontend
+$DOCKER_COMPOSE up -d frontend
 
 echo ""
 echo "4. Ожидание запуска контейнеров..."
