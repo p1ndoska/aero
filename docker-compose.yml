@@ -92,7 +92,8 @@ services:
       # ДОБАВЛЕНО: Пробрасываем конфиг, чтобы Nginx знал про домен и прокси
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       # ДОБАВЛЕНО: Пробрасываем папку с картинками, чтобы Nginx их видел
-      - ./backend/uploads:${UPLOADS_DIR:-/app/uploads}:ro
+      # ВАЖНО: Путь должен совпадать с UPLOADS_DIR в backend и nginx.conf
+      - ./backend/uploads:/app/uploads:ro
     depends_on:
       - backend
     restart: unless-stopped
