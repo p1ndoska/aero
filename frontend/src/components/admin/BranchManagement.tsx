@@ -626,23 +626,27 @@ export default function BranchManagement() {
               >
                 <div className="flex gap-3 pb-2 px-8" style={{ minWidth: 'max-content' }}>
                 {/* Существующие изображения */}
-                {isEdit && (formData.images || []).map((url, i) => (
-                  <div key={`exist-${i}`} className="relative flex-shrink-0">
-                    <img 
-                      src={`${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`} 
-                      alt={`img-${i}`} 
-                      className="w-24 h-24 object-cover rounded border cursor-pointer"
-                      onError={(e) => {
-                        console.error(' Ошибка загрузки изображения:', url);
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                    <Button type="button" variant="destructive" size="sm" className="absolute -top-2 -right-2 w-6 h-6 p-0"
-                      onClick={() => setFormData({ ...formData, images: (formData.images || []).filter((_, idx) => idx !== i) })}>
-                      <X className="w-3 h-3" />
-                    </Button>
-                  </div>
-                ))}
+                {isEdit && (formData.images || []).map((url, i) => {
+                  const imageUrl = url && url.startsWith('http') ? url : `${BASE_URL}${url?.startsWith('/') ? '' : '/'}${url}`;
+                  return (
+                    <div key={`exist-${i}`} className="relative flex-shrink-0">
+                      <img 
+                        src={imageUrl}
+                        alt={`img-${i}`} 
+                        className="w-24 h-24 object-cover rounded border cursor-pointer"
+                        onError={(e) => {
+                          console.error(' Ошибка загрузки изображения:', url);
+                          console.error(' Полный URL:', imageUrl);
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <Button type="button" variant="destructive" size="sm" className="absolute -top-2 -right-2 w-6 h-6 p-0"
+                        onClick={() => setFormData({ ...formData, images: (formData.images || []).filter((_, idx) => idx !== i) })}>
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  );
+                })}
                 {/* Новые превью */}
                 {previewImages.map((src, i) => (
                   <div key={`new-${i}`} className="relative flex-shrink-0">

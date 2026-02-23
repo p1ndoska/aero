@@ -51,15 +51,26 @@ module.exports = {
         if (path.startsWith(UPLOADS_URL_PREFIX)) {
           return path;
         }
+        // Если путь содержит /uploads/, извлекаем его (включая сам /uploads/)
+        if (path.includes('/uploads/')) {
+          const uploadsIndex = path.indexOf('/uploads/');
+          return path.substring(uploadsIndex);
+        }
+        // Если путь содержит только uploads без слеша, добавляем слеш
+        if (path.includes('uploads/')) {
+          const uploadsIndex = path.indexOf('uploads/');
+          return '/' + path.substring(uploadsIndex);
+        }
         // Иначе добавляем префикс
         return `${UPLOADS_URL_PREFIX}${path.startsWith('/') ? path : '/' + path}`;
       } catch (e) {
         // Если не удалось распарсить URL, пытаемся извлечь путь вручную
-        const match = normalized.match(/\/uploads\/[^\/]+/);
+        const match = normalized.match(/\/uploads\/[^\/\s]+/);
         if (match) {
           return match[0];
         }
         // Если не нашли, возвращаем как есть, но это не должно происходить
+        console.warn('Could not extract path from URL:', normalized);
         return normalized;
       }
     }

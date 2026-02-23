@@ -195,6 +195,8 @@ const BranchController = {
                         return img !== null && img !== undefined && img !== '';
                     });
                     console.log('Normalized images:', normalizedImages);
+                    console.log('Original images:', images);
+                    console.log('Existing images:', existingBranch.images);
                 } else if (images === null) {
                     // Если явно передано null, очищаем массив
                     normalizedImages = [];
