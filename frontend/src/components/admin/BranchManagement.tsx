@@ -26,6 +26,7 @@ export default function BranchManagement() {
   const [createBranch, { isLoading: isCreating }] = useCreateBranchMutation();
   const [updateBranch, { isLoading: isUpdating }] = useUpdateBranchMutation();
   const [deleteBranch, { isLoading: isDeleting }] = useDeleteBranchMutation();
+  const [uploadImage] = useUploadImageMutation();
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
@@ -108,6 +109,11 @@ export default function BranchManagement() {
       let uploadedImages: string[] = [];
       if (selectedImages.length > 0) {
         uploadedImages = await uploadImages(selectedImages);
+        // Проверяем, что все изображения загружены успешно
+        if (uploadedImages.length !== selectedImages.length) {
+          toast.error('Не все изображения были загружены. Проверьте подключение к серверу.');
+          return;
+        }
       }
       // Перемещаем главное изображение в начало массива
       if (uploadedImages.length > 0 && mainImageIndex < uploadedImages.length) {
