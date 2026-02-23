@@ -30,34 +30,22 @@ services:
     container_name: aero-backend
     environment:
       NODE_ENV: ${NODE_ENV:-production}
-      PORT: ${PORT:-3000}
+      PORT: 3000
       DATABASE_URL: ${DATABASE_URL:-postgresql://prisma:prisma@aero-postgres:5432/mydb?schema=public}
-
       SECRET_KEY: ${SECRET_KEY}
-      JWT_SECRET: ${SECRET_KEY}
-      # Укажите тут ваш домен
       FRONTEND_URL: ${FRONTEND_URL:-https://aero.ban.by:8443}
       SMTP_HOST: ${SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER}
       SMTP_PASS: ${SMTP_PASS}
-      EMAIL_USER: ${EMAIL_USER}
-      EMAIL_PASS: ${EMAIL_PASS}
-      ADMIN_EMAIL: ${ADMIN_EMAIL}
-      SUPER_ADMIN_EMAIL: ${SUPER_ADMIN_EMAIL}
-      SUPER_ADMIN_PASSWORD: ${SUPER_ADMIN_PASSWORD}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      secretKey: ${secretKey:-}
-      # Пути к файлам и директориям (настраиваются через переменные окружения)
-      UPLOADS_DIR: ${UPLOADS_DIR:-/app/uploads}
-      UPLOADS_URL_PREFIX: ${UPLOADS_URL_PREFIX:-/uploads}
-      HERO_IMAGES_DIR: ${HERO_IMAGES_DIR:-}
-      DOCUMENTS_DIR: ${DOCUMENTS_DIR:-}
-      HERO_IMAGE_FILENAME: ${HERO_IMAGE_FILENAME:-hero-bg.jpg}
+      UPLOADS_DIR: /app/uploads
+      UPLOADS_URL_PREFIX: /uploads
     ports:
-      - "${BACKEND_PORT:-3000}:3000"
+      - "3000:3000"
     volumes:
-      - ./backend/uploads:${UPLOADS_DIR:-/app/uploads} # Бэкенд пишет сюда
+      # Связываем папку на сервере с папкой в контейнере бэкенда
+      - ./backend/uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -65,37 +53,21 @@ services:
     networks:
       - aero-network
 
-  # Frontend Service (с исправленными путями для Nginx и картинок)
+  # Frontend (Nginx) Service
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # VITE_API_URL используется только для dev режима или как fallback
-        # В production используется window.location.origin для автоматического определения домена
-        # Это позволяет работать как по IP, так и по DNS без пересборки
-        VITE_API_URL: ${VITE_API_URL:-}
+        VITE_API_URL: ${VITE_API_URL:-https://aero.ban.by:8443}
     container_name: aero-frontend
-    environment:
-      # Пути для Nginx (настраиваются через переменные окружения)
-      NGINX_ERROR_LOG: ${NGINX_ERROR_LOG:-/var/log/nginx/error.log}
-      NGINX_PID_FILE: ${NGINX_PID_FILE:-/var/run/nginx.pid}
-      NGINX_MIME_TYPES: ${NGINX_MIME_TYPES:-/etc/nginx/mime.types}
-      NGINX_SSL_CERT: ${NGINX_SSL_CERT:-/etc/nginx/ssl/cert.pem}
-      NGINX_SSL_KEY: ${NGINX_SSL_KEY:-/etc/nginx/ssl/key.pem}
-      NGINX_ROOT: ${NGINX_ROOT:-/usr/share/nginx/html}
-      UPLOADS_URL_PREFIX: ${UPLOADS_URL_PREFIX:-/uploads}
-      UPLOADS_DIR: ${UPLOADS_DIR:-/app/uploads}
     ports:
-      # - "80:80"        # Стандартный HTTP (закомментировано, порт занят)
-      - "8443:443"     # Ваш HTTPS порт
+      - "80:80"
+      - "8443:443"
     volumes:
-      - ./nginx/ssl:${NGINX_SSL_DIR:-/etc/nginx/ssl}:ro
-      # ДОБАВЛЕНО: Пробрасываем конфиг из frontend, чтобы Nginx знал про домен и прокси
-      # Используем конфиг из frontend/nginx.conf, который уже скопирован в контейнер
-      # - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro  # Отключено, используем конфиг из frontend/nginx.conf
-      # ДОБАВЛЕНО: Пробрасываем папку с картинками, чтобы Nginx их видел
-      # ВАЖНО: Путь должен совпадать с UPLOADS_DIR в backend и nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # ВАЖНО: Тот же путь, что и у бэкенда. Теперь Nginx увидит всё, что создал бэкенд.
       - ./backend/uploads:/app/uploads:ro
     depends_on:
       - backend
@@ -109,3 +81,5 @@ networks:
 
 volumes:
   postgres_data:
+  # Мы создаем внешний том для надежной передачи файлов между контейнерами
+  aero_uploads:
