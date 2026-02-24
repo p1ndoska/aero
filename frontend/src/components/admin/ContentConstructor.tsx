@@ -186,8 +186,8 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
     
     // Для файлов
     if (element.type === 'file') {
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit для файлов
-        toast.error('Размер файла не должен превышать 10MB');
+      if (file.size > 1000 * 1024 * 1024) { // 1000MB limit для файлов
+        toast.error('Размер файла не должен превышать 1000MB');
         return;
       }
 
@@ -297,8 +297,8 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
         toast.success('Изображение успешно загружено');
       } else {
         // Загрузка файла
-        if (file.size > 10 * 1024 * 1024) {
-          toast.error('Размер файла не должен превышать 10MB');
+        if (file.size > 1000 * 1024 * 1024) {
+          toast.error('Размер файла не должен превышать 1000MB');
           return;
         }
 
@@ -1501,7 +1501,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                       )}
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      Поддерживаются любые файлы (максимум 10MB)
+                      Поддерживаются любые файлы (максимум 1000MB)
                     </p>
                   </div>
 
