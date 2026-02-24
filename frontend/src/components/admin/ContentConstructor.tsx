@@ -757,8 +757,25 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                 ) : (
                   <Input
                     id={`content-${element.id}`}
-                    value={element.content}
-                    onChange={(e) => updateElement(element.id, { content: e.target.value })}
+                    value={
+                      element.type === 'file'
+                        ? (element.props?.fileName ?? element.content)
+                        : element.content
+                    }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (element.type === 'file') {
+                        updateElement(element.id, { 
+                          content: value,
+                          props: { 
+                            ...element.props, 
+                            fileName: value 
+                          }
+                        });
+                      } else {
+                        updateElement(element.id, { content: value });
+                      }
+                    }}
                     placeholder={
                       element.type === 'heading' ? 'Введите заголовок' :
                       element.type === 'link' ? 'Введите текст ссылки' :
