@@ -96,7 +96,7 @@ const NewsDetailPage: React.FC = () => {
             />
           </div>
         );
-      case 'file':
+      case 'file': {
         const formatFileSize = (bytes: number) => {
           if (bytes === 0) return '0 Bytes';
           const k = 1024;
@@ -104,6 +104,9 @@ const NewsDetailPage: React.FC = () => {
           const i = Math.floor(Math.log(bytes) / Math.log(k));
           return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         };
+        const displayName = cell.fileName
+          ? cell.fileName.replace(/\.[^/.]+$/, '')
+          : '';
         return (
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-gray-600" />
@@ -112,10 +115,11 @@ const NewsDetailPage: React.FC = () => {
               download={cell.fileName}
               className="text-blue-600 hover:text-blue-800 text-sm"
             >
-              {cell.fileName} ({formatFileSize(cell.fileSize)})
+              {displayName || cell.fileName} ({formatFileSize(cell.fileSize)})
             </a>
           </div>
         );
+      }
       default:
         return <span>{typeof cell === 'string' ? cell : JSON.stringify(cell)}</span>;
     }
