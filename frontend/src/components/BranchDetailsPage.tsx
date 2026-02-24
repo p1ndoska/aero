@@ -430,7 +430,7 @@ export default function BranchDetailsPage() {
                                     />
                                   </div>
                                 );
-                              case 'file': {
+                              case 'file':
                                 const formatFileSize = (bytes: number) => {
                                   if (bytes === 0) return '0 Bytes';
                                   const k = 1024;
@@ -438,22 +438,18 @@ export default function BranchDetailsPage() {
                                   const i = Math.floor(Math.log(bytes) / Math.log(k));
                                   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
                                 };
-                                const displayName = cell.fileName
-                                  ? cell.fileName.replace(/\.[^/.]+$/, '')
-                                  : '';
                                 return (
                                   <div className="flex items-center gap-2">
                                     <FileText className="w-4 h-4 text-gray-600" />
-                                    <a 
+                                    <a
                                       href={`${BASE_URL}${cell.fileUrl?.startsWith('/') ? '' : '/'}${cell.fileUrl}`}
                                       download={cell.fileName}
                                       className="text-blue-600 hover:text-blue-800 text-sm"
                                     >
-                                      {displayName || cell.fileName} ({formatFileSize(cell.fileSize)})
+                                      {cell.fileName} ({formatFileSize(cell.fileSize)})
                                     </a>
                                   </div>
                                 );
-                              }
                               default:
                                 return <span>{typeof cell === 'string' ? cell : JSON.stringify(cell)}</span>;
                             }
@@ -496,6 +492,10 @@ export default function BranchDetailsPage() {
                             const i = Math.floor(Math.log(bytes) / Math.log(k));
                             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
                           };
+                          const fileDisplayName =
+                            (element.content && String(element.content).trim())
+                              ? String(element.content).trim()
+                              : (element.props.fileName || 'Неизвестный файл');
                           return (
                             <div key={index} className="mb-4 flex items-center gap-3 p-4 border border-gray-300 rounded-lg bg-gray-50">
                               <div className="flex-shrink-0">
@@ -505,7 +505,7 @@ export default function BranchDetailsPage() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-gray-900 break-words">
-                                  {element.props.fileName || 'Неизвестный файл'}
+                                  {fileDisplayName}
                                 </p>
                                 <p className="text-xs text-gray-500">
                                   {element.props.fileSize ? formatFileSize(element.props.fileSize) : ''}

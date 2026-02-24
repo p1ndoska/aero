@@ -225,7 +225,7 @@ export default function AboutCompanyPage() {
             </table>
           </div>
         );
-      case 'file': {
+      case 'file':
         if (!element.props?.fileUrl) return null;
         const formatFileSize = (bytes: number) => {
           if (bytes === 0) return '0 Bytes';
@@ -234,9 +234,10 @@ export default function AboutCompanyPage() {
           const i = Math.floor(Math.log(bytes) / Math.log(k));
           return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         };
-        const displayName = element.props.fileName
-          ? element.props.fileName.replace(/\.[^/.]+$/, '')
-          : '';
+        const fileDisplayName =
+          (element.content && String(element.content).trim())
+            ? String(element.content).trim()
+            : (element.props.fileName || t('unknown_file'));
         return (
           <div className="mb-4 flex items-center gap-3 p-4 border border-gray-300 rounded-lg bg-gray-50">
             <div className="flex-shrink-0">
@@ -246,7 +247,7 @@ export default function AboutCompanyPage() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 break-words">
-                {element.props.fileName || t('unknown_file')}
+                {fileDisplayName}
               </p>
               <p className="text-xs text-gray-500">
                 {element.props.fileType && `${element.props.fileType} • `}
@@ -262,7 +263,6 @@ export default function AboutCompanyPage() {
             </a>
           </div>
         );
-      }
       case 'video':
         if (!element.props?.videoSrc) return null;
         // Если URL уже полный (начинается с http), используем как есть, иначе добавляем BASE_URL

@@ -570,12 +570,15 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
           };
+          const fileDisplayName = (element.content && element.content.trim())
+            ? element.content.trim()
+            : (element.props.fileName || 'Неизвестный файл');
           return (
             <div className="flex items-center gap-2 p-3 border border-gray-300 rounded bg-gray-50">
               <FileText className="w-5 h-5 text-gray-600" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 break-words">
-                  {element.props.fileName || 'Неизвестный файл'}
+                  {fileDisplayName}
                 </p>
                 <p className="text-xs text-gray-500">
                   {element.props.fileType && `${element.props.fileType} • `}
@@ -739,7 +742,9 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                 <Label htmlFor={`content-${element.id}`}>
                   {element.type === 'heading' ? 'Текст заголовка' :
                    element.type === 'paragraph' ? 'Текст абзаца' :
-                   element.type === 'link' ? 'Текст ссылки' : 'Описание изображения'}
+                   element.type === 'link' ? 'Текст ссылки' :
+                   element.type === 'file' ? 'Описание файла' :
+                   'Описание изображения'}
                 </Label>
                 {element.type === 'paragraph' ? (
                   <Textarea
@@ -756,7 +761,9 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                     onChange={(e) => updateElement(element.id, { content: e.target.value })}
                     placeholder={
                       element.type === 'heading' ? 'Введите заголовок' :
-                      element.type === 'link' ? 'Введите текст ссылки' : 'Введите описание изображения'
+                      element.type === 'link' ? 'Введите текст ссылки' :
+                      element.type === 'file' ? 'Введите описание файла' :
+                      'Введите описание изображения'
                     }
                     className="break-words min-w-0 force-break"
                   />
