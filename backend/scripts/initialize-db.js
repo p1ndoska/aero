@@ -14,6 +14,7 @@ const { seedAppealsCategories } = require('./seed-appeals-categories');
 const { seedServicesCategories } = require('./seed-services-categories');
 const { updateAboutCompanyPageContentTitles } = require('./update-about-company-page-content-titles');
 const { updateSocialWorkPageContentTitles } = require('./update-social-work-page-content-titles');
+const { addQualityQuestionnaireCategories } = require('./add-quality-questionnaire-categories');
 
 const prisma = new PrismaClient();
 
@@ -171,6 +172,16 @@ async function initializeDatabase() {
       console.log(' Заголовки страниц социальной работы обновлены');
     } catch (error) {
       console.warn('⚠️ Предупреждение при обновлении заголовков социальной работы:', error.message);
+      // Не прерываем выполнение, это не критично
+    }
+    
+    // 10. Создаем категории анкет качества
+    console.log('\n📋 Шаг 10: Создание категорий анкет качества...');
+    try {
+      await addQualityQuestionnaireCategories();
+      console.log(' Категории анкет качества созданы');
+    } catch (error) {
+      console.warn('⚠️ Предупреждение при создании категорий анкет качества:', error.message);
       // Не прерываем выполнение, это не критично
     }
     
