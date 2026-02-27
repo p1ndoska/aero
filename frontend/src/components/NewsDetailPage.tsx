@@ -573,13 +573,10 @@ const NewsDetailPage: React.FC = () => {
                             </div>
                           </>
                         ) : (
-                          // Если пользователь авторизован или нет приватного контента, показываем весь контент
+                          // Если пользователь авторизован или нет приватного контента,
+                          // показываем только те блоки, которые он имеет право видеть
                           contentElements.map((element, index) => {
-                            const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
-                            // Показываем приватный контент только авторизованным пользователям
-                            if (isPrivate && !isAuthenticated) {
-                              return null;
-                            }
+                            if (!canViewElement(element)) return null;
                             return (
                               <div key={element.id || index}>
                                 {renderContentElement(element)}

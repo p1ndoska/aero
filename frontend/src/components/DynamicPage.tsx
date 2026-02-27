@@ -1123,17 +1123,15 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
 
                     return (
                       <>
-                        {/* Показываем публичный контент */}
+                        {/* Показываем публичный контент до авторизации */}
                         {translatedContent.map((element: any, index: number) => {
                           const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
-                          if (!isPrivate) {
-                            return (
-                              <div key={element.id || `content-${index}`}>
-                                {renderContentElement(element)}
-                              </div>
-                            );
-                          }
-                          return null;
+                          if (isPrivate) return null;
+                          return (
+                            <div key={element.id || `content-${index}`}>
+                              {renderContentElement(element)}
+                            </div>
+                          );
                         })}
                         
                         {/* Показываем одну форму логина для всех приватных блоков */}
@@ -1205,18 +1203,51 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
                     );
                   }
                   
-                  // Если пользователь авторизован или нет приватного контента, показываем весь контент
+                  // Если пользователь авторизован или нет приватного контента,
+                  // показываем только те блоки, которые он имеет право видеть
                   return translatedContent.map((element: any, index: number) => {
+                    // Правило доступа: приватность + роли
                     const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
-                    // Показываем приватный контент только авторизованным пользователям
-                    if (isPrivate && !isAuthenticated) {
+                    if (!isPrivate) {
+                      // Публичный блок — всегда виден
+                      return (
+                        <div key={element.id || `content-${index}`}>
+                          {renderContentElement(element)}
+                        </div>
+                      );
+                    }
+
+                    // Приватный блок: только для авторизованных
+                    if (!isAuthenticated) {
                       return null;
                     }
-                    return (
-                      <div key={element.id || `content-${index}`}>
-                        {renderContentElement(element)}
-                      </div>
-                    );
+
+                    const roleValue = user?.role;
+                    const currentRole = (typeof roleValue === 'string' ? roleValue : roleValue?.name || '').toString().toUpperCase();
+                    const allowedRoles = Array.isArray(element.allowedRoles)
+                      ? element.allowedRoles.map((r: string) => r.toString().toUpperCase())
+                      : [];
+
+                    // Если список ролей не задан — доступен любому авторизованному
+                    if (!allowedRoles.length) {
+                      return (
+                        <div key={element.id || `content-${index}`}>
+                          {renderContentElement(element)}
+                        </div>
+                      );
+                    }
+
+                    // SUPER_ADMIN видит всё
+                    if (currentRole === 'SUPER_ADMIN' || allowedRoles.includes(currentRole)) {
+                      return (
+                        <div key={element.id || `content-${index}`}>
+                          {renderContentElement(element)}
+                        </div>
+                      );
+                    }
+
+                    // Остальным блок скрыт
+                    return null;
                   });
                 })()}
               </div>
