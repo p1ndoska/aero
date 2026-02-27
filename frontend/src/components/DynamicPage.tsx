@@ -1205,50 +1205,152 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
                   
                   // Если пользователь авторизован или нет приватного контента,
                   // показываем только те блоки, которые он имеет право видеть
-                  return translatedContent.map((element: any, index: number) => {
-                    // Правило доступа: приватность + роли
-                    const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
-                    if (!isPrivate) {
-                      // Публичный блок — всегда виден
-                      return (
-                        <div key={element.id || `content-${index}`}>
-                          {renderContentElement(element)}
-                        </div>
-                      );
-                    }
+                  return (() => {
+                    let hasRestrictedForCurrentUser = false;
 
-                    // Приватный блок: только для авторизованных
-                    if (!isAuthenticated) {
+                    const visibleElements = translatedContent.map((element: any, index: number) => {
+                      // Правило доступа: приватность + роли
+                      const isPrivate =
+                        element.isPrivate === true ||
+                        String(element.isPrivate) === 'true' ||
+                        Number(element.isPrivate) === 1;
+                      if (!isPrivate) {
+                        // Публичный блок — всегда виден
+                        return (
+                          <div key={element.id || `content-${index}`}>
+                            {renderContentElement(element)}
+                          </div>
+                        );
+                      }
+
+                      // Приватный блок: только для авторизованных
+                      if (!isAuthenticated) {
+                        return null;
+                      }
+
+                      const roleValue = user?.role;
+                      const currentRole = (typeof roleValue === 'string' ? roleValue : roleValue?.name || '').toString().toUpperCase();
+                      const allowedRoles = Array.isArray(element.allowedRoles)
+                        ? element.allowedRoles.map((r: string) => r.toString().toUpperCase())
+                        : [];
+
+                      // Если список ролей не задан — доступен любому авторизованному
+                      if (!allowedRoles.length) {
+                        return (
+                          <div key={element.id || `content-${index}`}>
+                            {renderContentElement(element)}
+                          </div>
+                        );
+                      }
+
+                      // SUPER_ADMIN видит всё
+                      if (currentRole === 'SUPER_ADMIN' || allowedRoles.includes(currentRole)) {
+                        return (
+                          <div key={element.id || `content-${index}`}>
+                            {renderContentElement(element)}
+                          </div>
+                        );
+                      }
+
+                      // Остальным блок скрыт, но помечаем, что были недоступные блоки
+                      hasRestrictedForCurrentUser = true;
                       return null;
-                    }
+                    });
 
-                    const roleValue = user?.role;
-                    const currentRole = (typeof roleValue === 'string' ? roleValue : roleValue?.name || '').toString().toUpperCase();
-                    const allowedRoles = Array.isArray(element.allowedRoles)
-                      ? element.allowedRoles.map((r: string) => r.toString().toUpperCase())
-                      : [];
+                    return (
+                      <>
+                        {visibleElements}
+                        {hasRestrictedForCurrentUser && (
+                          <div className="mt-6 mb-4 p-6 bg-white border border-amber-300 rounded-lg shadow-sm">
+                            <div className="flex items-center gap-3 text-gray-800 mb-4">
+                              <svg className="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                  fillRule="evenodd"
+                                  d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                              <div>
+                                <p className="font-medium text-lg">Доступ к части контента ограничен</p>
+                                <p className="text-sm text-gray-600">
+                                  У вашей текущей учетной записи нет прав для просмотра некоторых блоков. Вы можете войти под другой
+                                  учетной записью.
+                                </p>
+                              </div>
+                            </div>
 
-                    // Если список ролей не задан — доступен любому авторизованному
-                    if (!allowedRoles.length) {
-                      return (
-                        <div key={element.id || `content-${index}`}>
-                          {renderContentElement(element)}
-                        </div>
-                      );
-                    }
+                            <form
+                              onSubmit={async (e: React.FormEvent) => {
+                                e.preventDefault();
+                                try {
+                                  const result = await login({ email: loginEmail, password: loginPassword }).unwrap();
+                                  if (result.token) {
+                                    dispatch(
+                                      setCredentials({
+                                        user: result.user,
+                                        token: result.token,
+                                        mustChangePassword: (result as any).mustChangePassword || false,
+                                      }),
+                                    );
+                                    toast.success(`Добро пожаловать, ${result.user.email}! 🎉`);
+                                    setLoginEmail('');
+                                    setLoginPassword('');
+                                  }
+                                } catch (err: any) {
+                                  toast.error(err.data?.error || 'Ошибка входа');
+                                }
+                              }}
+                              className="space-y-4 mt-4"
+                            >
+                              <div className="space-y-2">
+                                <Label htmlFor="login-email-roles" className="text-gray-700">
+                                  Email
+                                </Label>
+                                <div className="relative">
+                                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+                                  <Input
+                                    id="login-email-roles"
+                                    type="email"
+                                    placeholder="Введите email"
+                                    value={loginEmail}
+                                    onChange={(e) => setLoginEmail(e.target.value)}
+                                    required
+                                    className="pl-10"
+                                  />
+                                </div>
+                              </div>
 
-                    // SUPER_ADMIN видит всё
-                    if (currentRole === 'SUPER_ADMIN' || allowedRoles.includes(currentRole)) {
-                      return (
-                        <div key={element.id || `content-${index}`}>
-                          {renderContentElement(element)}
-                        </div>
-                      );
-                    }
+                              <div className="space-y-2">
+                                <Label htmlFor="login-password-roles" className="text-gray-700">
+                                  Пароль
+                                </Label>
+                                <div className="relative">
+                                  <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+                                  <Input
+                                    id="login-password-roles"
+                                    type="password"
+                                    placeholder="Введите пароль"
+                                    value={loginPassword}
+                                    onChange={(e) => setLoginPassword(e.target.value)}
+                                    required
+                                    className="pl-10"
+                                  />
+                                </div>
+                              </div>
 
-                    // Остальным блок скрыт
-                    return null;
-                  });
+                              <Button
+                                type="submit"
+                                className="w-full bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                                disabled={isLoggingIn}
+                              >
+                                {isLoggingIn ? 'Вход...' : 'Войти под другой учетной записью'}
+                              </Button>
+                            </form>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })();
                 })()}
               </div>
             </div>
