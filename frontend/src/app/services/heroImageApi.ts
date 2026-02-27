@@ -1,13 +1,9 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { createBaseQueryWithAuth } from './baseQueryWithAuth';
 
-const BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin);
-
 export const heroImageApi = createApi({
   reducerPath: 'heroImageApi',
-  baseQuery: createBaseQueryWithAuth(BASE_URL),
+  baseQuery: createBaseQueryWithAuth(),
   tagTypes: ['HeroImage'],
   endpoints: (builder) => ({
     getCurrentHeroImage: builder.query<{
@@ -15,7 +11,7 @@ export const heroImageApi = createApi({
       imageUrl: string | null;
       hasImage: boolean;
     }, void>({
-      query: () => '/api/hero-image/current',
+      query: () => '/hero-image/current',
       providesTags: ['HeroImage'],
     }),
     uploadHeroImage: builder.mutation<{
@@ -24,7 +20,7 @@ export const heroImageApi = createApi({
       imageUrl: string;
     }, FormData>({
       query: (formData) => ({
-        url: '/api/hero-image/upload',
+        url: '/hero-image/upload',
         method: 'POST',
         body: formData,
       }),
@@ -35,7 +31,7 @@ export const heroImageApi = createApi({
       message: string;
     }, void>({
       query: () => ({
-        url: '/api/hero-image/remove',
+        url: '/hero-image/remove',
         method: 'DELETE',
       }),
       invalidatesTags: ['HeroImage'],

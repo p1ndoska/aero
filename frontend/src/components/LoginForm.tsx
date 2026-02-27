@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
-import { Mail, Lock } from "lucide-react";
+import { Mail, Lock as LockIcon } from "lucide-react";
 import { toast } from "react-toastify";
 
 interface LoginModalProps {
@@ -108,7 +108,7 @@ export const LoginForm: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 Пароль
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6A81A9] h-4 w-4" />
+                <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6A81A9] h-4 w-4" />
                 <Input
                     id="password"
                     type="password"

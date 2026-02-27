@@ -23,7 +23,7 @@ import {
   Briefcase, 
   Building, 
   FileText, 
-  Lock, 
+  Lock as LockIcon, 
   Settings,
   Edit,
   Save,
@@ -524,7 +524,7 @@ export default function UserProfile() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Lock className="w-5 h-5" />
+                      <LockIcon className="w-5 h-5" />
                       {t('security')}
                     </CardTitle>
                   </CardHeader>
@@ -596,7 +596,7 @@ export default function UserProfile() {
                       <Dialog open={isChangePasswordOpen} onOpenChange={setIsChangePasswordOpen}>
                         <DialogTrigger asChild>
                           <Button variant="outline">
-                            <Lock className="w-4 h-4 mr-2" />
+                            <LockIcon className="w-4 h-4 mr-2" />
                             {t('change_password')}
                           </Button>
                         </DialogTrigger>

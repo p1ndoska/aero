@@ -32,25 +32,4 @@ export default defineConfig({
     },
     include: ['@jonesstack/react-form-engine'],
   },
-  // Настройка для CommonJS пакетов
-  build: {
-    // Игнорировать предупреждения о дублирующихся ключах
-    rollupOptions: {
-      onwarn(warning, warn) {
-        // Игнорировать предупреждения о дублирующихся ключах в объектах
-        if (warning.code === 'PLUGIN_WARNING' || warning.message?.includes('Duplicate')) {
-          return;
-        }
-        warn(warning);
-      },
-      external: (id) => {
-        // Не делаем внешним @jonesstack/react-form-engine
-        return false;
-      },
-    },
-    commonjsOptions: {
-      include: [/node_modules/],
-      transformMixedEsModules: true,
-    },
-  },
 })

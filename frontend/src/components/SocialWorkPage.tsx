@@ -14,7 +14,7 @@ import { getTranslatedField } from '../utils/translationHelpers';
 import { getRolePermissions } from '@/utils/roleUtils';
 import type { TableCellContent } from '@/types/branch';
 import { BASE_URL } from '@/constants';
-import { FileText, Mail, Lock } from 'lucide-react';
+import { FileText, Mail, Lock as LockIcon } from 'lucide-react';
 import { useLoginMutation } from '@/app/services/userApi';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '@/features/user/userSlice';
@@ -616,7 +616,7 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
                                 Пароль
                               </Label>
                               <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+                                <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                                 <Input
                                   id="login-password"
                                   type="password"

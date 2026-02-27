@@ -6,11 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Trash2, MoveUp, MoveDown, Type, Heading, Link, Image, Upload, List, Table, FileText, Lock, Video, FileStack } from 'lucide-react';
+import { Plus, Trash2, MoveUp, MoveDown, Type, Heading, Link, Image, Upload, List, Table, FileText, Lock as LockIcon, Video, FileStack } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUploadImageMutation, useUploadFileMutation } from '@/app/services/uploadApi';
 import type { ContentElement, TableCellContent, TableRow } from '@/types/branch';
 import { BASE_URL } from '@/constants';
+import { useGetRolesQuery } from '@/app/services/roleApi';
 
 interface ContentConstructorProps {
   content: ContentElement[];
@@ -26,6 +27,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
   const cellFileInputRef = useRef<HTMLInputElement>(null);
   const [uploadImage] = useUploadImageMutation();
   const [uploadFile] = useUploadFileMutation();
+  const { data: roles } = useGetRolesQuery();
 
   // Принудительное применение стилей выравнивания и цветов после рендеринга
   useEffect(() => {
@@ -1705,7 +1707,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
               )}
 
               {/* Настройка приватности блока */}
-              <div className="border-t pt-4 mt-4">
+              <div className="border-t pt-4 mt-4 space-y-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id={`isPrivate-${element.id}`}
@@ -1713,15 +1715,58 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                     onCheckedChange={(checked) => updateElement(element.id, { isPrivate: !!checked })}
                   />
                   <Label htmlFor={`isPrivate-${element.id}`} className="flex items-center gap-2 text-sm">
-                    <Lock className="w-4 h-4" />
+                    <LockIcon className="w-4 h-4" />
                     Только для авторизованных пользователей
                   </Label>
                 </div>
                 {element.isPrivate && (
-                  <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
-                    <Lock className="w-3 h-3" />
-                    Этот блок будет скрыт для неавторизованных пользователей
-                  </p>
+                  <>
+                    <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                      <LockIcon className="w-3 h-3" />
+                      Этот блок будет скрыт для неавторизованных пользователей
+                    </p>
+                    {roles && roles.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        <p className="text-xs text-gray-600">
+                          Роли, которым виден этот блок:
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {roles.map((role: any) => {
+                            const roleName = (role.name || '').toString().toUpperCase();
+                            if (!roleName) return null;
+                            const selected = Array.isArray(element.allowedRoles)
+                              ? element.allowedRoles.includes(roleName)
+                              : false;
+                            return (
+                              <label
+                                key={role.id}
+                                className={`flex items-center gap-1 text-xs border rounded-full px-2 py-1 bg-white ${
+                                  selected ? 'border-[#2A52BE] text-[#213659]' : 'border-gray-300 text-gray-700'
+                                }`}
+                              >
+                                <Checkbox
+                                  checked={selected}
+                                  onCheckedChange={(checked) => {
+                                    const current = Array.isArray(element.allowedRoles)
+                                      ? element.allowedRoles
+                                      : [];
+                                    const next = checked
+                                      ? Array.from(new Set([...current, roleName]))
+                                      : current.filter((r) => r !== roleName);
+                                    updateElement(element.id, { allowedRoles: next });
+                                  }}
+                                />
+                                <span>{roleName}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                        <p className="text-[11px] text-gray-500">
+                          Если роли не выбраны, блок будет виден всем авторизованным пользователям.
+                        </p>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>

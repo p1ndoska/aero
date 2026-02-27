@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Briefcase, MapPin, Clock, FileText, Settings, Type, Heading, Image as ImageIcon, List, Mail, Lock } from 'lucide-react';
+import { Briefcase, MapPin, Clock, FileText, Settings, Type, Heading, Image as ImageIcon, List, Mail, Lock as LockIcon } from 'lucide-react';
 import { useLoginMutation } from '@/app/services/userApi';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '@/features/user/userSlice';
@@ -580,12 +580,12 @@ export default function VacanciesPage() {
                           </div>
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="login-password" className="text-gray-700">
-                            Пароль
-                          </Label>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+                            <div className="space-y-2">
+                              <Label htmlFor="login-password" className="text-gray-700">
+                                Пароль
+                              </Label>
+                              <div className="relative">
+                                <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                             <Input
                               id="login-password"
                               type="password"

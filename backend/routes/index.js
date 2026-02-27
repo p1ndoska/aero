@@ -94,7 +94,7 @@ const uploadAnyFile = multer({
     storage: storage,
     fileFilter: anyFileFilter,
     limits: {
-        fileSize: 20 * 1024 * 1024 // Ограничение размера файла до 20MB для любых файлов
+        fileSize: 1000 * 1024 * 1024 // Ограничение размера файла до 1000MB для любых файлов
     }
 });
 
@@ -118,7 +118,7 @@ router.post('/upload', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOUT_ADM
             console.error('Upload error:', err);
             if (err.code === 'LIMIT_FILE_SIZE') {
                 return res.status(413).json({ 
-                    error: 'Файл слишком большой. Максимальный размер: 20MB' 
+                    error: 'Файл слишком большой. Максимальный размер: 1000MB' 
                 });
             }
             return res.status(400).json({ error: 'Ошибка загрузки файла: ' + err.message });
@@ -142,7 +142,7 @@ router.post('/upload-file', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOU
             console.error('File upload error:', err);
             if (err.code === 'LIMIT_FILE_SIZE') {
                 return res.status(413).json({ 
-                    error: 'Файл слишком большой. Максимальный размер: 20MB' 
+                    error: 'Файл слишком большой. Максимальный размер: 1000MB' 
                 });
             }
             return res.status(400).json({ error: 'Ошибка загрузки файла: ' + err.message });

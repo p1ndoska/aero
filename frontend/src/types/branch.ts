@@ -4,6 +4,7 @@ export interface ContentElement {
   type: 'paragraph' | 'heading' | 'link' | 'image' | 'list' | 'table' | 'file' | 'video' | 'page-link';
   content: string;
   isPrivate?: boolean; // Только для авторизованных пользователей
+  allowedRoles?: string[]; // Роли, которым доступен приватный блок (если не задано — всем авторизованным)
   props?: {
     level?: number; // Для заголовков (1-6)
     color?: string; // Цвет заголовка

@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useGetNewsByIdQuery } from '@/app/services/newsApi';
-import { ArrowLeft, Calendar, Tag, Image as ImageIcon, User, X, ChevronLeft, ChevronRight, FileText, Mail, Lock } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, Image as ImageIcon, User, X, ChevronLeft, ChevronRight, FileText, Mail, Lock as LockIcon } from 'lucide-react';
 import { BASE_URL } from '@/constants';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslatedField } from '@/utils/translationHelpers';
@@ -19,7 +19,7 @@ const NewsDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const newsId = id ? parseInt(id, 10) : null;
   const { language, t } = useLanguage();
-  const { isAuthenticated } = useSelector((state: any) => state.auth);
+  const { isAuthenticated, user } = useSelector((state: any) => state.auth);
   const dispatch = useDispatch<AppDispatch>();
   const [login, { isLoading: isLoggingIn }] = useLoginMutation();
   const [loginEmail, setLoginEmail] = useState('');
@@ -119,6 +119,29 @@ const NewsDetailPage: React.FC = () => {
       default:
         return <span>{typeof cell === 'string' ? cell : JSON.stringify(cell)}</span>;
     }
+  };
+
+  const roleValue = user?.role;
+  const currentRole = (typeof roleValue === 'string' ? roleValue : roleValue?.name || '').toString().toUpperCase();
+
+  const isElementPrivate = (element: any) => {
+    return element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
+  };
+
+  const canViewElement = (element: any): boolean => {
+    const isPrivate = isElementPrivate(element);
+    if (!isPrivate) return true;
+    if (!isAuthenticated) return false;
+
+    const allowedRoles = Array.isArray(element.allowedRoles)
+      ? element.allowedRoles.map((r: string) => r.toString().toUpperCase())
+      : [];
+
+    if (!allowedRoles.length) return true; // нет ограничений — любой авторизованный
+    if (!currentRole) return false;
+    if (currentRole === 'SUPER_ADMIN') return true;
+
+    return allowedRoles.includes(currentRole);
   };
 
   // Функция для рендеринга элементов контента конструктора
@@ -526,7 +549,7 @@ const NewsDetailPage: React.FC = () => {
                                     Пароль
                                   </Label>
                                   <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+                                    <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                                     <Input
                                       id="login-password"
                                       type="password"

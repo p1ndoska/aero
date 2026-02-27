@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
-import { Lock, Eye, EyeOff } from 'lucide-react';
+import { Lock as LockIcon, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -96,7 +96,7 @@ export const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> =
               {t('new_password') || 'Новый пароль'} *
             </Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6A81A9] h-4 w-4" />
+              <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6A81A9] h-4 w-4" />
               <Input
                 id="newPassword"
                 type={showNewPassword ? "text" : "password"}
@@ -125,7 +125,7 @@ export const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> =
               {t('confirm_password') || 'Подтвердите пароль'} *
             </Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6A81A9] h-4 w-4" />
+              <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6A81A9] h-4 w-4" />
               <Input
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}

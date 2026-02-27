@@ -6,9 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Edit, Trash2, Plus, Save, FolderOpen, Users, Building2, Newspaper, UserCheck, Briefcase, Building, Heart, Info, Plane, Mail, Settings, Image as ImageIcon, Calendar, BarChart3, FileText } from "lucide-react";
+import { Edit, Trash2, Plus, Save, FolderOpen, Users, Building2, Newspaper, UserCheck, Briefcase, Building, Heart, Info, Plane, Mail, Settings, Image as ImageIcon, Calendar, BarChart3, FileText, Lock as LockIcon } from "lucide-react";
 import { getRolePermissions } from "@/utils/roleUtils";
-import { useGetRolesQuery, useUpdateRoleMutation, useDeleteRoleMutation } from "@/app/services/roleApi";
+import { useGetRolesQuery, useCreateRoleMutation, useUpdateRoleMutation, useDeleteRoleMutation } from "@/app/services/roleApi";
 import { useGetAllUsersQuery, useUpdateUserMutation, useDeleteUserMutation, useRegisterMutation } from "@/app/services/userApi";
 //import { UserManagement } from "./UserManagement";
 import CategoriesAdminPage from "./CategoriesAdminPage";
@@ -62,7 +62,27 @@ export default function SuperAdminDashboard() {
         return 'roles';
     };
 
-    const [activeTab, setActiveTab] = useState<'roles' | 'users' | 'categories' | 'branches' | 'news' | 'management' | 'vacancies' | 'resumes' | 'logos' | 'social-categories' | 'about-company-categories' | 'aeronautical-info-categories' | 'appeals-categories' | 'services-categories' | 'service-requests' | 'hero-image' | 'reception-bookings' | 'statistics'>(getFirstAvailableTab());
+    const [activeTab, setActiveTab] = useState<
+        'roles'
+        | 'content-roles'
+        | 'users'
+        | 'categories'
+        | 'branches'
+        | 'news'
+        | 'management'
+        | 'vacancies'
+        | 'resumes'
+        | 'logos'
+        | 'social-categories'
+        | 'about-company-categories'
+        | 'aeronautical-info-categories'
+        | 'appeals-categories'
+        | 'services-categories'
+        | 'service-requests'
+        | 'hero-image'
+        | 'reception-bookings'
+        | 'statistics'
+    >(getFirstAvailableTab());
 
     // Принудительное обновление данных при переключении на вкладку логотипов
     useEffect(() => {
@@ -122,6 +142,25 @@ export default function SuperAdminDashboard() {
                         </h3>
                     </div>
                 </div>
+                       )}
+
+                       {/* Роли доступа к контенту - отдельная вкладка, использует те же роли */}
+                       {permissions.canManageRoles && (
+                           <div 
+                               className={`bg-white rounded-xl p-6 cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl border-2 ${
+                                   activeTab === 'content-roles' 
+                                       ? 'border-[#2A52BE] bg-[#E8F0FF]' 
+                                       : 'border-gray-200 hover:border-[#2A52BE]'
+                               }`}
+                               onClick={() => setActiveTab('content-roles')}
+                           >
+                               <div className="text-center">
+                                   <LockIcon className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
+                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                       Роли доступа к контенту
+                                   </h3>
+                               </div>
+                           </div>
                        )}
 
                        {/* Управление пользователями - только SUPER_ADMIN */}
@@ -433,6 +472,7 @@ export default function SuperAdminDashboard() {
             <div className="bg-white rounded-xl p-6 shadow-lg">
                 {activeTab === 'statistics' && permissions.canManageRoles && <StatisticsPanel />}
                 {activeTab === 'roles' && permissions.canManageRoles && <RolesPanel />}
+                {activeTab === 'content-roles' && permissions.canManageRoles && <ContentRolesPanel />}
                 {activeTab === 'users' && permissions.canManageUsers && <UsersPanel />}
                 {activeTab === 'categories' && permissions.canManageNews && <CategoriesAdminPage />}
                 {activeTab === 'branches' && permissions.canManageBranches && <BranchManagement />}
@@ -455,46 +495,45 @@ export default function SuperAdminDashboard() {
 }
 
 function RolesPanel() {
+    // Вкладка только для просмотра системных ролей (read-only)
     const { data: roles, isLoading, isError, error } = useGetRolesQuery(undefined, {
         refetchOnMountOrArgChange: true
     });
-    const [updateRole, { isLoading: isUpdating }] = useUpdateRoleMutation();
-    const [deleteRole] = useDeleteRoleMutation();
 
-    const [editingId, setEditingId] = useState<number | null>(null);
-    const [editingName, setEditingName] = useState("");
+    const coreRolesOrder = [
+        'SUPER_ADMIN',
+        'NEWS_ADMIN',
+        'ABOUT_ADMIN',
+        'SERVICES_ADMIN',
+        'AIRNAV_ADMIN',
+        'APPEALS_ADMIN',
+        'SOCIAL_ADMIN',
+        'MEDIA_ADMIN',
+        'USER',
+    ];
 
-    const save = async () => {
-        if (!editingId) return;
-        const name = editingName.trim().toUpperCase();
-        if (!name) return;
-        try {
-            await updateRole({ id: editingId, name }).unwrap();
-            toast.success("Роль обновлена");
-            setEditingId(null); setEditingName("");
-            // Не нужно вызывать refetch, так как invalidatesTags автоматически обновит кеш
-        } catch (e: any) { toast.error(e.data?.error || "Ошибка"); }
-    };
-
-    const remove = async (id: number) => {
-        if (!confirm("Удалить роль?")) return;
-        try { 
-            await deleteRole(id).unwrap(); 
-            toast.success("Удалено");
-            // Не нужно вызывать refetch, так как invalidatesTags автоматически обновит кеш
-        }
-        catch (e: any) { toast.error(e.data?.error || "Ошибка"); }
-    };
+    const sortedRoles = roles
+        ? [...roles].sort((a: any, b: any) => {
+            const ia = coreRolesOrder.indexOf((a.name || '').toUpperCase());
+            const ib = coreRolesOrder.indexOf((b.name || '').toUpperCase());
+            if (ia === -1 && ib === -1) return a.name.localeCompare(b.name);
+            if (ia === -1) return 1;
+            if (ib === -1) return -1;
+            return ia - ib;
+        })
+        : [];
 
     return (
         <div className="space-y-6">
             <div className="text-center">
-                       <h2 className="text-2xl font-bold text-[#213659] mb-2">Управление ролями</h2>
-                <p className="text-gray-600">Редактируйте роли пользователей</p>
+                <h2 className="text-2xl font-bold text-[#213659] mb-2">Системные роли (только чтение)</h2>
+                <p className="text-gray-600">
+                    Эти роли используются для прав доступа в системе. Их нельзя редактировать из панели администратора.
+                </p>
             </div>
 
             <div className="space-y-3">
-                       <h3 className="text-lg font-semibold text-[#213659]">Существующие роли</h3>
+                <h3 className="text-lg font-semibold text-[#213659]">Список ролей</h3>
                 {isLoading && <div className="text-center py-4 text-gray-500">Загрузка ролей...</div>}
                 {isError && (
                     <div className="text-center py-4 text-red-500">
@@ -504,19 +543,159 @@ function RolesPanel() {
                 {!isLoading && !isError && (!roles || roles.length === 0) && (
                     <div className="text-center py-4 text-gray-500">
                         Роли не найдены
-                        <div className="text-xs mt-2">Debug: isLoading={String(isLoading)}, isError={String(isError)}, roles={roles ? `Array(${roles.length})` : 'null'}</div>
                     </div>
                 )}
-                {!isLoading && !isError && roles && roles.length > 0 && roles.map((r: any) => (
+                {!isLoading && !isError && sortedRoles.length > 0 && sortedRoles.map((r: any) => (
+                    <div
+                        key={r.id}
+                        className="flex items-center justify-between gap-3 border border-gray-200 p-4 bg-white rounded-lg"
+                    >
+                        <div>
+                            <div className="text-[#213659] font-medium uppercase tracking-wide">{r.name}</div>
+                            <div className="text-xs text-gray-500 mt-1">
+                                ID: {r.id}
+                            </div>
+                        </div>
+                        <div className="text-xs text-gray-400">
+                            Только для чтения
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+function ContentRolesPanel() {
+    // Вкладка для создания / редактирования ролей доступа к контенту
+    const { data: roles, isLoading, isError, error } = useGetRolesQuery(undefined, {
+        refetchOnMountOrArgChange: true
+    });
+    const [createRole, { isLoading: isCreating }] = useCreateRoleMutation();
+    const [updateRole, { isLoading: isUpdating }] = useUpdateRoleMutation();
+    const [deleteRole] = useDeleteRoleMutation();
+
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editingName, setEditingName] = useState("");
+    const [newRoleName, setNewRoleName] = useState("");
+
+    const coreRoles = [
+        'SUPER_ADMIN',
+        'NEWS_ADMIN',
+        'ABOUT_ADMIN',
+        'SERVICES_ADMIN',
+        'AIRNAV_ADMIN',
+        'APPEALS_ADMIN',
+        'SOCIAL_ADMIN',
+        'MEDIA_ADMIN',
+        'USER',
+    ];
+
+    const save = async () => {
+        if (!editingId) return;
+        const name = editingName.trim().toUpperCase();
+        if (!name) return;
+        try {
+            await updateRole({ id: editingId, name }).unwrap();
+            toast.success("Роль обновлена");
+            setEditingId(null); setEditingName("");
+        } catch (e: any) { toast.error(e.data?.error || "Ошибка"); }
+    };
+
+    const remove = async (id: number, name: string) => {
+        const upper = (name || '').toUpperCase();
+        if (coreRoles.includes(upper)) {
+            toast.error("Системные роли удалить нельзя");
+            return;
+        }
+        if (!confirm(`Удалить роль "${name}"?`)) return;
+        try { 
+            await deleteRole(id).unwrap(); 
+            toast.success("Роль удалена");
+        }
+        catch (e: any) { toast.error(e.data?.error || "Ошибка"); }
+    };
+
+    const create = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const name = newRoleName.trim().toUpperCase();
+        if (!name) {
+            toast.error("Введите название роли");
+            return;
+        }
+        if (coreRoles.includes(name)) {
+            toast.error("Эта роль зарезервирована системой");
+            return;
+        }
+        try {
+            await createRole({ name }).unwrap();
+            toast.success("Роль создана");
+            setNewRoleName("");
+        } catch (e: any) {
+            toast.error(e.data?.error || "Ошибка создания роли");
+        }
+    };
+
+    const contentRoles = roles
+        ? roles.filter((r: any) => !coreRoles.includes((r.name || '').toUpperCase()))
+        : [];
+
+    return (
+        <div className="space-y-6">
+            <div className="text-center">
+                <h2 className="text-2xl font-bold text-[#213659] mb-2">Роли доступа к контенту</h2>
+                <p className="text-gray-600">
+                    Здесь вы можете создать дополнительные роли, которые будут использоваться для ограничения доступа к блокам контента.
+                </p>
+            </div>
+
+            {/* Создание новой роли */}
+            <form onSubmit={create} className="flex flex-col md:flex-row gap-3 items-stretch md:items-end border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <div className="flex-1">
+                    <Label className="text-sm text-[#213659]">Название новой роли</Label>
+                    <Input
+                        value={newRoleName}
+                        onChange={(e) => setNewRoleName(e.target.value)}
+                        placeholder="Например: CONTENT_MANAGERS"
+                        className="mt-1 bg-white border-[#B1D1E0] focus:border-[#213659]"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                        Рекомендуется использовать ЛАТИНСКИЕ БУКВЫ и подчеркивания (например, CONTENT_PILOTS).
+                    </p>
+                </div>
+                <Button
+                    type="submit"
+                    className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                    disabled={isCreating}
+                >
+                    {isCreating ? 'Создание...' : 'Создать роль'}
+                </Button>
+            </form>
+
+            {/* Список ролей */}
+            <div className="space-y-3">
+                <h3 className="text-lg font-semibold text-[#213659]">Дополнительные роли</h3>
+                {isLoading && <div className="text-center py-4 text-gray-500">Загрузка ролей...</div>}
+                {isError && (
+                    <div className="text-center py-4 text-red-500">
+                        Ошибка загрузки ролей: {error ? ('data' in error && error.data ? JSON.stringify(error.data) : 'Неизвестная ошибка') : 'Неизвестная ошибка'}
+                    </div>
+                )}
+                {!isLoading && !isError && contentRoles.length === 0 && (
+                    <div className="text-center py-4 text-gray-500">
+                        Пока нет дополнительных ролей. Создайте первую роль выше.
+                    </div>
+                )}
+                {!isLoading && !isError && contentRoles.length > 0 && contentRoles.map((r: any) => (
                     <div key={r.id} className="flex items-center gap-3 border border-gray-200 p-4 bg-white rounded-lg hover:shadow-md transition-shadow">
                         {editingId === r.id ? (
                             <>
                                 <Input 
                                     value={editingName} 
                                     onChange={(e)=>setEditingName(e.target.value)} 
-                                           className="bg-white border-[#B1D1E0] focus:border-[#213659] flex-1"
+                                    className="bg-white border-[#B1D1E0] focus:border-[#213659] flex-1"
                                 />
-                                       <Button onClick={save} className="bg-[#213659] hover:bg-[#1a2a4a] text-white" disabled={isUpdating}>
+                                <Button onClick={save} className="bg-[#213659] hover:bg-[#1a2a4a] text-white" disabled={isUpdating}>
                                     <Save className="w-4 h-4 mr-1"/>
                                     {isUpdating ? 'Сохранение...' : 'Сохранить'}
                                 </Button>
@@ -526,12 +705,12 @@ function RolesPanel() {
                             </>
                         ) : (
                             <>
-                                       <div className="flex-1 text-[#213659] font-medium">{r.name}</div>
+                                <div className="flex-1 text-[#213659] font-medium">{r.name}</div>
                                 <Button variant="outline" size="sm" onClick={()=>{setEditingId(r.id); setEditingName(r.name)}}>
                                     <Edit className="w-4 h-4 mr-1"/>
                                     Редактировать
                                 </Button>
-                                <Button variant="destructive" size="sm" onClick={()=>remove(r.id)}>
+                                <Button variant="destructive" size="sm" onClick={()=>remove(r.id, r.name)}>
                                     <Trash2 className="w-4 h-4"/>
                                 </Button>
                             </>
