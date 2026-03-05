@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import DynamicForm from './DynamicForm';
 
 const NewsDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -321,6 +322,12 @@ const NewsDetailPage: React.FC = () => {
             >
               {linkText}
             </a>
+          </div>
+        );
+      case 'form':
+        return (
+          <div className="my-6">
+            <DynamicForm fields={element.props?.formConfig?.fields || []} />
           </div>
         );
       default:

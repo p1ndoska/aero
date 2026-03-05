@@ -13,6 +13,7 @@ import ContentConstructor from './admin/ContentConstructor';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getTranslatedField } from '../utils/translationHelpers';
 import { BASE_URL } from '@/constants';
+import DynamicForm from './DynamicForm';
 
 export default function AboutCompanyPage() {
   const { language, t } = useLanguage();
@@ -305,6 +306,12 @@ export default function AboutCompanyPage() {
             >
               {linkText}
             </a>
+          </div>
+        );
+      case 'form':
+        return (
+          <div className="my-6">
+            <DynamicForm fields={element.props?.formConfig?.fields || []} />
           </div>
         );
       default:

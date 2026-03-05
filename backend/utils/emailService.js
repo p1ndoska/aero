@@ -1088,6 +1088,102 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             return { success: false, error: error.message, details: error.response || error.code };
         }
     }
+
+    /**
+     * Отправка данных динамической формы администратору
+     * @param {string} formName - Название формы (может быть пустым)
+     * @param {Object} formData - Объект с данными формы (ключ -> значение)
+     */
+    async sendDynamicFormSubmission(formName, formData) {
+        try {
+            if (!this.transporter) {
+                console.error(' Email transporter is not initialized!');
+                return { success: false, error: 'Email transporter is not initialized' };
+            }
+
+            const recipientEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER || process.env.SMTP_USER;
+            const fromEmail = this.getFromEmail();
+
+            if (!recipientEmail) {
+                console.warn('⚠️ ADMIN_EMAIL not set, using EMAIL_USER');
+                return { success: false, error: 'Admin email not configured' };
+            }
+
+            const title = formName || 'Новая заявка с динамической формы';
+
+            // Формируем HTML-таблицу с данными формы
+            let rowsHtml = '';
+            for (const [key, value] of Object.entries(formData || {})) {
+                const displayKey = key;
+                const displayValue = Array.isArray(value)
+                    ? value.join(', ')
+                    : typeof value === 'object'
+                        ? JSON.stringify(value, null, 2)
+                        : (value ?? '').toString();
+
+                if (displayValue === '') continue;
+
+                rowsHtml += `
+                    <tr>
+                        <td style="padding: 8px 12px; border: 1px solid #ddd; font-weight: 500;">${displayKey}</td>
+                        <td style="padding: 8px 12px; border: 1px solid #ddd;">${displayValue.replace(/\n/g, '<br>')}</td>
+                    </tr>
+                `;
+            }
+
+            const htmlContent = `
+                <!DOCTYPE html>
+                <html lang="ru">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${title}</title>
+                </head>
+                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                    <h2>${title}</h2>
+                    <p>Поступила новая заявка с динамической формы на сайте.</p>
+                    <table style="border-collapse: collapse; width: 100%; max-width: 800px; margin-top: 16px;">
+                        <thead>
+                            <tr>
+                                <th style="padding: 8px 12px; border: 1px solid #ddd; text-align: left; background-color: #f5f5f5;">Поле</th>
+                                <th style="padding: 8px 12px; border: 1px solid #ddd; text-align: left; background-color: #f5f5f5;">Значение</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml || '<tr><td colspan="2" style="padding: 12px; border: 1px solid #ddd;">Нет данных</td></tr>'}
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            const textLines = ['Новая заявка с динамической формы:', ''];
+            for (const [key, value] of Object.entries(formData || {})) {
+                const displayValue = Array.isArray(value)
+                    ? value.join(', ')
+                    : typeof value === 'object'
+                        ? JSON.stringify(value, null, 2)
+                        : (value ?? '').toString();
+                if (displayValue === '') continue;
+                textLines.push(`${key}: ${displayValue}`);
+            }
+
+            const mailOptions = {
+                from: `"ГП «Белаэронавигация»" <${fromEmail}>`,
+                to: recipientEmail,
+                subject: title,
+                text: textLines.join('\n'),
+                html: htmlContent,
+            };
+
+            const result = await this.transporter.sendMail(mailOptions);
+            console.log('✅ Dynamic form email sent successfully!');
+            console.log('Message ID:', result.messageId);
+            return { success: true, messageId: result.messageId };
+        } catch (error) {
+            console.error(' Dynamic form email error:', error);
+            return { success: false, error: error.message || 'Unknown error' };
+        }
+    }
 }
 
 module.exports = new EmailService();

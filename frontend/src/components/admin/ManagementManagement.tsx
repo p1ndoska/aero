@@ -701,20 +701,20 @@ export default function ManagementManagement() {
                           ? image 
                           : `${BASE_URL}${image?.startsWith('/') ? '' : '/'}${image}`;
                         return (
-                          <img
-                            key={index}
+                        <img
+                          key={index}
                             src={imageUrl}
-                            alt={`Изображение ${index + 1}`}
-                            className="w-16 h-16 object-cover rounded border"
-                            onError={(e) => {
-                              console.error('Ошибка загрузки изображения руководителя:', image);
-                              console.error('Статус:', e.currentTarget.src);
-                              e.currentTarget.style.display = 'none';
-                            }}
-                            onLoad={() => {
-                              console.log('Изображение руководителя загружено успешно:', image);
-                            }}
-                          />
+                          alt={`Изображение ${index + 1}`}
+                          className="w-16 h-16 object-cover rounded border"
+                          onError={(e) => {
+                            console.error('Ошибка загрузки изображения руководителя:', image);
+                            console.error('Статус:', e.currentTarget.src);
+                            e.currentTarget.style.display = 'none';
+                          }}
+                          onLoad={() => {
+                            console.log('Изображение руководителя загружено успешно:', image);
+                          }}
+                        />
                         );
                       })}
                       {manager.images.length > 3 && (

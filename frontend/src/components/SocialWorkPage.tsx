@@ -10,6 +10,7 @@ import { useGetSocialWorkPageContentQuery, useUpdateSocialWorkPageContentMutatio
 import { useGetAllSocialWorkCategoriesQuery } from '@/app/services/socialWorkCategoryApi';
 import ContentConstructor from './admin/ContentConstructor';
 import { useLanguage } from '../contexts/LanguageContext';
+import DynamicForm from './DynamicForm';
 import { getTranslatedField } from '../utils/translationHelpers';
 import { getRolePermissions } from '@/utils/roleUtils';
 import type { TableCellContent } from '@/types/branch';
@@ -491,6 +492,13 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
             </a>
           </div>
         );
+      case 'form':
+        return (
+          <div className="my-6 p-6 border border-gray-200 rounded-xl bg-white shadow-sm">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800">Форма обратной связи</h3>
+            <DynamicForm fields={element.props?.formConfig?.fields || []} />
+          </div>
+        );
       default:
         return null;
     }
@@ -675,11 +683,11 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
 
                     // SUPER_ADMIN видит всё
                     if (currentRole === 'SUPER_ADMIN' || allowedRoles.includes(currentRole)) {
-                      return (
-                        <div key={element.id || `content-${index}`}>
-                          {renderContentElement(element)}
-                        </div>
-                      );
+                    return (
+                      <div key={element.id || `content-${index}`}>
+                        {renderContentElement(element)}
+                      </div>
+                    );
                     }
 
                     // Остальным блок скрыт

@@ -12,6 +12,7 @@ import { useUploadImageMutation, useUploadFileMutation } from '@/app/services/up
 import type { ContentElement, TableCellContent, TableRow } from '@/types/branch';
 import { BASE_URL } from '@/constants';
 import { useGetRolesQuery } from '@/app/services/roleApi';
+import FormBuilder from './FormBuilder';
 
 interface ContentConstructorProps {
   content: ContentElement[];
@@ -1721,10 +1722,10 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                 </div>
                 {element.isPrivate && (
                   <>
-                    <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                  <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
                       <LockIcon className="w-3 h-3" />
-                      Этот блок будет скрыт для неавторизованных пользователей
-                    </p>
+                    Этот блок будет скрыт для неавторизованных пользователей
+                  </p>
                     {roles && roles.length > 0 && (
                       <div className="mt-2 space-y-1">
                         <p className="text-xs text-gray-600">
@@ -1976,47 +1977,41 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
       )}
 
       {activeTab === 'form' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Конструктор формы</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-gray-600">
-              Здесь будет визуальный конструктор формы. Можно будет добавлять поля, настраивать валидацию
-              и порядок элементов. Пока реализован только интерфейс вкладки, без логики.
-            </p>
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-              <div className="border rounded-md p-3 bg-gray-50">
-                <p className="text-xs font-semibold text-gray-700 mb-1">Планируемые элементы формы</p>
-                <ul className="text-xs text-gray-600 list-disc list-inside space-y-1">
-                  <li>Текстовое поле</li>
-                  <li>Email / телефон</li>
-                  <li>Textarea</li>
-                  <li>Чекбокс / переключатель</li>
-                  <li>Селект / выпадающий список</li>
-                </ul>
-              </div>
-              <div className="border rounded-md p-3 bg-gray-50">
-                <p className="text-xs font-semibold text-gray-700 mb-1">Настройки</p>
-                <ul className="text-xs text-gray-600 list-disc list-inside space-y-1">
-                  <li>Обязательные поля</li>
-                  <li>Подписи и placeholder&apos;ы</li>
-                  <li>Порядок полей</li>
-                </ul>
-              </div>
-              <div className="border rounded-md p-3 bg-gray-50">
-                <p className="text-xs font-semibold text-gray-700 mb-1">Интеграция</p>
-                <p className="text-xs text-gray-600">
-                  Позже здесь будет настройка, как обрабатывать отправку формы
-                  (email, API и т.&nbsp;д.).
-                </p>
-              </div>
-            </div>
-            <p className="text-xs text-gray-500">
-              Структуру и поведение формы мы добавим позже, когда вы решите, как её нужно обрабатывать.
-            </p>
-          </CardContent>
-        </Card>
+        <FormBuilder
+          fields={
+            (content.find((el) => el.type === 'form')?.props?.formConfig?.fields) || []
+          }
+          onChange={(fields) => {
+            // Находим (или создаём) элемент формы в общем контенте
+            const existingFormIndex = content.findIndex((el) => el.type === 'form');
+
+            if (existingFormIndex >= 0) {
+              const updated = [...content];
+              const existing = updated[existingFormIndex];
+              updated[existingFormIndex] = {
+                ...existing,
+                props: {
+                  ...(existing.props || {}),
+                  formConfig: {
+                    ...(existing.props?.formConfig || {}),
+                    fields,
+                  },
+                },
+              };
+              onChange(updated);
+            } else {
+              const newFormElement: ContentElement = {
+                id: `form-${Date.now()}`,
+                type: 'form',
+                content: '',
+                props: {
+                  formConfig: { fields },
+                },
+              };
+              onChange([...content, newFormElement]);
+            }
+          }}
+        />
       )}
     </div>
   );

@@ -28,6 +28,7 @@ import SAIConsumerQuestionnaireForm from './SAIConsumerQuestionnaireForm';
 import QuestionnaireOfTheConsumerOfAirNavigationServices from './QuestionnaireOfTheConsumerOfAirNavigationServices';
 import { getRolePermissions } from '@/utils/roleUtils';
 import type { TableCellContent } from '@/types/branch';
+import DynamicForm from './DynamicForm';
 import { useLoginMutation } from '@/app/services/userApi';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '@/features/user/userSlice';
@@ -1025,6 +1026,12 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
             </a>
           </div>
         );
+      case 'form':
+        return (
+          <div className="my-6">
+            <DynamicForm fields={element.props?.formConfig?.fields || []} />
+          </div>
+        );
       default:
         return null;
     }
@@ -1127,11 +1134,11 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
                         {translatedContent.map((element: any, index: number) => {
                           const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
                           if (isPrivate) return null;
-                          return (
-                            <div key={element.id || `content-${index}`}>
-                              {renderContentElement(element)}
-                            </div>
-                          );
+                            return (
+                              <div key={element.id || `content-${index}`}>
+                                {renderContentElement(element)}
+                              </div>
+                            );
                         })}
                         
                         {/* Показываем одну форму логина для всех приватных блоков */}
@@ -1225,8 +1232,8 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
 
                       // Приватный блок: только для авторизованных
                       if (!isAuthenticated) {
-                        return null;
-                      }
+                      return null;
+                    }
 
                       const roleValue = user?.role;
                       const currentRole = (typeof roleValue === 'string' ? roleValue : roleValue?.name || '').toString().toUpperCase();
@@ -1236,11 +1243,11 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
 
                       // Если список ролей не задан — доступен любому авторизованному
                       if (!allowedRoles.length) {
-                        return (
-                          <div key={element.id || `content-${index}`}>
-                            {renderContentElement(element)}
-                          </div>
-                        );
+                    return (
+                      <div key={element.id || `content-${index}`}>
+                        {renderContentElement(element)}
+                      </div>
+                    );
                       }
 
                       // SUPER_ADMIN видит всё

@@ -12,6 +12,7 @@ import ContentConstructor from './admin/ContentConstructor';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getTranslatedField } from '../utils/translationHelpers';
 import { useForceStyles } from '../hooks/useForceStyles';
+import DynamicForm from './DynamicForm';
 
 export default function SecurityPolicyPage() {
   const { language } = useLanguage();
@@ -143,6 +144,13 @@ export default function SecurityPolicyPage() {
               }}
             />
             {element.props?.alt && <p className="text-sm text-gray-500 mt-2 text-center">{element.props.alt}</p>}
+          </div>
+        );
+      case 'form':
+        return (
+          <div className="my-6 p-6 border border-gray-200 rounded-xl bg-white shadow-sm">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800">Форма</h3>
+            <DynamicForm fields={element.props?.formConfig?.fields || []} />
           </div>
         );
       default:

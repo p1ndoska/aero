@@ -24,6 +24,7 @@ import { BASE_URL } from '@/constants';
 import VacancyApplicationForm from './VacancyApplicationForm';
 import ResumeUploadForm from './ResumeUploadForm';
 import MultilingualContentEditor from './admin/MultilingualContentEditor';
+import DynamicForm from './DynamicForm';
 
 export default function VacanciesPage() {
   const HR_EMAIL = 'office@ban.by';
@@ -442,6 +443,12 @@ export default function VacanciesPage() {
             </a>
           </div>
         );
+      case 'form':
+        return (
+          <div className="my-6">
+            <DynamicForm fields={element.props?.formConfig?.fields || []} />
+          </div>
+        );
       default:
         return null;
     }
@@ -580,11 +587,11 @@ export default function VacanciesPage() {
                           </div>
                         </div>
 
-                            <div className="space-y-2">
-                              <Label htmlFor="login-password" className="text-gray-700">
-                                Пароль
-                              </Label>
-                              <div className="relative">
+                        <div className="space-y-2">
+                          <Label htmlFor="login-password" className="text-gray-700">
+                            Пароль
+                          </Label>
+                          <div className="relative">
                                 <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                             <Input
                               id="login-password"
@@ -633,11 +640,11 @@ export default function VacanciesPage() {
 
                     // Если список ролей не задан — доступен любому авторизованному
                     if (!allowedRoles.length) {
-                      return (
-                        <div key={element.id || `content-${index}`}>
-                          {renderContentElement(element)}
-                        </div>
-                      );
+                    return (
+                      <div key={element.id || `content-${index}`}>
+                        {renderContentElement(element)}
+                      </div>
+                    );
                     }
 
                     // SUPER_ADMIN видит всё

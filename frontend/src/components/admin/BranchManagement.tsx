@@ -232,7 +232,7 @@ export default function BranchManagement() {
         if (uploadedImages.length !== selectedImages.length) {
           toast.error('Не все изображения были загружены. Проверьте подключение к серверу.');
           return;
-        }
+      }
       }
       // Объединяем существующие изображения (которые остались после удаления) и новые загруженные
       // formData.images уже содержит только те изображения, которые не были удалены пользователем
@@ -638,22 +638,22 @@ export default function BranchManagement() {
                 {isEdit && (formData.images || []).map((url, i) => {
                   const imageUrl = url && url.startsWith('http') ? url : `${BASE_URL}${url?.startsWith('/') ? '' : '/'}${url}`;
                   return (
-                    <div key={`exist-${i}`} className="relative flex-shrink-0">
-                      <img 
+                  <div key={`exist-${i}`} className="relative flex-shrink-0">
+                    <img 
                         src={imageUrl}
-                        alt={`img-${i}`} 
-                        className="w-24 h-24 object-cover rounded border cursor-pointer"
-                        onError={(e) => {
-                          console.error(' Ошибка загрузки изображения:', url);
+                      alt={`img-${i}`} 
+                      className="w-24 h-24 object-cover rounded border cursor-pointer"
+                      onError={(e) => {
+                        console.error(' Ошибка загрузки изображения:', url);
                           console.error(' Полный URL:', imageUrl);
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                      <Button type="button" variant="destructive" size="sm" className="absolute -top-2 -right-2 w-6 h-6 p-0"
-                        onClick={() => setFormData({ ...formData, images: (formData.images || []).filter((_, idx) => idx !== i) })}>
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </div>
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                    <Button type="button" variant="destructive" size="sm" className="absolute -top-2 -right-2 w-6 h-6 p-0"
+                      onClick={() => setFormData({ ...formData, images: (formData.images || []).filter((_, idx) => idx !== i) })}>
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
                   );
                 })}
                 {/* Новые превью */}
@@ -947,20 +947,20 @@ export default function BranchManagement() {
                           ? image 
                           : `${BASE_URL}${image?.startsWith('/') ? '' : '/'}${image}`;
                         return (
-                          <img
-                            key={index}
+                        <img
+                          key={index}
                             src={imageUrl}
-                            alt={`Изображение ${index + 1}`}
-                            className="w-16 h-16 object-cover rounded border"
-                            onError={(e) => {
-                              console.error(' Ошибка загрузки изображения филиала:', image);
+                          alt={`Изображение ${index + 1}`}
+                          className="w-16 h-16 object-cover rounded border"
+                          onError={(e) => {
+                            console.error(' Ошибка загрузки изображения филиала:', image);
                               console.error(' Полный URL:', imageUrl);
-                              e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect width="64" height="64" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-size="10"%3EОшибка%3C/text%3E%3C/svg%3E';
-                            }}
-                            onLoad={() => {
-                              console.log(' Изображение филиала загружено:', image);
-                            }}
-                          />
+                            e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect width="64" height="64" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-size="10"%3EОшибка%3C/text%3E%3C/svg%3E';
+                          }}
+                          onLoad={() => {
+                            console.log(' Изображение филиала загружено:', image);
+                          }}
+                        />
                         );
                       })}
                       {branch.images.length > 3 && (

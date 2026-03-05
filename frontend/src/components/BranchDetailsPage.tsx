@@ -595,23 +595,23 @@ export default function BranchDetailsPage() {
                   {additionalImages.map((image, index) => {
                     const imageUrl = image && image.startsWith('http') ? image : `${BASE_URL}${image?.startsWith('/') ? '' : '/'}${image}`;
                     return (
-                      <img
-                        key={index}
+                    <img
+                      key={index}
                         src={imageUrl}
-                        alt={`${getTranslatedField(branch, 'name', language)} - фото ${index + 2}`}
-                        className="w-64 h-48 object-cover rounded-lg border hover:shadow-md transition-shadow cursor-pointer hover:opacity-90 flex-shrink-0"
-                        onClick={() => {
+                      alt={`${getTranslatedField(branch, 'name', language)} - фото ${index + 2}`}
+                      className="w-64 h-48 object-cover rounded-lg border hover:shadow-md transition-shadow cursor-pointer hover:opacity-90 flex-shrink-0"
+                      onClick={() => {
                           setSelectedImage(imageUrl);
-                          setSelectedImageIndex(index + 1); // +1 because main image is at index 0
-                        }}
-                        onError={(e) => {
-                          console.error(' Ошибка загрузки дополнительного изображения филиала:', image);
-                          e.currentTarget.style.display = 'none';
-                        }}
-                        onLoad={() => {
-                          console.log(' Дополнительное изображение филиала загружено:', image);
-                        }}
-                      />
+                        setSelectedImageIndex(index + 1); // +1 because main image is at index 0
+                      }}
+                      onError={(e) => {
+                        console.error(' Ошибка загрузки дополнительного изображения филиала:', image);
+                        e.currentTarget.style.display = 'none';
+                      }}
+                      onLoad={() => {
+                        console.log(' Дополнительное изображение филиала загружено:', image);
+                      }}
+                    />
                     );
                   })}
                 </div>

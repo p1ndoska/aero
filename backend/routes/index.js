@@ -4,6 +4,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const {UserController, AdminController, NewsController, CategoryController, RoleController, ManagementController, IncidentReportController, BranchController, VacancyController, VacancyPageContentController, HistoryPageContentController, AboutCompanyPageContentController, SecurityPolicyPageContentController, SocialWorkPageContentController, OrganizationLogoController, SocialWorkCategoryController, AboutCompanyCategoryController, AeronauticalInfoCategoryController, AppealsCategoryController, ServicesCategoryController, ReceptionSlotController, UserProfileController, AeronauticalInfoPageContentController, AppealsPageContentController, ServicesPageContentController, ServiceRequestController, StatisticsController, ResumeController} = require("../controllers");
+const emailService = require('../utils/emailService');
+const nodemailer = require('nodemailer');
 const {authenticationToken} = require("../middleware/auth");
 const checkRole = require('../middleware/checkRole');
 const { UPLOADS_DIR, UPLOADS_URL_PREFIX, DOCUMENTS_DIR, normalizeUploadPath } = require('../config/paths');
@@ -109,6 +111,84 @@ const uploadResumeFile = multer({
 // Health check endpoint (для Docker healthcheck)
 router.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Транспортер для динамических форм (как в статических анкетах)
+const dynamicFormTransporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
+
+// Приём динамических форм с сайта (конструктор форм)
+router.post('/dynamic-form-submission', async (req, res) => {
+    try {
+        const { formName, pageUrl, data } = req.body || {};
+
+        if (!data || typeof data !== 'object') {
+            return res.status(400).json({ error: 'Некорректные данные формы' });
+        }
+
+        // Для динамических форм всегда отправляем только на EMAIL_USER,
+        // чтобы исключить старые некорректные ADMIN_EMAIL
+        const adminEmail = process.env.EMAIL_USER;
+        if (!adminEmail) {
+            console.error('ADMIN_EMAIL/EMAIL_USER not configured');
+            return res.status(500).json({ error: 'Email получателя не настроен' });
+        }
+
+        const title = formName || 'Новая заявка с динамической формы';
+
+        // Формируем текст и HTML с данными формы
+        let htmlRows = '';
+        let textLines = [];
+
+        if (pageUrl) {
+            htmlRows += `<tr><td><strong>Страница</strong></td><td>${pageUrl}</td></tr>`;
+            textLines.push(`Страница: ${pageUrl}`);
+        }
+        if (formName) {
+            htmlRows += `<tr><td><strong>Форма</strong></td><td>${formName}</td></tr>`;
+            textLines.push(`Форма: ${formName}`);
+        }
+
+        for (const [key, value] of Object.entries(data)) {
+            const displayValue = Array.isArray(value)
+                ? value.join(', ')
+                : typeof value === 'object'
+                    ? JSON.stringify(value, null, 2)
+                    : (value ?? '').toString();
+            if (displayValue === '') continue;
+
+            htmlRows += `<tr><td><strong>${key}</strong></td><td>${displayValue.replace(/\n/g, '<br>')}</td></tr>`;
+            textLines.push(`${key}: ${displayValue}`);
+        }
+
+        const htmlContent = `
+            <h2>${title}</h2>
+            <p>Поступила новая заявка с динамической формы на сайте.</p>
+            <table border="1" cellpadding="6" cellspacing="0" style="border-collapse: collapse;">
+              ${htmlRows}
+            </table>
+        `;
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: adminEmail,
+            subject: title,
+            text: textLines.join('\n'),
+            html: htmlContent,
+        };
+
+        await dynamicFormTransporter.sendMail(mailOptions);
+
+        res.json({ success: true, message: 'Форма успешно отправлена' });
+    } catch (error) {
+        console.error('Error handling dynamic form submission:', error);
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+    }
 });
 
 // Загрузка изображений

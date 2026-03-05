@@ -158,9 +158,9 @@ export default function SuperAdminDashboard() {
                                    <LockIcon className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
                                    <h3 className={`font-semibold text-sm text-[#213659]`}>
                                        Роли доступа к контенту
-                                   </h3>
-                               </div>
-                           </div>
+                        </h3>
+                    </div>
+                </div>
                        )}
 
                        {/* Управление пользователями - только SUPER_ADMIN */}
@@ -693,9 +693,9 @@ function ContentRolesPanel() {
                                 <Input 
                                     value={editingName} 
                                     onChange={(e)=>setEditingName(e.target.value)} 
-                                    className="bg-white border-[#B1D1E0] focus:border-[#213659] flex-1"
+                                           className="bg-white border-[#B1D1E0] focus:border-[#213659] flex-1"
                                 />
-                                <Button onClick={save} className="bg-[#213659] hover:bg-[#1a2a4a] text-white" disabled={isUpdating}>
+                                       <Button onClick={save} className="bg-[#213659] hover:bg-[#1a2a4a] text-white" disabled={isUpdating}>
                                     <Save className="w-4 h-4 mr-1"/>
                                     {isUpdating ? 'Сохранение...' : 'Сохранить'}
                                 </Button>
@@ -705,7 +705,7 @@ function ContentRolesPanel() {
                             </>
                         ) : (
                             <>
-                                <div className="flex-1 text-[#213659] font-medium">{r.name}</div>
+                                       <div className="flex-1 text-[#213659] font-medium">{r.name}</div>
                                 <Button variant="outline" size="sm" onClick={()=>{setEditingId(r.id); setEditingName(r.name)}}>
                                     <Edit className="w-4 h-4 mr-1"/>
                                     Редактировать

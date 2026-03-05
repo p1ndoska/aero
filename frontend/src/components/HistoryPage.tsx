@@ -12,6 +12,7 @@ import { useGetHistoryPageContentQuery, useUpdateHistoryPageContentMutation } fr
 import ContentConstructor from './admin/ContentConstructor';
 import { useForceStyles } from '../hooks/useForceStyles';
 import { BASE_URL } from '@/constants';
+import DynamicForm from './DynamicForm';
 
 export default function HistoryPage() {
   const { data: pageContent, refetch: refetchPageContent } = useGetHistoryPageContentQuery();
@@ -291,6 +292,13 @@ export default function HistoryPage() {
             >
               {linkText}
             </a>
+          </div>
+        );
+      case 'form':
+        return (
+          <div className="my-6 p-6 border border-gray-200 rounded-xl bg-white shadow-sm">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800">Форма обратной связи</h3>
+            <DynamicForm fields={element.props?.formConfig?.fields || []} />
           </div>
         );
       default:

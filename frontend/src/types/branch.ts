@@ -1,7 +1,9 @@
+import type { FormConfig } from '@/types/form';
+
 // Типы для элементов конструктора контента
 export interface ContentElement {
   id: string;
-  type: 'paragraph' | 'heading' | 'link' | 'image' | 'list' | 'table' | 'file' | 'video' | 'page-link';
+  type: 'paragraph' | 'heading' | 'link' | 'image' | 'list' | 'table' | 'file' | 'video' | 'page-link' | 'form';
   content: string;
   isPrivate?: boolean; // Только для авторизованных пользователей
   allowedRoles?: string[]; // Роли, которым доступен приватный блок (если не задано — всем авторизованным)
@@ -33,6 +35,7 @@ export interface ContentElement {
     autoplay?: boolean; // Автовоспроизведение
     loop?: boolean; // Зацикливание
     muted?: boolean; // Без звука
+    formConfig?: FormConfig; // Конфигурация динамической формы для элемента типа form
   };
 }
 

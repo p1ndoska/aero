@@ -11,6 +11,7 @@ interface CaptchaProps {
   onChange: (value: string) => void;
   error?: string;
   required?: boolean;
+  placeholder?: string;
 }
 
 export default function Captcha({
@@ -18,6 +19,7 @@ export default function Captcha({
   onChange,
   error,
   required = true,
+  placeholder,
 }: CaptchaProps) {
   const { t } = useLanguage();
 
@@ -45,7 +47,7 @@ export default function Captcha({
             id="antispamCode"
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder={t('enter_code') || 'Введите код'}
+            placeholder={placeholder || t('enter_code') || 'Введите код'}
             required={required}
             className={`flex-1 ${error ? 'border-red-500' : ''}`}
           />

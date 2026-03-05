@@ -14,6 +14,9 @@
     "test:coverage": "vitest --coverage"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@jonesstack/react-form-engine": "^0.1.0",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-checkbox": "^1.3.3",
@@ -46,9 +49,14 @@
     "react-toastify": "^11.0.5",
     "react19-google-recaptcha-v3": "^1.0.0",
     "sonner": "^2.0.7",
+    "survey-core": "^2.5.13",
+    "survey-creator-core": "^2.5.13",
+    "survey-creator-react": "^2.5.13",
+    "survey-react-ui": "^2.5.13",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.12",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "yup": "^1.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
