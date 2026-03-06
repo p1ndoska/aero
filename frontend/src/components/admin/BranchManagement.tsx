@@ -636,24 +636,41 @@ export default function BranchManagement() {
                 <div className="flex gap-3 pb-2 px-8" style={{ minWidth: 'max-content' }}>
                 {/* Существующие изображения */}
                 {isEdit && (formData.images || []).map((url, i) => {
-                  const imageUrl = url && url.startsWith('http') ? url : `${BASE_URL}${url?.startsWith('/') ? '' : '/'}${url}`;
+                  const imageUrl = url && url.startsWith('http')
+                    ? url
+                    : `${BASE_URL}${url?.startsWith('/') ? '' : '/'}${url}`;
+                  const fileName = url?.split('/').pop() || url || `Изображение ${i + 1}`;
                   return (
-                  <div key={`exist-${i}`} className="relative flex-shrink-0">
-                    <img 
+                    <div key={`exist-${i}`} className="relative flex-shrink-0">
+                      <img
                         src={imageUrl}
-                      alt={`img-${i}`} 
-                      className="w-24 h-24 object-cover rounded border cursor-pointer"
-                      onError={(e) => {
-                        console.error(' Ошибка загрузки изображения:', url);
+                        alt={fileName}
+                        className="w-24 h-24 object-cover rounded border cursor-pointer bg-gray-50"
+                        onError={(e) => {
+                          console.error(' Ошибка загрузки изображения:', url);
                           console.error(' Полный URL:', imageUrl);
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                    <Button type="button" variant="destructive" size="sm" className="absolute -top-2 -right-2 w-6 h-6 p-0"
-                      onClick={() => setFormData({ ...formData, images: (formData.images || []).filter((_, idx) => idx !== i) })}>
-                      <X className="w-3 h-3" />
-                    </Button>
-                  </div>
+                          // Не скрываем картинку, чтобы администратор видел «битое» изображение
+                          // и мог его удалить по крестику.
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute -top-2 -right-2 w-6 h-6 p-0"
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            images: (formData.images || []).filter((_, idx) => idx !== i),
+                          })
+                        }
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                      <p className="mt-1 text-[10px] text-gray-500 max-w-[96px] break-all">
+                        {fileName}
+                      </p>
+                    </div>
                   );
                 })}
                 {/* Новые превью */}
