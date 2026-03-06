@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslatedField } from '@/utils/translationHelpers';
+import { getImageUrl } from '@/utils/imageUtils';
 
 interface OrganizationLogo {
   id: number;
@@ -106,7 +107,7 @@ const LogosCarousel: React.FC<LogosCarouselProps> = ({ logos, loading }) => {
             <>
               <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 flex items-center justify-center bg-white rounded-lg border border-gray-200 shadow-sm mb-1 p-1.5">
                 <img
-                  src={logo.logoUrl}
+                  src={getImageUrl(logo.logoUrl)}
                   alt={getTranslatedField(logo, 'name', language)}
                   className="max-w-full max-h-full object-contain"
                   onError={(e) => {

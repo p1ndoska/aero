@@ -10,6 +10,7 @@ import { useGetSlotsByManagerQuery, useBookSlotMutation } from '@/app/services/r
 import { Users, Phone, MapPin, Clock, Calendar, UserPlus, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslatedField } from '@/utils/translationHelpers';
+import { getImageUrl } from '@/utils/imageUtils';
 import { toast } from 'sonner';
 import type { TimeSlot, Management } from '@/types/management';
 
@@ -160,7 +161,7 @@ export default function ManagementPage() {
                 <div className="text-center mb-4">
                   {manager.images && manager.images.length > 0 ? (
                     <img
-                      src={manager.images[0]}
+                      src={getImageUrl(manager.images[0])}
                       alt={manager.name}
                       className="w-56 h-80 md:w-64 md:h-96 lg:w-80 lg:h-[28rem] rounded-xl object-cover object-center mx-auto mb-4 border-4 border-[#213659]"
                       onError={(e) => {

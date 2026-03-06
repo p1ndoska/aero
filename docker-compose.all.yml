@@ -64,7 +64,9 @@ services:
       - "${FRONTEND_PORT:-5173}:5173"
       - "${BACKEND_PORT:-3000}:3000"
     volumes:
-      - ./backend/uploads:/app/backend/uploads
+      # Хостовая папка backend/uploads монтируется в ту же директорию,
+      # которую использует backend-приложение (/app/uploads)
+      - ./backend/uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
