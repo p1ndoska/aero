@@ -8,9 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { MapPin, Phone, Mail, Clock, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import ContentConstructor from './admin/ContentConstructor';
-import { useLanguage } from '../contexts/LanguageContext';
-import { getTranslatedField } from '../utils/translationHelpers';
 import DynamicForm from './DynamicForm';
+import { isVisibleBySchedule, renderScheduleBadge } from '@/utils/scheduleVisibility';
 
 export default function ContactsPage() {
   const { language } = useLanguage();
@@ -18,6 +17,7 @@ export default function ContactsPage() {
   const roleValue = user?.role;
   const roleName = (typeof roleValue === 'string' ? roleValue : roleValue?.name) ?? '';
   const isAdmin = ['SUPER_ADMIN', 'ABOUT_ADMIN'].includes(roleName.toString().toUpperCase());
+  const isAdminPreview = isAuthenticated && isAdmin;
 
   const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
   const [editableTitle, setEditableTitle] = useState('Контакты');
@@ -186,11 +186,14 @@ export default function ContactsPage() {
           {editableContent && Array.isArray(editableContent) && editableContent.length > 0 && (
             <div className="w-full mb-12">
               <div className="py-8">
-                {editableContent.map((element: any) => (
-                  <div key={element.id}>
-                    {renderContentElement(element)}
-                  </div>
-                ))}
+                {editableContent
+                  .filter((element: any) => isVisibleBySchedule(element, new Date(), isAdminPreview))
+                  .map((element: any) => (
+                    <div key={element.id}>
+                      {renderContentElement(element)}
+                      {renderScheduleBadge(element, isAdminPreview)}
+                    </div>
+                  ))}
               </div>
             </div>
           )}

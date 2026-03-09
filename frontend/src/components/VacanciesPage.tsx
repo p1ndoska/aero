@@ -25,6 +25,7 @@ import VacancyApplicationForm from './VacancyApplicationForm';
 import ResumeUploadForm from './ResumeUploadForm';
 import MultilingualContentEditor from './admin/MultilingualContentEditor';
 import DynamicForm from './DynamicForm';
+import { isVisibleBySchedule, renderScheduleBadge } from '@/utils/scheduleVisibility';
 
 export default function VacanciesPage() {
   const HR_EMAIL = 'office@ban.by';
@@ -93,6 +94,7 @@ export default function VacanciesPage() {
   const roleValue = user?.role;
   const roleName = (typeof roleValue === 'string' ? roleValue : roleValue?.name) ?? '';
   const isAdmin = ['SUPER_ADMIN', 'HR_ADMIN'].includes(roleName.toString().toUpperCase());
+  const isAdminPreview = isAuthenticated && isAdmin;
 
   const [selectedVacancy, setSelectedVacancy] = useState<Vacancy | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
@@ -520,12 +522,15 @@ export default function VacanciesPage() {
                 {hasPrivateContent && !isAuthenticated ? (
                   <>
                     {/* Показываем публичный контент */}
-                    {translatedContent.map((element: any, index: number) => {
+                    {translatedContent
+                      .filter((element: any) => isVisibleBySchedule(element, new Date(), isAdminPreview))
+                      .map((element: any, index: number) => {
                       const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
                       if (!isPrivate) {
                         return (
                           <div key={element.id || `content-${index}`}>
                             {renderContentElement(element)}
+                              {renderScheduleBadge(element, isAdminPreview)}
                           </div>
                         );
                       }
@@ -618,13 +623,16 @@ export default function VacanciesPage() {
                 ) : (
                   // Если пользователь авторизован или нет приватного контента,
                   // показываем только те блоки, которые он имеет право видеть
-                  translatedContent.map((element: any, index: number) => {
+                  translatedContent
+                    .filter((element: any) => isVisibleBySchedule(element, new Date(), isAdminPreview))
+                    .map((element: any, index: number) => {
                     const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
                     if (!isPrivate) {
                       // Публичный блок — всегда виден
                       return (
                         <div key={element.id || `content-${index}`}>
                           {renderContentElement(element)}
+                          {renderScheduleBadge(element, isAdminPreview)}
                         </div>
                       );
                     }
@@ -643,6 +651,7 @@ export default function VacanciesPage() {
                     return (
                       <div key={element.id || `content-${index}`}>
                         {renderContentElement(element)}
+                        {renderScheduleBadge(element, isAdminPreview)}
                       </div>
                     );
                     }
@@ -652,6 +661,7 @@ export default function VacanciesPage() {
                       return (
                         <div key={element.id || `content-${index}`}>
                           {renderContentElement(element)}
+                          {renderScheduleBadge(element, isAdminPreview)}
                         </div>
                       );
                     }

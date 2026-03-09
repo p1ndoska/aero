@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import DynamicForm from './DynamicForm';
+import { isVisibleBySchedule, renderScheduleBadge } from '@/utils/scheduleVisibility';
 
 const NewsDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -124,6 +125,8 @@ const NewsDetailPage: React.FC = () => {
 
   const roleValue = user?.role;
   const currentRole = (typeof roleValue === 'string' ? roleValue : roleValue?.name || '').toString().toUpperCase();
+  const isNewsAdmin = currentRole === 'SUPER_ADMIN' || currentRole === 'NEWS_ADMIN';
+  const isAdminPreview = isAuthenticated && isNewsAdmin;
 
   const isElementPrivate = (element: any) => {
     return element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
@@ -489,12 +492,15 @@ const NewsDetailPage: React.FC = () => {
                         {hasPrivateContent && !isAuthenticated ? (
                           <>
                             {/* Показываем публичный контент */}
-                            {contentElements.map((element, index) => {
+                            {contentElements
+                              .filter((element: any) => isVisibleBySchedule(element, new Date(), isAdminPreview))
+                              .map((element: any, index: number) => {
                               const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
                               if (!isPrivate) {
                                 return (
                                   <div key={element.id || index}>
                                     {renderContentElement(element)}
+                                    {renderScheduleBadge(element, isAdminPreview)}
                                   </div>
                                 );
                               }
@@ -582,14 +588,17 @@ const NewsDetailPage: React.FC = () => {
                         ) : (
                           // Если пользователь авторизован или нет приватного контента,
                           // показываем только те блоки, которые он имеет право видеть
-                          contentElements.map((element, index) => {
-                            if (!canViewElement(element)) return null;
-                            return (
-                              <div key={element.id || index}>
-                                {renderContentElement(element)}
-                              </div>
-                            );
-                          })
+                          contentElements
+                            .filter((element: any) => isVisibleBySchedule(element, new Date(), isAdminPreview))
+                            .map((element, index) => {
+                              if (!canViewElement(element)) return null;
+                              return (
+                                <div key={element.id || index}>
+                                  {renderContentElement(element)}
+                                  {renderScheduleBadge(element, isAdminPreview)}
+                                </div>
+                              );
+                            })
                         )}
                       </div>
                     );

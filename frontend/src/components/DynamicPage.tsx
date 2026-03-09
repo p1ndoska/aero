@@ -36,6 +36,7 @@ import type { AppDispatch } from '@/store';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Mail, Lock as LockIcon } from 'lucide-react';
+import { isVisibleBySchedule, renderScheduleBadge } from '@/utils/scheduleVisibility';
 
 interface DynamicPageProps {
   pageType?: 'about' | 'aeronautical' | 'appeals' | 'social' | 'services';
@@ -103,6 +104,8 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
         return false;
     }
   })();
+
+  const isAdminPreview = isAuthenticated && isAdmin;
 
   const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
@@ -1131,12 +1134,15 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
                     return (
                       <>
                         {/* Показываем публичный контент до авторизации */}
-                        {translatedContent.map((element: any, index: number) => {
+                        {translatedContent
+                          .filter((element: any) => isVisibleBySchedule(element, new Date(), isAdminPreview))
+                          .map((element: any, index: number) => {
                           const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
                           if (isPrivate) return null;
                             return (
                               <div key={element.id || `content-${index}`}>
                                 {renderContentElement(element)}
+                                {renderScheduleBadge(element, isAdminPreview)}
                               </div>
                             );
                         })}
@@ -1215,7 +1221,9 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
                   return (() => {
                     let hasRestrictedForCurrentUser = false;
 
-                    const visibleElements = translatedContent.map((element: any, index: number) => {
+                    const visibleElements = translatedContent
+                      .filter((element: any) => isVisibleBySchedule(element, new Date(), isAdminPreview))
+                      .map((element: any, index: number) => {
                       // Правило доступа: приватность + роли
                       const isPrivate =
                         element.isPrivate === true ||
@@ -1226,6 +1234,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
                         return (
                           <div key={element.id || `content-${index}`}>
                             {renderContentElement(element)}
+                            {renderScheduleBadge(element, isAdminPreview)}
                           </div>
                         );
                       }
@@ -1246,6 +1255,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
                     return (
                       <div key={element.id || `content-${index}`}>
                         {renderContentElement(element)}
+                        {renderScheduleBadge(element, isAdminPreview)}
                       </div>
                     );
                       }
@@ -1255,6 +1265,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
                         return (
                           <div key={element.id || `content-${index}`}>
                             {renderContentElement(element)}
+                            {renderScheduleBadge(element, isAdminPreview)}
                           </div>
                         );
                       }

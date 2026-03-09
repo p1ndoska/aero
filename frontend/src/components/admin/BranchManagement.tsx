@@ -641,18 +641,18 @@ export default function BranchManagement() {
                     : `${BASE_URL}${url?.startsWith('/') ? '' : '/'}${url}`;
                   const fileName = url?.split('/').pop() || url || `Изображение ${i + 1}`;
                   return (
-                    <div key={`exist-${i}`} className="relative flex-shrink-0">
-                      <img
+                  <div key={`exist-${i}`} className="relative flex-shrink-0">
+                    <img 
                         src={imageUrl}
                         alt={fileName}
                         className="w-24 h-24 object-cover rounded border cursor-pointer bg-gray-50"
-                        onError={(e) => {
-                          console.error(' Ошибка загрузки изображения:', url);
+                      onError={(e) => {
+                        console.error(' Ошибка загрузки изображения:', url);
                           console.error(' Полный URL:', imageUrl);
                           // Не скрываем картинку, чтобы администратор видел «битое» изображение
                           // и мог его удалить по крестику.
-                        }}
-                      />
+                      }}
+                    />
                       <Button
                         type="button"
                         variant="destructive"
@@ -665,12 +665,12 @@ export default function BranchManagement() {
                           })
                         }
                       >
-                        <X className="w-3 h-3" />
-                      </Button>
+                      <X className="w-3 h-3" />
+                    </Button>
                       <p className="mt-1 text-[10px] text-gray-500 max-w-[96px] break-all">
                         {fileName}
                       </p>
-                    </div>
+                  </div>
                   );
                 })}
                 {/* Новые превью */}

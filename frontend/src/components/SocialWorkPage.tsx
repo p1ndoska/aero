@@ -13,6 +13,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import DynamicForm from './DynamicForm';
 import { getTranslatedField } from '../utils/translationHelpers';
 import { getRolePermissions } from '@/utils/roleUtils';
+import { isVisibleBySchedule, renderScheduleBadge } from '@/utils/scheduleVisibility';
 import type { TableCellContent } from '@/types/branch';
 import { BASE_URL } from '@/constants';
 import { FileText, Mail, Lock as LockIcon } from 'lucide-react';
@@ -76,6 +77,7 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
   const roleName = (typeof roleValue === 'string' ? roleValue : roleValue?.name) ?? '';
   const permissions = getRolePermissions(roleName);
   const isAdmin = permissions.canManageSocial;
+  const isAdminPreview = isAuthenticated && isAdmin;
 
   // Находим категорию социальной работы по pageType для получения названия
   const socialWorkCategory = socialWorkCategories && Array.isArray(socialWorkCategories)
@@ -569,12 +571,15 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
                     return (
                       <>
                         {/* Показываем публичный контент */}
-                        {translatedContent.map((element: any, index: number) => {
+                        {translatedContent
+                          .filter((element: any) => isVisibleBySchedule(element, new Date(), isAdminPreview))
+                          .map((element: any, index: number) => {
                           const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
                           if (!isPrivate) {
                             return (
                               <div key={element.id || `content-${index}`}>
                                 {renderContentElement(element)}
+                                {renderScheduleBadge(element, isAdminPreview)}
                               </div>
                             );
                           }
@@ -652,18 +657,21 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
                   
                   // Если пользователь авторизован или нет приватного контента,
                   // показываем только те блоки, которые он имеет право видеть
-                  return translatedContent.map((element: any, index: number) => {
+                  return translatedContent
+                    .filter((element: any) => isVisibleBySchedule(element, new Date(), isAdminPreview))
+                    .map((element: any, index: number) => {
                     const isPrivate = element.isPrivate === true || String(element.isPrivate) === 'true' || Number(element.isPrivate) === 1;
                     if (!isPrivate) {
                       // Публичный блок — всегда виден
                       return (
                         <div key={element.id || `content-${index}`}>
                           {renderContentElement(element)}
+                          {renderScheduleBadge(element, isAdminPreview)}
                         </div>
                       );
                     }
 
-                    // Приватный блок: только для авторизованных
+                      // Приватный блок: только для авторизованных
                     if (!isAuthenticated) return null;
 
                     const roleValue = user?.role;
@@ -677,17 +685,19 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
                       return (
                         <div key={element.id || `content-${index}`}>
                           {renderContentElement(element)}
+                          {renderScheduleBadge(element, isAdminPreview)}
                         </div>
                       );
                     }
 
                     // SUPER_ADMIN видит всё
                     if (currentRole === 'SUPER_ADMIN' || allowedRoles.includes(currentRole)) {
-                    return (
-                      <div key={element.id || `content-${index}`}>
-                        {renderContentElement(element)}
-                      </div>
-                    );
+                      return (
+                        <div key={element.id || `content-${index}`}>
+                          {renderContentElement(element)}
+                          {renderScheduleBadge(element, isAdminPreview)}
+                        </div>
+                      );
                     }
 
                     // Остальным блок скрыт

@@ -13,6 +13,7 @@ import ContentConstructor from './admin/ContentConstructor';
 import { useForceStyles } from '../hooks/useForceStyles';
 import { BASE_URL } from '@/constants';
 import DynamicForm from './DynamicForm';
+import { isVisibleBySchedule, renderScheduleBadge } from '@/utils/scheduleVisibility';
 
 export default function HistoryPage() {
   const { data: pageContent, refetch: refetchPageContent } = useGetHistoryPageContentQuery();
@@ -22,6 +23,7 @@ export default function HistoryPage() {
   const roleValue = user?.role;
   const roleName = (typeof roleValue === 'string' ? roleValue : roleValue?.name) ?? '';
   const isAdmin = ['SUPER_ADMIN', 'ABOUT_ADMIN'].includes(roleName.toString().toUpperCase());
+  const isAdminPreview = isAuthenticated && isAdmin;
 
   const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
   const [editableTitle, setEditableTitle] = useState('');
@@ -339,11 +341,14 @@ export default function HistoryPage() {
           {pageContent?.content && Array.isArray(pageContent.content) && pageContent.content.length > 0 && (
             <div className="w-full mb-12">
               <div className="py-8">
-                {pageContent.content.map((element: any) => (
-                  <div key={element.id}>
-                    {renderContentElement(element)}
-                  </div>
-                ))}
+                {pageContent.content
+                  .filter((element: any) => isVisibleBySchedule(element, new Date(), isAdminPreview))
+                  .map((element: any) => (
+                    <div key={element.id}>
+                      {renderContentElement(element)}
+                      {renderScheduleBadge(element, isAdminPreview)}
+                    </div>
+                  ))}
               </div>
             </div>
           )}

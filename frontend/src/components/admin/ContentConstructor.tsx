@@ -1708,7 +1708,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
               )}
 
               {/* Настройка приватности блока */}
-              <div className="border-t pt-4 mt-4 space-y-2">
+              <div className="border-t pt-4 mt-4 space-y-4">
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id={`isPrivate-${element.id}`}
@@ -1769,6 +1769,52 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                     )}
                   </>
                 )}
+
+                {/* Расписание публикации */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div className="space-y-1">
+                    <Label htmlFor={`publishAt-${element.id}`} className="text-sm">
+                      Дата и время публикации
+                    </Label>
+                    <Input
+                      id={`publishAt-${element.id}`}
+                      type="datetime-local"
+                      value={element.props?.publishAt || ''}
+                      onChange={(e) =>
+                        updateElement(element.id, {
+                          props: {
+                            ...(element.props || {}),
+                            publishAt: e.target.value || null,
+                          },
+                        })
+                      }
+                    />
+                    <p className="text-xs text-gray-500">
+                      Если оставить пустым — блок будет виден сразу после сохранения.
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor={`unpublishAt-${element.id}`} className="text-sm">
+                      Снять с публикации после
+                    </Label>
+                    <Input
+                      id={`unpublishAt-${element.id}`}
+                      type="datetime-local"
+                      value={element.props?.unpublishAt || ''}
+                      onChange={(e) =>
+                        updateElement(element.id, {
+                          props: {
+                            ...(element.props || {}),
+                            unpublishAt: e.target.value || null,
+                          },
+                        })
+                      }
+                    />
+                    <p className="text-xs text-gray-500">
+                      Можно оставить пустым, если блок всегда должен быть виден.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           ) : (
@@ -1782,6 +1828,30 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                (element.props?.rows && element.props.rows.length > 0) ? 
                renderPreview() : 
                <p className="text-gray-500 text-sm">Нажмите "Редактировать" для добавления контента</p>}
+              {/* Индикатор расписания публикации для администратора */}
+              {(() => {
+                const publishAt = element.props?.publishAt ? new Date(element.props.publishAt) : null;
+                const unpublishAt = element.props?.unpublishAt ? new Date(element.props.unpublishAt) : null;
+                const now = new Date();
+
+                if (publishAt && publishAt > now) {
+                  return (
+                    <p className="mt-2 text-xs text-amber-600">
+                      Запланировано с {publishAt.toLocaleString('ru-RU')}
+                    </p>
+                  );
+                }
+
+                if (unpublishAt && unpublishAt < now) {
+                  return (
+                    <p className="mt-2 text-xs text-red-600">
+                      Снято с публикации с {unpublishAt.toLocaleString('ru-RU')}
+                    </p>
+                  );
+                }
+
+                return null;
+              })()}
             </div>
           )}
         </CardContent>

@@ -14,6 +14,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { getTranslatedField } from '../utils/translationHelpers';
 import { BASE_URL } from '@/constants';
 import DynamicForm from './DynamicForm';
+import { isVisibleBySchedule, renderScheduleBadge } from '@/utils/scheduleVisibility';
 
 export default function AboutCompanyPage() {
   const { language, t } = useLanguage();
@@ -24,6 +25,7 @@ export default function AboutCompanyPage() {
   const roleValue = user?.role;
   const roleName = (typeof roleValue === 'string' ? roleValue : roleValue?.name) ?? '';
   const isAdmin = ['SUPER_ADMIN', 'ABOUT_ADMIN'].includes(roleName.toString().toUpperCase());
+  const isAdminPreview = isAuthenticated && isAdmin;
 
   const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
   const [editableTitle, setEditableTitle] = useState('');
@@ -352,11 +354,14 @@ export default function AboutCompanyPage() {
           {pageContent?.content && Array.isArray(pageContent.content) && pageContent.content.length > 0 && (
             <div className="w-full mb-12">
               <div className="py-8">
-                {getTranslatedField(pageContent, 'content', language).map((element: any) => (
-                  <div key={element.id}>
-                    {renderContentElement(element)}
-                  </div>
-                ))}
+                {getTranslatedField(pageContent, 'content', language)
+                  .filter((element: any) => isVisibleBySchedule(element, new Date(), isAdminPreview))
+                  .map((element: any) => (
+                    <div key={element.id}>
+                      {renderContentElement(element)}
+                      {renderScheduleBadge(element, isAdminPreview)}
+                    </div>
+                  ))}
               </div>
             </div>
           )}

@@ -36,6 +36,8 @@ export interface ContentElement {
     loop?: boolean; // Зацикливание
     muted?: boolean; // Без звука
     formConfig?: FormConfig; // Конфигурация динамической формы для элемента типа form
+    publishAt?: string | null; // Дата/время, с которого элемент виден
+    unpublishAt?: string | null; // Дата/время, после которого элемент скрывается
   };
 }
 
