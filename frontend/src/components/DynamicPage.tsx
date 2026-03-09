@@ -415,8 +415,16 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
     return null;
   }, [actualPageType, actualUrlPageType, aboutCompanyCategories]);
   
-  // Определяем заголовок: приоритет - название категории, затем заголовок из контента, затем дефолтный
+  // Определяем заголовок: приоритет - заголовок из контента, затем название категории, затем дефолтный
   const pageTitle = useMemo(() => {
+    // Сначала пробуем заголовок из контента (то, что редактирует админ)
+    if (content) {
+      const contentTitle = getTranslatedField(content, 'title', language);
+      if (contentTitle && String(contentTitle).trim() !== '') {
+        return contentTitle;
+      }
+    }
+
     // Для "О предприятии" - всегда используем название категории, если доступно
     if (actualPageType === 'about' && aboutCompanyCategory) {
       const categoryName = getTranslatedField(aboutCompanyCategory, 'name', language);
@@ -442,13 +450,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
       }
     }
     
-    // Если категории нет или для других типов страниц, используем заголовок из контента или дефолтный
-    if (content) {
-      const contentTitle = getTranslatedField(content, 'title', language);
-      if (contentTitle) {
-        return contentTitle;
-      }
-    }
+    // Если категории нет или заголовок в контенте пустой, используем дефолтный
     return defaultTitle || t('page');
   }, [actualPageType, actualUrlPageType, aboutCompanyCategory, serviceCategory, content, language, defaultTitle, t, aboutCompanyCategories]);
   

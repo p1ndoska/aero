@@ -60,7 +60,12 @@ export default function VacanciesPage() {
 
   // Мемоизируем заголовок страницы
   const pageTitle = useMemo(() => {
-    // Приоритет: название категории > заголовок из контента > дефолтный
+    // Приоритет: заголовок из контента > название категории > дефолтный
+    const contentTitle = pageContent ? getTranslatedField(pageContent, 'title', language) : null;
+    if (contentTitle && String(contentTitle).trim() !== '') {
+      return contentTitle;
+    }
+
     if (vacanciesCategory) {
       const categoryName = getTranslatedField(vacanciesCategory, 'name', language);
       if (categoryName) {
@@ -70,7 +75,6 @@ export default function VacanciesPage() {
         return vacanciesCategory.name;
       }
     }
-    const contentTitle = pageContent ? getTranslatedField(pageContent, 'title', language) : null;
     return contentTitle || 'Открытые вакансии';
   }, [vacanciesCategory, pageContent, language]);
 

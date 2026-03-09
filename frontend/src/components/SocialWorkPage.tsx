@@ -161,9 +161,15 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
   const pageConfig = PAGE_CONFIG[pageType as keyof typeof PAGE_CONFIG];
   const IconComponent = pageConfig?.icon || Users;
   
-  // Получаем переведенное название категории
-  // Приоритет: название категории > заголовок из контента (если не дефолтный) > fallback
+  // Получаем переведенное название категории и заголовок страницы
+  // Приоритет: заголовок из контента (если задан) > название категории > fallback
   const getPageTitle = () => {
+    // Сначала пробуем заголовок из контента (то, что редактирует админ)
+    const contentTitle = getTranslatedField(pageContent, 'title', language);
+    if (contentTitle && String(contentTitle).trim() !== '') {
+      return contentTitle;
+    }
+
     // Сначала проверяем категорию - это основной источник названия
     // Название категории всегда должно использоваться, если оно доступно
     if (socialWorkCategory) {
@@ -175,14 +181,6 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
       if (socialWorkCategory.name) {
         return socialWorkCategory.name;
       }
-    }
-    
-    // Если категории нет, проверяем заголовок в контенте
-    const contentTitle = getTranslatedField(pageContent, 'title', language);
-    // Используем заголовок из контента только если он не является дефолтным
-    const defaultTitles = ['Социальная работа', 'Social work', 'Сацыяльная праца'];
-    if (contentTitle && !defaultTitles.includes(contentTitle)) {
-      return contentTitle;
     }
     
     // Fallback на PAGE_CONFIG
