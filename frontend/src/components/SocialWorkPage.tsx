@@ -499,6 +499,33 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
             <DynamicForm fields={element.props?.formConfig?.fields || []} />
           </div>
         );
+      case 'map': {
+        const lat = Number(element.props?.latitude) || 53.9023;
+        const lng = Number(element.props?.longitude) || 27.5619;
+        const zoom = Number(element.props?.zoom) || 13;
+        const ll = `${lng.toFixed(6)},${lat.toFixed(6)}`;
+        const pt = `${lng.toFixed(6)},${lat.toFixed(6)},pm2rdm`;
+        const src = `https://yandex.ru/map-widget/v1/?ll=${encodeURIComponent(ll)}&z=${zoom}&pt=${encodeURIComponent(pt)}`;
+        const height = Number(element.props?.mapHeight) || 400;
+        return (
+          <div className="mb-6">
+            <div className="w-full border border-gray-300 rounded-lg overflow-hidden">
+              <iframe
+                title="Карта"
+                src={src}
+                style={{ border: 0, width: '100%', height }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+            {element.props?.mapLabel && (
+              <p className="text-sm text-gray-500 mt-2 text-center break-words">
+                {element.props.mapLabel}
+              </p>
+            )}
+          </div>
+        );
+      }
       default:
         return null;
     }

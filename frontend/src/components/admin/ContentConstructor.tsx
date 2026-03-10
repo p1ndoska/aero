@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Trash2, MoveUp, MoveDown, Type, Heading, Link, Image, Upload, List, Table, FileText, Lock as LockIcon, Video, FileStack } from 'lucide-react';
+import { Plus, Trash2, MoveUp, MoveDown, Type, Heading, Link, Image, Upload, List, Table, FileText, Lock as LockIcon, Video, FileStack, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUploadImageMutation, useUploadFileMutation } from '@/app/services/uploadApi';
 import type { ContentElement, TableCellContent, TableRow } from '@/types/branch';
@@ -102,6 +102,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
              type === 'file' ? { fileName: '', fileUrl: '', fileType: '', fileSize: 0 } :
              type === 'video' ? { videoSrc: '', videoTitle: '', videoWidth: 800, videoHeight: 450, controls: true, autoplay: false, loop: false, muted: false } :
              type === 'page-link' ? { pageId: undefined, pageSlug: '', pageTitle: '', linkText: '' } :
+             type === 'map' ? { latitude: 53.9023, longitude: 27.5619, zoom: 13, mapHeight: 400, mapLabel: '' } :
              type === 'paragraph' ? { textIndent: false, textAlign: 'left' } : {}
     };
     
@@ -502,6 +503,38 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
               {element.props?.alt && <p className="text-xs text-gray-500 text-center">{element.props.alt}</p>}
             </div>
           );
+        case 'map': {
+          const lat = Number(element.props?.latitude) || 53.9023;
+          const lng = Number(element.props?.longitude) || 27.5619;
+          const zoom = Number(element.props?.zoom) || 13;
+          const ll = `${lng.toFixed(6)},${lat.toFixed(6)}`;
+          const pt = `${lng.toFixed(6)},${lat.toFixed(6)},pm2rdm`;
+          const src = `https://yandex.ru/map-widget/v1/?ll=${encodeURIComponent(ll)}&z=${zoom}&pt=${encodeURIComponent(pt)}`;
+          return (
+            <div className="w-full">
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin className="w-4 h-4 text-red-500" />
+                <span className="text-sm text-gray-700 break-words">
+                  Карта: {lat.toFixed(5)}, {lng.toFixed(5)} (zoom {zoom})
+                </span>
+              </div>
+              <div className="border border-gray-300 rounded overflow-hidden bg-gray-100">
+                <iframe
+                  title="Предпросмотр карты"
+                  src={src}
+                  style={{ border: 0, width: '100%', height: 200 }}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
+              {element.props?.mapLabel && (
+                <p className="mt-1 text-xs text-gray-500 break-words">
+                  {element.props.mapLabel}
+                </p>
+              )}
+            </div>
+          );
+        }
         case 'list':
           const items = element.props?.items || [];
           if (!Array.isArray(items) || items.length === 0) {
@@ -1663,6 +1696,99 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                 </div>
               )}
 
+              {element.type === 'map' && (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor={`map-latitude-${element.id}`}>Широта (latitude)</Label>
+                      <Input
+                        id={`map-latitude-${element.id}`}
+                        type="number"
+                        value={element.props?.latitude ?? 53.9023}
+                        onChange={(e) =>
+                          updateElement(element.id, {
+                            props: { ...element.props, latitude: parseFloat(e.target.value) || 0 },
+                          })
+                        }
+                        step="0.000001"
+                        placeholder="53.9023"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`map-longitude-${element.id}`}>Долгота (longitude)</Label>
+                      <Input
+                        id={`map-longitude-${element.id}`}
+                        type="number"
+                        value={element.props?.longitude ?? 27.5619}
+                        onChange={(e) =>
+                          updateElement(element.id, {
+                            props: { ...element.props, longitude: parseFloat(e.target.value) || 0 },
+                          })
+                        }
+                        step="0.000001"
+                        placeholder="27.5619"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor={`map-zoom-${element.id}`}>Масштаб (zoom)</Label>
+                      <Input
+                        id={`map-zoom-${element.id}`}
+                        type="number"
+                        value={element.props?.zoom ?? 13}
+                        onChange={(e) =>
+                          updateElement(element.id, {
+                            props: {
+                              ...element.props,
+                              zoom: Math.min(19, Math.max(1, parseInt(e.target.value) || 13)),
+                            },
+                          })
+                        }
+                        min={1}
+                        max={19}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Рекомендуется значение от 10 до 17. Чем больше число — тем ближе масштаб.
+                      </p>
+                    </div>
+                    <div>
+                      <Label htmlFor={`map-height-${element.id}`}>Высота карты (px)</Label>
+                      <Input
+                        id={`map-height-${element.id}`}
+                        type="number"
+                        value={element.props?.mapHeight ?? 400}
+                        onChange={(e) =>
+                          updateElement(element.id, {
+                            props: {
+                              ...element.props,
+                              mapHeight: Math.min(800, Math.max(200, parseInt(e.target.value) || 400)),
+                            },
+                          })
+                        }
+                        min={200}
+                        max={800}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor={`map-label-${element.id}`}>Подпись под картой</Label>
+                    <Input
+                      id={`map-label-${element.id}`}
+                      value={element.props?.mapLabel || ''}
+                      onChange={(e) =>
+                        updateElement(element.id, {
+                          props: { ...element.props, mapLabel: e.target.value },
+                        })
+                      }
+                      placeholder="Например: Офис компании"
+                    />
+                  </div>
+                </div>
+              )}
+
               {element.type === 'page-link' && (
                 <div className="space-y-3">
                   <div>
@@ -2018,6 +2144,16 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
         >
           <Video className="w-4 h-4" />
           Видео
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => addElement('map')}
+          className="flex items-center gap-2"
+        >
+          <MapPin className="w-4 h-4" />
+          Карта
         </Button>
         <Button
           type="button"

@@ -454,42 +454,19 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
     return defaultTitle || t('page');
   }, [actualPageType, actualUrlPageType, aboutCompanyCategory, serviceCategory, content, language, defaultTitle, t, aboutCompanyCategories]);
   
-  // Функция для получения подзаголовка: приоритет - описание категории, затем подзаголовок из контента, затем дефолтный
+  // Функция для получения подзаголовка: приоритет - подзаголовок из контента, затем дефолтный
   const pageSubtitle = useMemo(() => {
-    // Для "О предприятии" - используем описание категории, если доступно
-    if (actualPageType === 'about' && aboutCompanyCategory) {
-      const categoryDescription = getTranslatedField(aboutCompanyCategory, 'description', language);
-      // getTranslatedField уже возвращает правильное значение (перевод или базовое)
-      // Проверяем, что значение не пустое и не null/undefined
-      if (categoryDescription != null && String(categoryDescription).trim() !== '') {
-        return String(categoryDescription);
-      }
-      // Если перевод пустой, используем базовое значение
-      if (aboutCompanyCategory.description != null && String(aboutCompanyCategory.description).trim() !== '') {
-        return String(aboutCompanyCategory.description);
-      }
-    }
-    
-    // Для услуг - используем описание категории, если доступно
-    if (actualPageType === 'services' && serviceCategory) {
-      const categoryDescription = getTranslatedField(serviceCategory, 'description', language);
-      if (categoryDescription) {
-        return categoryDescription;
-      }
-      if (serviceCategory.description) {
-        return serviceCategory.description;
-      }
-    }
-    
-    // Для остальных типов страниц используем стандартную логику
+    // Сначала пробуем подзаголовок из контента (то, что редактирует админ)
     if (content) {
       const contentSubtitle = getTranslatedField(content, 'subtitle', language);
-      if (contentSubtitle) {
+      if (contentSubtitle && String(contentSubtitle).trim() !== '') {
         return contentSubtitle;
       }
     }
+    
+    // Если ничего не найдено, используем дефолтный подзаголовок
     return defaultSubtitle || t('information');
-  }, [actualPageType, actualUrlPageType, aboutCompanyCategory, serviceCategory, content, language, defaultSubtitle, t, aboutCompanyCategories]);
+  }, [content, language, defaultSubtitle, t]);
   
   // Отладочная информация только при ошибках (не в production)
   useEffect(() => {
@@ -1037,6 +1014,33 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
             <DynamicForm fields={element.props?.formConfig?.fields || []} />
           </div>
         );
+      case 'map': {
+        const lat = Number(element.props?.latitude) || 53.9023;
+        const lng = Number(element.props?.longitude) || 27.5619;
+        const zoom = Number(element.props?.zoom) || 13;
+        const ll = `${lng.toFixed(6)},${lat.toFixed(6)}`;
+        const pt = `${lng.toFixed(6)},${lat.toFixed(6)},pm2rdm`;
+        const src = `https://yandex.ru/map-widget/v1/?ll=${encodeURIComponent(ll)}&z=${zoom}&pt=${encodeURIComponent(pt)}`;
+        const height = Number(element.props?.mapHeight) || 400;
+        return (
+          <div className="mb-6">
+            <div className="w-full border border-gray-300 rounded-lg overflow-hidden">
+              <iframe
+                title="Карта"
+                src={src}
+                style={{ border: 0, width: '100%', height }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+            {element.props?.mapLabel && (
+              <p className="text-sm text-gray-500 mt-2 text-center break-words">
+                {element.props.mapLabel}
+              </p>
+            )}
+          </div>
+        );
+      }
       default:
         return null;
     }

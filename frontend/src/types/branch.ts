@@ -3,7 +3,7 @@ import type { FormConfig } from '@/types/form';
 // Типы для элементов конструктора контента
 export interface ContentElement {
   id: string;
-  type: 'paragraph' | 'heading' | 'link' | 'image' | 'list' | 'table' | 'file' | 'video' | 'page-link' | 'form';
+  type: 'paragraph' | 'heading' | 'link' | 'image' | 'list' | 'table' | 'file' | 'video' | 'page-link' | 'form' | 'map';
   content: string;
   isPrivate?: boolean; // Только для авторизованных пользователей
   allowedRoles?: string[]; // Роли, которым доступен приватный блок (если не задано — всем авторизованным)
@@ -38,6 +38,11 @@ export interface ContentElement {
     formConfig?: FormConfig; // Конфигурация динамической формы для элемента типа form
     publishAt?: string | null; // Дата/время, с которого элемент виден
     unpublishAt?: string | null; // Дата/время, после которого элемент скрывается
+    latitude?: number; // Для карты - широта
+    longitude?: number; // Для карты - долгота
+    zoom?: number; // Для карты - масштаб
+    mapHeight?: number; // Высота карты в пикселях
+    mapLabel?: string; // Подпись под картой
   };
 }
 
