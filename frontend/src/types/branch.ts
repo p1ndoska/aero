@@ -21,6 +21,8 @@ export interface ContentElement {
     alt?: string; // Для изображений
     src?: string; // Для изображений
     items?: string[]; // Для списков
+    listTitle?: string; // Заголовок списка
+    listTitleAlign?: 'left' | 'center' | 'right'; // Выравнивание заголовка списка
     rows?: TableRow[]; // Для таблиц
     headers?: string[]; // Заголовки столбцов таблицы
     tableTitle?: string; // Заголовок всей таблицы

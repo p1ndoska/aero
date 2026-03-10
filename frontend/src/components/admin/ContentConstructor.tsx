@@ -97,7 +97,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
       props: type === 'heading' ? { level: 2, color: '#000000', textAlign: 'left' } : 
              type === 'link' ? { href: '', target: '_blank' } : 
              type === 'image' ? { alt: '', src: '' } : 
-             type === 'list' ? { items: [] } :
+             type === 'list' ? { items: [], listTitle: '', listTitleAlign: 'left' } :
              type === 'table' ? { tableTitle: '', headers: [], rows: [] } :
              type === 'file' ? { fileName: '', fileUrl: '', fileType: '', fileSize: 0 } :
              type === 'video' ? { videoSrc: '', videoTitle: '', videoWidth: 800, videoHeight: 450, controls: true, autoplay: false, loop: false, muted: false } :
@@ -773,7 +773,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
           {isEditing ? (
             <div className="space-y-3">
               {/* Основной контент */}
-              {element.type !== 'page-link' && element.type !== 'table' && element.type !== 'map' && (
+              {element.type !== 'page-link' && element.type !== 'table' && element.type !== 'map' && element.type !== 'list' && (
               <div>
                 <Label htmlFor={`content-${element.id}`}>
                   {element.type === 'heading' ? 'Текст заголовка' :
@@ -1036,6 +1036,49 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
 
               {element.type === 'list' && (
                 <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4 items-end">
+                    <div>
+                      <Label htmlFor={`listTitle-${element.id}`}>Заголовок списка</Label>
+                      <Input
+                        id={`listTitle-${element.id}`}
+                        value={element.props?.listTitle || ''}
+                        onChange={(e) =>
+                          updateElement(element.id, {
+                            props: { ...element.props, listTitle: e.target.value },
+                          })
+                        }
+                        placeholder="Введите заголовок списка"
+                      />
+                    </div>
+                    <div>
+                      <Label className="mb-1 block">Выравнивание заголовка</Label>
+                      <div className="flex gap-2">
+                        {(['left', 'center', 'right'] as const).map((align) => (
+                          <Button
+                            key={align}
+                            type="button"
+                            variant={
+                              element.props?.listTitleAlign === align ||
+                              (!element.props?.listTitleAlign && align === 'left')
+                                ? 'default'
+                                : 'outline'
+                            }
+                            size="sm"
+                            onClick={() =>
+                              updateElement(element.id, {
+                                props: { ...element.props, listTitleAlign: align },
+                              })
+                            }
+                          >
+                            {align === 'left' && 'Слева'}
+                            {align === 'center' && 'По центру'}
+                            {align === 'right' && 'Справа'}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
                   <div>
                     <Label>Элементы списка</Label>
                     <div className="space-y-3">

@@ -110,11 +110,30 @@ export default function SecurityPolicyPage() {
       case 'list':
         const items = element.props?.items || [];
         return (
-          <ul className="list-disc list-inside mb-4 space-y-2">
-            {items.map((item: string, idx: number) => (
-              <li key={idx} className="text-gray-700 break-words">{item}</li>
-            ))}
-          </ul>
+          <div className="mb-4">
+            {element.props?.listTitle && (
+              <h3
+                className="text-lg font-semibold text-gray-900 mb-2 break-words"
+                style={{
+                  textAlign:
+                    element.props.listTitleAlign === 'center'
+                      ? 'center'
+                      : element.props.listTitleAlign === 'right'
+                      ? 'right'
+                      : 'left',
+                }}
+              >
+                {element.props.listTitle}
+              </h3>
+            )}
+            <ul className="list-disc list-inside space-y-2">
+              {items.map((item: string, idx: number) => (
+                <li key={idx} className="text-gray-700 break-words">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
         );
       case 'link':
         return (
