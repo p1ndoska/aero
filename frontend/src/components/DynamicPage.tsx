@@ -928,6 +928,21 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
         const rows = element.props?.rows || [];
         return (
           <div className="mb-6 overflow-x-auto">
+            {element.props?.tableTitle && (
+              <h3
+                className="text-lg font-semibold text-gray-900 mb-2 break-words"
+                style={{
+                  textAlign:
+                    element.props.tableTitleAlign === 'center'
+                      ? 'center'
+                      : element.props.tableTitleAlign === 'right'
+                      ? 'right'
+                      : 'left',
+                }}
+              >
+                {element.props.tableTitle}
+              </h3>
+            )}
             <table className="min-w-full border border-gray-300 bg-white">
               {headers.length > 0 && (
                 <thead>

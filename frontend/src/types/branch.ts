@@ -22,7 +22,9 @@ export interface ContentElement {
     src?: string; // Для изображений
     items?: string[]; // Для списков
     rows?: TableRow[]; // Для таблиц
-    headers?: string[]; // Заголовки таблицы
+    headers?: string[]; // Заголовки столбцов таблицы
+    tableTitle?: string; // Заголовок всей таблицы
+    tableTitleAlign?: 'left' | 'center' | 'right'; // Выравнивание заголовка таблицы
     fileName?: string; // Для файлов
     fileUrl?: string; // URL файла
     fileSize?: number; // Размер файла

@@ -98,7 +98,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
              type === 'link' ? { href: '', target: '_blank' } : 
              type === 'image' ? { alt: '', src: '' } : 
              type === 'list' ? { items: [] } :
-             type === 'table' ? { headers: [], rows: [] } :
+             type === 'table' ? { tableTitle: '', headers: [], rows: [] } :
              type === 'file' ? { fileName: '', fileUrl: '', fileType: '', fileSize: 0 } :
              type === 'video' ? { videoSrc: '', videoTitle: '', videoWidth: 800, videoHeight: 450, controls: true, autoplay: false, loop: false, muted: false } :
              type === 'page-link' ? { pageId: undefined, pageSlug: '', pageTitle: '', linkText: '' } :
@@ -773,7 +773,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
           {isEditing ? (
             <div className="space-y-3">
               {/* Основной контент */}
-              {element.type !== 'page-link' && (
+              {element.type !== 'page-link' && element.type !== 'table' && element.type !== 'map' && (
               <div>
                 <Label htmlFor={`content-${element.id}`}>
                   {element.type === 'heading' ? 'Текст заголовка' :
@@ -1091,6 +1091,44 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
 
               {element.type === 'table' && (
                 <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4 items-end">
+                    <div>
+                      <Label htmlFor={`tableTitle-${element.id}`}>Заголовок таблицы</Label>
+                      <Input
+                        id={`tableTitle-${element.id}`}
+                        value={element.props?.tableTitle || ''}
+                        onChange={(e) =>
+                          updateElement(element.id, {
+                            props: { ...element.props, tableTitle: e.target.value },
+                          })
+                        }
+                        placeholder="Введите заголовок таблицы"
+                      />
+                    </div>
+                    <div>
+                      <Label className="mb-1 block">Выравнивание заголовка</Label>
+                      <div className="flex gap-2">
+                        {(['left', 'center', 'right'] as const).map((align) => (
+                          <Button
+                            key={align}
+                            type="button"
+                            variant={element.props?.tableTitleAlign === align || (!element.props?.tableTitleAlign && align === 'left') ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() =>
+                              updateElement(element.id, {
+                                props: { ...element.props, tableTitleAlign: align },
+                              })
+                            }
+                          >
+                            {align === 'left' && 'Слева'}
+                            {align === 'center' && 'По центру'}
+                            {align === 'right' && 'Справа'}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <Label className="text-sm font-medium text-gray-700">Настройки таблицы</Label>
                     <div className="mt-2">
