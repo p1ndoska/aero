@@ -188,21 +188,23 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
   };
 
   const getPageSubtitle = () => {
-    // Сначала проверяем описание категории
+    // 1. В приоритете подзаголовок из контента (то, что редактируется в конструкторе)
+    const contentSubtitle = getTranslatedField(pageContent, 'subtitle', language);
+    if (contentSubtitle && String(contentSubtitle).trim() !== '') {
+      return contentSubtitle;
+    }
+
+    // 2. Если в контенте ничего нет, используем описание категории (старое поведение)
     if (socialWorkCategory) {
-      const categoryDescription = getTranslatedField(socialWorkCategory, 'description', language) || socialWorkCategory.description;
-      if (categoryDescription) {
+      const categoryDescription =
+        getTranslatedField(socialWorkCategory, 'description', language) ||
+        socialWorkCategory.description;
+      if (categoryDescription && String(categoryDescription).trim() !== '') {
         return categoryDescription;
       }
     }
     
-    // Если категории нет или нет описания, проверяем подзаголовок в контенте
-    const contentSubtitle = getTranslatedField(pageContent, 'subtitle', language);
-    if (contentSubtitle) {
-      return contentSubtitle;
-    }
-    
-    // Fallback на PAGE_CONFIG
+    // 3. Fallback на PAGE_CONFIG
     return pageConfig?.defaultSubtitle || '';
   };
 

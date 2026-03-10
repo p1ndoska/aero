@@ -127,6 +127,9 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
   const [editableSubtitleBe, setEditableSubtitleBe] = useState('');
   const [editableContentBe, setEditableContentBe] = useState<any[]>([]);
 
+  // Локальный оверрайд подзаголовка после сохранения (чтобы сразу видеть новое значение)
+  const [pageSubtitleOverride, setPageSubtitleOverride] = useState<string | null>(null);
+
   // Вызываем все хуки на верхнем уровне (правило React Hooks)
   // Используем skip для условных запросов
   // Если pageType не указан, ищем по slug во всех типах контента
@@ -674,6 +677,27 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
       await refetchPageContent();
       }
       
+      // Обновляем локальный подзаголовок, чтобы сразу отразить изменения в шапке
+      setPageSubtitleOverride(() => {
+        // Берём подзаголовок в зависимости от текущего языка интерфейса
+        if (language === 'en') {
+          return (editableSubtitleEn && editableSubtitleEn.trim()) 
+            || (editableSubtitleRu && editableSubtitleRu.trim()) 
+            || defaultSubtitle 
+            || t('information');
+        }
+        if (language === 'be') {
+          return (editableSubtitleBe && editableSubtitleBe.trim()) 
+            || (editableSubtitleRu && editableSubtitleRu.trim()) 
+            || defaultSubtitle 
+            || t('information');
+        }
+        // ru и все остальные — сначала русский
+        return (editableSubtitleRu && editableSubtitleRu.trim()) 
+          || defaultSubtitle 
+          || t('information');
+      });
+      
       setIsContentEditorOpen(false);
     } catch (error: any) {
       toast.error(error.data?.error || 'Ошибка при сохранении контента');
@@ -1094,7 +1118,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
               </div>
             </div>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              {pageSubtitle}
+              {pageSubtitleOverride ?? pageSubtitle}
             </p>
           </div>
 
