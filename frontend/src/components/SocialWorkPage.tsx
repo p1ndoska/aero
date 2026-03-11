@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useGetSocialWorkPageContentQuery, useUpdateSocialWorkPageContentMutation } from '@/app/services/socialWorkPageContentApi';
 import { useGetAllSocialWorkCategoriesQuery } from '@/app/services/socialWorkCategoryApi';
 import ContentConstructor from './admin/ContentConstructor';
+import MultilingualContentEditor from './admin/MultilingualContentEditor';
 import { useLanguage } from '../contexts/LanguageContext';
 import DynamicForm from './DynamicForm';
 import { getTranslatedField } from '../utils/translationHelpers';
@@ -95,9 +96,18 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
   // });
 
   const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
-  const [editableTitle, setEditableTitle] = useState('');
-  const [editableSubtitle, setEditableSubtitle] = useState('');
-  const [editableContent, setEditableContent] = useState<any[]>([]);
+  // Состояния для русского языка
+  const [editableTitleRu, setEditableTitleRu] = useState('');
+  const [editableSubtitleRu, setEditableSubtitleRu] = useState('');
+  const [editableContentRu, setEditableContentRu] = useState<any[]>([]);
+  // Состояния для английского языка
+  const [editableTitleEn, setEditableTitleEn] = useState('');
+  const [editableSubtitleEn, setEditableSubtitleEn] = useState('');
+  const [editableContentEn, setEditableContentEn] = useState<any[]>([]);
+  // Состояния для белорусского языка
+  const [editableTitleBe, setEditableTitleBe] = useState('');
+  const [editableSubtitleBe, setEditableSubtitleBe] = useState('');
+  const [editableContentBe, setEditableContentBe] = useState<any[]>([]);
   const dispatch = useDispatch<AppDispatch>();
   const [login, { isLoading: isLoggingIn }] = useLoginMutation();
   const [loginEmail, setLoginEmail] = useState('');
@@ -156,7 +166,7 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
     const timeoutId = setTimeout(applyStyles, 100);
     
     return () => clearTimeout(timeoutId);
-  }, [editableContent]);
+  }, [editableContentRu, editableContentEn, editableContentBe]);
 
   const pageConfig = PAGE_CONFIG[pageType as keyof typeof PAGE_CONFIG];
   const IconComponent = pageConfig?.icon || Users;
@@ -213,39 +223,76 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
 
   const handleOpenContentEditor = () => {
     if (pageContent) {
-      setEditableTitle(getTranslatedField(pageContent, 'title', language) || pageTitle);
-      setEditableSubtitle(getTranslatedField(pageContent, 'subtitle', language) || pageSubtitle);
-      setEditableContent(getTranslatedField(pageContent, 'content', language) || []);
+      // Загружаем данные для всех трех языков из объекта контента
+      setEditableTitleRu(pageContent.title || pageTitle);
+      setEditableSubtitleRu(pageContent.subtitle || pageSubtitle);
+      setEditableContentRu(Array.isArray(pageContent.content) ? pageContent.content : []);
+
+      setEditableTitleEn(pageContent.titleEn || '');
+      setEditableSubtitleEn(pageContent.subtitleEn || '');
+      setEditableContentEn(Array.isArray(pageContent.contentEn) ? pageContent.contentEn : []);
+
+      setEditableTitleBe(pageContent.titleBe || '');
+      setEditableSubtitleBe(pageContent.subtitleBe || '');
+      setEditableContentBe(Array.isArray(pageContent.contentBe) ? pageContent.contentBe : []);
+
+      // Если заголовки не заданы ни на одном языке, используем название категории или дефолт
+      if (!pageContent.title && !pageContent.titleEn && !pageContent.titleBe) {
+        if (socialWorkCategory) {
+          setEditableTitleRu(socialWorkCategory.name || pageTitle);
+          setEditableTitleEn(socialWorkCategory.nameEn || '');
+          setEditableTitleBe(socialWorkCategory.nameBe || '');
+        } else {
+          setEditableTitleRu(pageTitle);
+        }
+      }
+
+      // Если подзаголовки не заданы, используем описание категории или дефолт
+      if (!pageContent.subtitle && !pageContent.subtitleEn && !pageContent.subtitleBe) {
+        if (socialWorkCategory) {
+          setEditableSubtitleRu(socialWorkCategory.description || pageSubtitle);
+          setEditableSubtitleEn(socialWorkCategory.descriptionEn || '');
+          setEditableSubtitleBe(socialWorkCategory.descriptionBe || '');
+        }
+      }
     } else {
-      setEditableTitle(pageTitle);
-      setEditableSubtitle(pageSubtitle);
-      setEditableContent([]);
+      // Если контент не создан, используем категорию и конфиг страницы
+      if (socialWorkCategory) {
+        setEditableTitleRu(socialWorkCategory.name || pageTitle);
+        setEditableTitleEn(socialWorkCategory.nameEn || '');
+        setEditableTitleBe(socialWorkCategory.nameBe || '');
+        setEditableSubtitleRu(socialWorkCategory.description || pageSubtitle);
+        setEditableSubtitleEn(socialWorkCategory.descriptionEn || '');
+        setEditableSubtitleBe(socialWorkCategory.descriptionBe || '');
+      } else {
+        setEditableTitleRu(pageTitle);
+        setEditableTitleEn('');
+        setEditableTitleBe('');
+        setEditableSubtitleRu(pageSubtitle);
+        setEditableSubtitleEn('');
+        setEditableSubtitleBe('');
+      }
+      setEditableContentRu([]);
+      setEditableContentEn([]);
+      setEditableContentBe([]);
     }
     setIsContentEditorOpen(true);
   };
 
   const handleSaveContent = async () => {
     try {
+      // Всегда сохраняем все три языка, как на других страницах
       const updateData: any = {
-        title: editableTitle,
-        subtitle: editableSubtitle,
-        content: editableContent,
+        title: editableTitleRu,
+        titleEn: editableTitleEn,
+        titleBe: editableTitleBe,
+        subtitle: editableSubtitleRu,
+        subtitleEn: editableSubtitleEn,
+        subtitleBe: editableSubtitleBe,
+        content: editableContentRu,
+        contentEn: editableContentEn,
+        contentBe: editableContentBe,
       };
-
-      // Add multilingual fields if needed
-      if (language === 'en') {
-        updateData.titleEn = editableTitle;
-        updateData.subtitleEn = editableSubtitle;
-        updateData.contentEn = editableContent;
-      } else if (language === 'be') {
-        updateData.titleBe = editableTitle;
-        updateData.subtitleBe = editableSubtitle;
-        updateData.contentBe = editableContent;
-      } else { // Default to Russian
-        updateData.title = editableTitle;
-        updateData.subtitle = editableSubtitle;
-        updateData.content = editableContent;
-      }
 
       await updatePageContent({ pageType, body: updateData }).unwrap();
       toast.success('Контент страницы успешно обновлен');
@@ -798,40 +845,38 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
         </div>
       </div>
 
-      {/* Редактор контента страницы */}
+      {/* Редактор контента страницы (многоязычный) */}
       <Dialog open={isContentEditorOpen} onOpenChange={setIsContentEditorOpen}>
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-white min-w-0 dialog-content">
           <DialogHeader>
             <DialogTitle>Управление контентом страницы социальной работы</DialogTitle>
             <DialogDescription>
-              Редактируйте заголовок, подзаголовок и основной контент страницы.
+              Редактируйте заголовок, подзаголовок и основной контент страницы на трех языках.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">Заголовок страницы</label>
-              <Input
-                value={editableTitle}
-                onChange={(e) => setEditableTitle(e.target.value)}
-                placeholder={pageTitle}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Подзаголовок</label>
-              <Textarea
-                value={editableSubtitle}
-                onChange={(e) => setEditableSubtitle(e.target.value)}
-                placeholder={pageSubtitle || 'Описание страницы...'}
-                className="min-h-[80px] resize-none"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-4">Основной контент</label>
-              <ContentConstructor
-                content={editableContent}
-                onChange={setEditableContent}
-              />
-            </div>
+            <MultilingualContentEditor
+              titleRu={editableTitleRu}
+              subtitleRu={editableSubtitleRu}
+              contentRu={editableContentRu}
+              titleEn={editableTitleEn}
+              subtitleEn={editableSubtitleEn}
+              contentEn={editableContentEn}
+              titleBe={editableTitleBe}
+              subtitleBe={editableSubtitleBe}
+              contentBe={editableContentBe}
+              onTitleRuChange={setEditableTitleRu}
+              onSubtitleRuChange={setEditableSubtitleRu}
+              onContentRuChange={setEditableContentRu}
+              onTitleEnChange={setEditableTitleEn}
+              onSubtitleEnChange={setEditableSubtitleEn}
+              onContentEnChange={setEditableContentEn}
+              onTitleBeChange={setEditableTitleBe}
+              onSubtitleBeChange={setEditableSubtitleBe}
+              onContentBeChange={setEditableContentBe}
+              titlePlaceholder={pageTitle}
+              subtitlePlaceholder={pageSubtitle || 'Описание страницы...'}
+            />
             <div className="flex justify-end gap-3 pt-4 border-t">
               <Button variant="outline" onClick={() => setIsContentEditorOpen(false)}>
                 Отмена
