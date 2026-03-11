@@ -101,7 +101,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
              type === 'table' ? { tableTitle: '', headers: [], rows: [] } :
              type === 'file' ? { fileName: '', fileUrl: '', fileType: '', fileSize: 0 } :
              type === 'video' ? { videoSrc: '', videoTitle: '', videoWidth: 800, videoHeight: 450, controls: true, autoplay: false, loop: false, muted: false } :
-             type === 'page-link' ? { pageId: undefined, pageSlug: '', pageTitle: '', linkText: '' } :
+             type === 'page-link' ? { pageId: undefined, pageSlug: '', pageTitle: '', linkText: '', isExternal: false, externalUrl: '' } :
              type === 'map' ? { latitude: 53.9023, longitude: 27.5619, zoom: 13, mapHeight: 400, mapLabel: '' } :
              type === 'paragraph' ? { textIndent: false, textAlign: 'left' } : {}
     };
@@ -1872,45 +1872,83 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
 
               {element.type === 'page-link' && (
                 <div className="space-y-3">
-                  <div>
-                    <Label htmlFor={`pageTitle-${element.id}`}>Название страницы</Label>
-                    <Input
-                      id={`pageTitle-${element.id}`}
-                      value={element.content || ''}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        updateElement(element.id, { 
-                          content: value, // Сохраняем в content (текст ссылки)
-                          props: { ...element.props, pageTitle: value }
-                        });
-                      }}
-                      placeholder="Введите название страницы (будет заголовком новой страницы)"
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`isExternal-${element.id}`}
+                      checked={element.props?.isExternal || false}
+                      onCheckedChange={(checked) =>
+                        updateElement(element.id, {
+                          props: { 
+                            ...element.props, 
+                            isExternal: !!checked 
+                          },
+                        })
+                      }
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Это название будет заголовком создаваемой страницы и текстом ссылки
-                    </p>
+                    <Label htmlFor={`isExternal-${element.id}`} className="cursor-pointer">
+                      Внешняя ссылка (на другой сайт)
+                    </Label>
                   </div>
-                  <div>
-                    <Label htmlFor={`pageSlug-${element.id}`}>URL страницы (slug)</Label>
-                    <Input
-                      id={`pageSlug-${element.id}`}
-                      value={element.props?.pageSlug || ''}
-                      onChange={(e) => updateElement(element.id, { 
-                        props: { ...element.props, pageSlug: e.target.value }
-                      })}
-                      placeholder="например: new-page"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Если оставить пустым, будет создан автоматически на основе названия
-                    </p>
-                  </div>
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded">
-                    <p className="text-sm text-blue-800">
-                      <strong>Примечание:</strong> При сохранении страницы будет создана новая динамическая страница 
-                      с указанным названием и URL. Новая страница будет иметь конструктор контента для редактирования.
-                      Логика создания будет реализована позже.
-                    </p>
-                  </div>
+
+                  {element.props?.isExternal ? (
+                    <div>
+                      <Label htmlFor={`externalUrl-${element.id}`}>URL внешней страницы</Label>
+                      <Input
+                        id={`externalUrl-${element.id}`}
+                        value={element.props?.externalUrl || ''}
+                        onChange={(e) =>
+                          updateElement(element.id, {
+                            props: { ...element.props, externalUrl: e.target.value },
+                          })
+                        }
+                        placeholder="Например: https://example.com/page"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Ссылка будет вести на указанный внешний адрес и откроется в новой вкладке.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div>
+                        <Label htmlFor={`pageTitle-${element.id}`}>Название страницы</Label>
+                        <Input
+                          id={`pageTitle-${element.id}`}
+                          value={element.content || ''}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            updateElement(element.id, { 
+                              content: value, // Сохраняем в content (текст ссылки)
+                              props: { ...element.props, pageTitle: value }
+                            });
+                          }}
+                          placeholder="Введите название страницы (будет заголовком новой страницы)"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Это название будет заголовком создаваемой страницы и текстом ссылки
+                        </p>
+                      </div>
+                      <div>
+                        <Label htmlFor={`pageSlug-${element.id}`}>URL страницы (slug)</Label>
+                        <Input
+                          id={`pageSlug-${element.id}`}
+                          value={element.props?.pageSlug || ''}
+                          onChange={(e) => updateElement(element.id, { 
+                            props: { ...element.props, pageSlug: e.target.value }
+                          })}
+                          placeholder="например: new-page"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Если оставить пустым, будет создан автоматически на основе названия
+                        </p>
+                      </div>
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded">
+                        <p className="text-sm text-blue-800">
+                          <strong>Примечание:</strong> При сохранении страницы будет создана новая динамическая страница 
+                          с указанным названием и URL. Новая страница будет иметь конструктор контента для редактирования.
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 

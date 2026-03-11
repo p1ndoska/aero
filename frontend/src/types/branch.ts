@@ -18,6 +18,8 @@ export interface ContentElement {
     pageSlug?: string; // Slug внутренней страницы (для page-link)
     pageTitle?: string; // Название страницы (для page-link) - заголовок новой страницы
     linkText?: string; // Текст ссылки (для page-link) - что отображается на текущей странице
+    isExternal?: boolean; // Внешняя ссылка (true) или внутренняя страница (false/undefined)
+    externalUrl?: string; // URL внешнего ресурса (для внешней ссылки)
     alt?: string; // Для изображений
     src?: string; // Для изображений
     items?: string[]; // Для списков

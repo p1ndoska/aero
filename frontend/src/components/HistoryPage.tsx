@@ -314,15 +314,37 @@ export default function HistoryPage() {
             )}
           </div>
         );
-      case 'page-link':
+      case 'page-link': {
         const linkText = element.content || element.props?.linkText;
         if (!linkText) return null;
+
+        // Внешняя ссылка
+        if (element.props?.isExternal && element.props.externalUrl) {
+          return (
+            <div className="mb-6">
+              <a
+                href={element.props.externalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-2"
+              >
+                {linkText}
+              </a>
+            </div>
+          );
+        }
+
+        // Внутренняя страница
         const pageTitle = element.props?.pageTitle || '';
-        const pageSlug = element.props?.pageSlug || (pageTitle ? pageTitle.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : '');
+        const pageSlug =
+          element.props?.pageSlug ||
+          (pageTitle
+            ? pageTitle.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+            : '');
         if (!pageSlug) return null;
         return (
           <div className="mb-6">
-            <a 
+            <a
               href={`/page/${pageSlug}`}
               className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-2"
             >
@@ -330,6 +352,7 @@ export default function HistoryPage() {
             </a>
           </div>
         );
+      }
       case 'form':
         return (
           <div className="my-6 p-6 border border-gray-200 rounded-xl bg-white shadow-sm">

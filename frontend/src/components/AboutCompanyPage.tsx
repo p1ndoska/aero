@@ -356,21 +356,45 @@ export default function AboutCompanyPage() {
         );
       }
       case 'page-link':
-        const linkText = element.content || element.props?.linkText;
-        if (!linkText) return null;
-        const pageTitle = element.props?.pageTitle || '';
-        const pageSlug = element.props?.pageSlug || (pageTitle ? pageTitle.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : '');
-        if (!pageSlug) return null;
-        return (
-          <div className="mb-6">
-            <a 
-              href={`/page/${pageSlug}`}
-              className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-2"
-            >
-              {linkText}
-            </a>
-          </div>
-        );
+        {
+          const linkText = element.content || element.props?.linkText;
+          if (!linkText) return null;
+
+          // Внешняя ссылка
+          if (element.props?.isExternal && element.props.externalUrl) {
+            return (
+              <div className="mb-6">
+                <a
+                  href={element.props.externalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-2"
+                >
+                  {linkText}
+                </a>
+              </div>
+            );
+          }
+
+          // Внутренняя страница
+          const pageTitle = element.props?.pageTitle || '';
+          const pageSlug =
+            element.props?.pageSlug ||
+            (pageTitle
+              ? pageTitle.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+              : '');
+          if (!pageSlug) return null;
+          return (
+            <div className="mb-6">
+              <a
+                href={`/page/${pageSlug}`}
+                className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-2"
+              >
+                {linkText}
+              </a>
+            </div>
+          );
+        }
       case 'form':
         return (
           <div className="my-6">
