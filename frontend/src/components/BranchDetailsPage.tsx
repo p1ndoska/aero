@@ -521,6 +521,46 @@ export default function BranchDetailsPage() {
                               </a>
                             </div>
                           );
+                        case 'page-link': {
+                          const linkText = element.content || element.props?.linkText;
+                          if (!linkText) return null;
+
+                          // Внешняя ссылка
+                          if (element.props?.isExternal && element.props.externalUrl) {
+                            return (
+                              <div key={index} className="mb-4">
+                                <a
+                                  href={element.props.externalUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[#2A52BE] hover:underline inline-flex items-center gap-2"
+                                >
+                                  {linkText}
+                                </a>
+                              </div>
+                            );
+                          }
+
+                          // Внутренняя страница
+                          const pageTitle = element.props?.pageTitle || '';
+                          const pageSlug =
+                            element.props?.pageSlug ||
+                            (pageTitle
+                              ? pageTitle.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+                              : '');
+                          if (!pageSlug) return null;
+
+                          return (
+                            <div key={index} className="mb-4">
+                              <a
+                                href={`/page/${pageSlug}`}
+                                className="text-[#2A52BE] hover:underline inline-flex items-center gap-2"
+                              >
+                                {linkText}
+                              </a>
+                            </div>
+                          );
+                        }
                         default:
                           return null;
                       }

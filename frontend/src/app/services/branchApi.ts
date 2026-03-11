@@ -28,6 +28,7 @@ export const branchApi = api.injectEndpoints({
         method: "POST",
         body: branchData,
       }),
+      invalidatesTags: ['Branch'],
     }),
 
     // Обновить филиал
@@ -37,6 +38,10 @@ export const branchApi = api.injectEndpoints({
         method: "PUT",
         body: branchData,
       }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Branch', id },
+        'Branch',
+      ],
     }),
 
     // Удалить филиал
@@ -45,6 +50,10 @@ export const branchApi = api.injectEndpoints({
         url: `/branch/${id}`,
         method: "DELETE",
       }),
+      invalidatesTags: (result, error, id) => [
+        { type: 'Branch', id },
+        'Branch',
+      ],
     }),
   }),
 });
