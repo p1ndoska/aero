@@ -1,4 +1,5 @@
 const prisma = require('../prisma/prisma-client');
+const { logUserActivity } = require('../utils/activityLogger');
 
 const HistoryPageContentController = {
     getHistoryPageContent: async (req, res) => {
@@ -52,6 +53,19 @@ const HistoryPageContentController = {
                 });
             }
             res.json(updatedContent);
+
+            // Логируем обновление контента страницы "История"
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: existingContent ? 'UPDATE_CONTENT' : 'CREATE_CONTENT',
+                userId,
+                description: `Изменён контент страницы "История предприятия" (ID=${updatedContent.id})`,
+                metadata: {
+                    entity: 'HistoryPageContent',
+                    entityId: updatedContent.id,
+                },
+                req,
+            });
         } catch (error) {
             console.error('Error updating history page content:', error);
             res.status(500).json({ error: 'Internal server error' });

@@ -1,4 +1,5 @@
 const prisma = require('../prisma/prisma-client');
+const { logUserActivity } = require('../utils/activityLogger');
 
 // Получить контент страницы услуг по pageType
 const getServicesPageContent = async (req, res) => {
@@ -114,6 +115,20 @@ const updateServicesPageContent = async (req, res) => {
     });
 
     res.json(pageContent);
+
+    // Логируем создание/обновление контента страницы услуг
+    const userId = req.user?.userId || null;
+    await logUserActivity({
+      action: 'UPDATE_CONTENT',
+      userId,
+      description: `Изменён контент страницы услуг (pageType=${pageType}, ID=${pageContent.id})`,
+      metadata: {
+        entity: 'ServicesPageContent',
+        entityId: pageContent.id,
+        pageType,
+      },
+      req,
+    });
   } catch (error) {
     console.error('Ошибка при обновлении контента страницы услуг:', error);
     res.status(500).json({ error: 'Внутренняя ошибка сервера' });
@@ -125,8 +140,28 @@ const deleteServicesPageContent = async (req, res) => {
   try {
     const { pageType } = req.params;
 
+    // Сохраняем данные для лога до удаления
+    const existing = await prisma.servicesPageContent.findUnique({
+      where: { pageType },
+      select: { id: true, pageType: true, title: true },
+    });
+
     await prisma.servicesPageContent.delete({
       where: { pageType }
+    });
+
+    // Логируем удаление
+    const userId = req.user?.userId || null;
+    await logUserActivity({
+      action: 'DELETE_CONTENT',
+      userId,
+      description: `Удалён контент страницы услуг (pageType=${pageType}, ID=${existing?.id ?? 'unknown'})`,
+      metadata: {
+        entity: 'ServicesPageContent',
+        entityId: existing?.id ?? null,
+        pageType,
+      },
+      req,
     });
 
     res.status(204).send();

@@ -1,4 +1,5 @@
 const prisma = require('../prisma/prisma-client');
+const { logUserActivity } = require('../utils/activityLogger');
 
 const SocialWorkPageContentController = {
     getSocialWorkPageContent: async (req, res) => {
@@ -91,6 +92,20 @@ const SocialWorkPageContentController = {
                 });
             }
             res.json(updatedContent);
+
+            // Логируем изменение страницы социальной работы
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: existingContent ? 'UPDATE_CONTENT' : 'CREATE_CONTENT',
+                userId,
+                description: `Изменён контент страницы социальной работы (pageType=${pageType}, ID=${updatedContent.id})`,
+                metadata: {
+                    entity: 'SocialWorkPageContent',
+                    entityId: updatedContent.id,
+                    pageType,
+                },
+                req,
+            });
         } catch (error) {
             console.error('Error updating social work page content:', error);
             console.error('Error details:', error.message);

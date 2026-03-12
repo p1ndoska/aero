@@ -1,4 +1,5 @@
 const prisma = require('../prisma/prisma-client');
+const { logUserActivity } = require('../utils/activityLogger');
 
 const AeronauticalInfoPageContentController = {
     getAeronauticalInfoPageContent: async (req, res) => {
@@ -168,6 +169,19 @@ const AeronauticalInfoPageContentController = {
                 create: updateData
             });
             res.json(updatedContent);
+
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: 'UPDATE_CONTENT',
+                userId,
+                description: `Изменён контент аэронавигационной страницы (pageType=${pageType}, ID=${updatedContent.id})`,
+                metadata: {
+                    entity: 'AeronauticalInfoPageContent',
+                    entityId: updatedContent.id,
+                    pageType,
+                },
+                req,
+            });
         } catch (error) {
             console.error('Error updating aeronautical info page content:', error);
             res.status(500).json({ error: 'Internal server error' });
@@ -207,6 +221,19 @@ const AeronauticalInfoPageContentController = {
                 });
                 
                 res.json(updatedContent);
+
+                const userId = req.user?.userId || null;
+                await logUserActivity({
+                    action: 'UPDATE_CONTENT',
+                    userId,
+                    description: `Изменён контент аэронавигационной страницы (pageType=${pageType}, ID=${updatedContent.id})`,
+                    metadata: {
+                        entity: 'AeronauticalInfoPageContent',
+                        entityId: updatedContent.id,
+                        pageType,
+                    },
+                    req,
+                });
             } else {
                 // Создаем новую запись
                 const newContent = await prisma.aeronauticalInfoPageContent.create({
@@ -224,6 +251,19 @@ const AeronauticalInfoPageContentController = {
                     }
                 });
                 res.json(newContent);
+
+                const userId = req.user?.userId || null;
+                await logUserActivity({
+                    action: 'CREATE_CONTENT',
+                    userId,
+                    description: `Создан контент аэронавигационной страницы (pageType=${pageType}, ID=${newContent.id})`,
+                    metadata: {
+                        entity: 'AeronauticalInfoPageContent',
+                        entityId: newContent.id,
+                        pageType,
+                    },
+                    req,
+                });
             }
         } catch (error) {
             console.error('Error updating aeronautical info page content by pageType:', error);
@@ -259,10 +299,27 @@ const AeronauticalInfoPageContentController = {
     deleteAeronauticalInfoPageContent: async (req, res) => {
         try {
             const { pageType } = req.params;
+            const existing = await prisma.aeronauticalInfoPageContent.findUnique({
+                where: { pageType },
+                select: { id: true, pageType: true, title: true },
+            });
             await prisma.aeronauticalInfoPageContent.delete({
                 where: { pageType }
             });
             res.json({ message: 'Aeronautical info page content deleted successfully' });
+
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: 'DELETE_CONTENT',
+                userId,
+                description: `Удалён контент аэронавигационной страницы (pageType=${pageType}, ID=${existing?.id ?? 'unknown'})`,
+                metadata: {
+                    entity: 'AeronauticalInfoPageContent',
+                    entityId: existing?.id ?? null,
+                    pageType,
+                },
+                req,
+            });
         } catch (error) {
             console.error('Error deleting aeronautical info page content:', error);
             res.status(500).json({ error: 'Internal server error' });

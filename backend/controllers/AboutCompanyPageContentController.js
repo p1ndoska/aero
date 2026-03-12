@@ -1,4 +1,5 @@
 const prisma = require('../prisma/prisma-client');
+const { logUserActivity } = require('../utils/activityLogger');
 
 const AboutCompanyPageContentController = {
     getAboutCompanyPageContent: async (req, res) => {
@@ -67,6 +68,19 @@ const AboutCompanyPageContentController = {
                 });
             }
             res.json(updatedContent);
+
+            // Логируем обновление основной страницы "О предприятии"
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: existingContent ? 'UPDATE_CONTENT' : 'CREATE_CONTENT',
+                userId,
+                description: `Изменён контент страницы "О предприятии" (ID=${updatedContent.id})`,
+                metadata: {
+                    entity: 'AboutCompanyPageContent',
+                    entityId: updatedContent.id,
+                },
+                req,
+            });
         } catch (error) {
             console.error('Error updating about company page content:', error);
             res.status(500).json({ error: 'Internal server error' });
@@ -193,6 +207,20 @@ const AboutCompanyPageContentController = {
                 
                 console.log('Updated content:', JSON.stringify(updatedContent, null, 2));
                 res.json(updatedContent);
+
+                // Логируем обновление конкретной подстраницы "О предприятии"
+                const userId = req.user?.userId || null;
+                await logUserActivity({
+                    action: 'UPDATE_CONTENT',
+                    userId,
+                    description: `Изменён контент страницы "О предприятии" (pageType=${pageType}, ID=${updatedContent.id})`,
+                    metadata: {
+                        entity: 'AboutCompanyPageContent',
+                        entityId: updatedContent.id,
+                        pageType,
+                    },
+                    req,
+                });
             } else {
                 // Создаем новую запись
                 const newContent = await prisma.aboutCompanyPageContent.create({

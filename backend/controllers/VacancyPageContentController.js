@@ -1,4 +1,5 @@
 const prisma = require('../prisma/prisma-client');
+const { logUserActivity } = require('../utils/activityLogger');
 
 const VacancyPageContentController = {
     // Получение контента страницы вакансий
@@ -128,6 +129,19 @@ const VacancyPageContentController = {
                     }
                 });
             }
+
+            const isCreate = !existingContent;
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: isCreate ? 'CREATE_CONTENT' : 'UPDATE_CONTENT',
+                userId,
+                description: `Изменён контент страницы вакансий (ID=${pageContent.id})`,
+                metadata: {
+                    entity: 'VacancyPageContent',
+                    entityId: pageContent.id,
+                },
+                req,
+            });
 
             return res.status(200).json(pageContent);
         } catch (error) {

@@ -38,6 +38,8 @@ model User {
   passwordChangedAt DateTime? // Дата последней смены пароля
   mustChangePassword Boolean @default(true) // Требуется ли смена пароля при следующем входе
   previousPasswords String[] @default([]) // Массив хешей предыдущих паролей (для проверки отличия)
+  // Логи активности (read-only, только для просмотра)
+  activities  UserActivityLog[]
 }
 
 model Role {
@@ -495,5 +497,23 @@ model Resume {
   
   @@index([status])
   @@index([createdAt])
+}
+
+// Логи активности пользователей (read-only в админке, только для просмотра)
+model UserActivityLog {
+  id          Int       @id @default(autoincrement())
+  userId      Int?      // Может быть null, если действие без авторизации
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action      String    // Тип действия: LOGIN, LOGOUT, CREATE_CONTENT, UPDATE_CONTENT и т.п.
+  description String?   // Человеко-читаемое описание
+  userRole    String?   // Роль пользователя на момент действия
+  userName    String?   // Имя/логин пользователя (например, email или ФИО)
+  ip          String?   // IP-адрес пользователя
+  userAgent   String?   // User-Agent браузера / клиента
+  metadata    Json?     // Дополнительные данные (ID сущности, payload и т.п.)
+  createdAt   DateTime  @default(now())
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
 }
 

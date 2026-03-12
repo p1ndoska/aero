@@ -5,6 +5,7 @@ const jdenticon = require('jdenticon');
 const fs = require('fs');
 const path = require('path');
 const { checkPasswordExpiry } = require('../utils/passwordValidator');
+const { logUserActivity } = require('../utils/activityLogger');
 
 const UserController = {
     login: async (req, res) => {
@@ -48,7 +49,7 @@ const UserController = {
             // Если пароль истек или требуется смена при первом входе
             if (mustChangePassword || passwordExpired) {
                 const token = jwt.sign(
-                    { userId: user.id, role: user.role?.name, mustChangePassword: true },
+                    { userId: user.id, role: user.role?.name, email: user.email, mustChangePassword: true },
                     process.env.SECRET_KEY,
                     { expiresIn: "1h" } // Короткий срок для принудительной смены пароля
                 );
@@ -107,12 +108,23 @@ const UserController = {
             });
 
             const token = jwt.sign(
-                { userId: user.id, role: user.role?.name },
+                { userId: user.id, role: user.role?.name, email: user.email },
                 process.env.SECRET_KEY,
                 { expiresIn: "7d" } // токен живет 7 дней
             );
 
             console.log("Успешная авторизация:", user.email);
+
+            // Логируем успешный вход пользователя
+            await logUserActivity({
+                action: 'LOGIN',
+                userId: user.id,
+                description: `Успешный вход пользователя ${user.email}`,
+                metadata: {
+                    role: user.role?.name || null,
+                },
+                req,
+            });
             const { password: _, ...userData } = user;
 
             return res.status(200).json({
@@ -126,6 +138,32 @@ const UserController = {
         } catch (error) {
             console.error("login error", error);
             return res.status(502).json({ error: "Internal server error" });
+        }
+    },
+
+    // Логаута как такового на сервере нет (JWT статeless),
+    // но фиксируем факт выхода пользователя из аккаунта.
+    logout: async (req, res) => {
+        try {
+            const userId = req.user?.userId || null;
+            const role = req.user?.role || null;
+
+            await logUserActivity({
+                action: 'LOGOUT',
+                userId,
+                description: userId ? `Пользователь ${userId} вышел из аккаунта` : 'Выход из аккаунта (пользователь не определён)',
+                metadata: {
+                    role,
+                },
+                req,
+            });
+
+            // Клиенту достаточно знать, что событие зафиксировано.
+            // Само "выходить" он должен удалением токена на фронтенде.
+            return res.status(200).json({ message: 'Выход зафиксирован' });
+        } catch (error) {
+            console.error('logout error', error);
+            return res.status(500).json({ error: 'Internal server error' });
         }
     },
 

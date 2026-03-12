@@ -1,4 +1,5 @@
 const prisma = require('../prisma/prisma-client');
+const { logUserActivity } = require('../utils/activityLogger');
 
 const SocialWorkCategoryController = {
     getAllSocialWorkCategories: async (req, res) => {
@@ -139,10 +140,27 @@ const SocialWorkCategoryController = {
     deleteSocialWorkCategory: async (req, res) => {
         try {
             const { id } = req.params;
+            const existing = await prisma.socialWorkCategory.findUnique({
+                where: { id: parseInt(id) },
+                select: { id: true, name: true, pageType: true },
+            });
             await prisma.socialWorkCategory.delete({
                 where: { id: parseInt(id) }
             });
             res.json({ message: 'Social work category deleted successfully' });
+
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: 'DELETE_CONTENT',
+                userId,
+                description: `Удалена категория социальной работы "${existing?.name || id}" (ID=${existing?.id ?? id})`,
+                metadata: {
+                    entity: 'SocialWorkCategory',
+                    entityId: existing?.id ?? null,
+                    pageType: existing?.pageType ?? null,
+                },
+                req,
+            });
         } catch (error) {
             console.error('Error deleting social work category:', error);
             res.status(500).json({ error: 'Internal server error' });

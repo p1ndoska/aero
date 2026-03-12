@@ -1,4 +1,5 @@
 const prisma = require('../prisma/prisma-client');
+const { logUserActivity } = require('../utils/activityLogger');
 
 const AppealsPageContentController = {
     getAppealsPageContent: async (req, res) => {
@@ -114,6 +115,19 @@ const AppealsPageContentController = {
                 create: updateData
             });
             res.json(updatedContent);
+
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: 'UPDATE_CONTENT',
+                userId,
+                description: `Изменён контент страницы обращений (pageType=${pageType}, ID=${updatedContent.id})`,
+                metadata: {
+                    entity: 'AppealsPageContent',
+                    entityId: updatedContent.id,
+                    pageType,
+                },
+                req,
+            });
         } catch (error) {
             console.error('Error updating appeals page content:', error);
             res.status(500).json({ error: 'Internal server error' });
@@ -152,6 +166,19 @@ const AppealsPageContentController = {
                     data: updateData
                 });
                 res.json(updatedContent);
+
+                const userId = req.user?.userId || null;
+                await logUserActivity({
+                    action: 'UPDATE_CONTENT',
+                    userId,
+                    description: `Изменён контент страницы обращений (pageType=${pageType}, ID=${updatedContent.id})`,
+                    metadata: {
+                        entity: 'AppealsPageContent',
+                        entityId: updatedContent.id,
+                        pageType,
+                    },
+                    req,
+                });
             } else {
                 // Создаем новую запись
                 const newContent = await prisma.appealsPageContent.create({
@@ -169,6 +196,19 @@ const AppealsPageContentController = {
                     }
                 });
                 res.json(newContent);
+
+                const userId = req.user?.userId || null;
+                await logUserActivity({
+                    action: 'CREATE_CONTENT',
+                    userId,
+                    description: `Создан контент страницы обращений (pageType=${pageType}, ID=${newContent.id})`,
+                    metadata: {
+                        entity: 'AppealsPageContent',
+                        entityId: newContent.id,
+                        pageType,
+                    },
+                    req,
+                });
             }
         } catch (error) {
             console.error('Error updating appeals page content by pageType:', error);
@@ -195,6 +235,19 @@ const AppealsPageContentController = {
                 },
             });
             res.status(201).json(newContent);
+
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: 'CREATE_CONTENT',
+                userId,
+                description: `Создан контент страницы обращений (pageType=${pageType || 'default'}, ID=${newContent.id})`,
+                metadata: {
+                    entity: 'AppealsPageContent',
+                    entityId: newContent.id,
+                    pageType: pageType || 'default',
+                },
+                req,
+            });
         } catch (error) {
             console.error('Error creating appeals page content:', error);
             res.status(500).json({ error: 'Internal server error' });
@@ -204,10 +257,27 @@ const AppealsPageContentController = {
     deleteAppealsPageContent: async (req, res) => {
         try {
             const { pageType } = req.params;
+            const existing = await prisma.appealsPageContent.findUnique({
+                where: { pageType },
+                select: { id: true, pageType: true, title: true },
+            });
             await prisma.appealsPageContent.delete({
                 where: { pageType }
             });
             res.json({ message: 'Appeals page content deleted successfully' });
+
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: 'DELETE_CONTENT',
+                userId,
+                description: `Удалён контент страницы обращений (pageType=${pageType}, ID=${existing?.id ?? 'unknown'})`,
+                metadata: {
+                    entity: 'AppealsPageContent',
+                    entityId: existing?.id ?? null,
+                    pageType,
+                },
+                req,
+            });
         } catch (error) {
             console.error('Error deleting appeals page content:', error);
             res.status(500).json({ error: 'Internal server error' });

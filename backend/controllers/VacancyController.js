@@ -1,4 +1,5 @@
 const prisma = require('../prisma/prisma-client');
+const { logUserActivity } = require('../utils/activityLogger');
 
 const VacancyController = {
     // Создание новой вакансии
@@ -276,6 +277,19 @@ const VacancyController = {
         try {
             const vacancy = await prisma.vacancy.delete({
                 where: { id: vacancyId }
+            });
+
+            // Логируем удаление вакансии
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: 'DELETE_CONTENT',
+                userId,
+                description: `Удалена вакансия "${vacancy.title}" (ID=${vacancy.id})`,
+                metadata: {
+                    entity: 'Vacancy',
+                    entityId: vacancy.id,
+                },
+                req,
             });
 
             return res.status(200).json({ message: `Вакансия "${vacancy.title}" успешно удалена` });

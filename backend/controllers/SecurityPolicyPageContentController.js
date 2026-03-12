@@ -1,4 +1,5 @@
 const prisma = require('../prisma/prisma-client');
+const { logUserActivity } = require('../utils/activityLogger');
 
 const SecurityPolicyPageContentController = {
     getSecurityPolicyPageContent: async (req, res) => {
@@ -52,6 +53,19 @@ const SecurityPolicyPageContentController = {
                 });
             }
             res.json(updatedContent);
+
+            // Логируем изменение политики безопасности
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: existingContent ? 'UPDATE_CONTENT' : 'CREATE_CONTENT',
+                userId,
+                description: `Изменён контент страницы политики безопасности (ID=${updatedContent.id})`,
+                metadata: {
+                    entity: 'SecurityPolicyPageContent',
+                    entityId: updatedContent.id,
+                },
+                req,
+            });
         } catch (error) {
             console.error('Error updating security policy page content:', error);
             res.status(500).json({ error: 'Internal server error' });

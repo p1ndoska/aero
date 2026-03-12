@@ -1,4 +1,5 @@
 const prisma = require('../prisma/prisma-client');
+const { logUserActivity } = require('../utils/activityLogger');
 
 const OrganizationLogoController = {
     getAllOrganizationLogos: async (req, res) => {
@@ -105,10 +106,26 @@ const OrganizationLogoController = {
     deleteOrganizationLogo: async (req, res) => {
         try {
             const { id } = req.params;
+            const existing = await prisma.organizationLogo.findUnique({
+                where: { id: parseInt(id) },
+                select: { id: true, name: true },
+            });
             await prisma.organizationLogo.delete({
                 where: { id: parseInt(id) }
             });
             res.json({ message: 'Organization logo deleted successfully' });
+
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: 'DELETE_CONTENT',
+                userId,
+                description: `Удалён логотип организации "${existing?.name || id}" (ID=${existing?.id ?? id})`,
+                metadata: {
+                    entity: 'OrganizationLogo',
+                    entityId: existing?.id ?? null,
+                },
+                req,
+            });
         } catch (error) {
             console.error('Error deleting organization logo:', error);
             res.status(500).json({ error: 'Internal server error' });

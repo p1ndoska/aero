@@ -1,5 +1,6 @@
 const prisma = require('../prisma/prisma-client');
 const { normalizeUploadPath } = require('../config/paths');
+const { logUserActivity } = require('../utils/activityLogger');
 
 const BranchController = {
     // Получить все филиалы
@@ -139,6 +140,19 @@ const BranchController = {
                 }
             });
 
+            // Логируем создание филиала
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: 'CREATE_CONTENT',
+                userId,
+                description: `Создан филиал "${newBranch.name}" (ID=${newBranch.id})`,
+                metadata: {
+                    entity: 'Branch',
+                    entityId: newBranch.id,
+                },
+                req,
+            });
+
             return res.status(201).json({
                 message: 'Филиал успешно создан',
                 branch: newBranch
@@ -231,6 +245,19 @@ const BranchController = {
                 }
             });
 
+            // Логируем обновление филиала
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: 'UPDATE_CONTENT',
+                userId,
+                description: `Обновлён филиал "${updatedBranch.name}" (ID=${updatedBranch.id})`,
+                metadata: {
+                    entity: 'Branch',
+                    entityId: updatedBranch.id,
+                },
+                req,
+            });
+
             return res.status(200).json({
                 message: 'Филиал успешно обновлен',
                 branch: updatedBranch
@@ -272,6 +299,19 @@ const BranchController = {
 
             await prisma.branch.delete({
                 where: { id: branchId }
+            });
+
+            // Логируем удаление филиала
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: 'DELETE_CONTENT',
+                userId,
+                description: `Удалён филиал "${existingBranch.name}" (ID=${existingBranch.id})`,
+                metadata: {
+                    entity: 'Branch',
+                    entityId: existingBranch.id,
+                },
+                req,
             });
 
             return res.status(200).json({ message: 'Филиал успешно удален' });

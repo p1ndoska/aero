@@ -23,7 +23,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set());
   const [editingCell, setEditingCell] = useState<{elementId: string; rowIndex: number; cellIndex: number} | null>(null);
-  const [activeTab, setActiveTab] = useState<'content' | 'form' | 'pages'>('content');
+  const [activeTab, setActiveTab] = useState<'content' | 'form'>('content');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cellFileInputRef = useRef<HTMLInputElement>(null);
   const [uploadImage] = useUploadImageMutation();
@@ -2106,7 +2106,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
 
   return (
     <div className="space-y-4 content-constructor-container">
-      {/* Вкладки конструктора: Контент / Форма / Внутренние страницы */}
+      {/* Вкладки конструктора: Контент / Форма */}
       <div className="sticky top-0 z-10 bg-white border-b pb-2 pt-2 -mx-4 px-4">
         <div className="flex gap-4">
           <button
@@ -2130,17 +2130,6 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
             onClick={() => setActiveTab('form')}
           >
             Форма
-          </button>
-          <button
-            type="button"
-            className={`text-sm pb-1 border-b-2 transition-colors ${
-              activeTab === 'pages'
-                ? 'border-[#213659] text-[#213659] font-semibold'
-                : 'border-transparent text-gray-500 hover:text-[#213659]'
-            }`}
-            onClick={() => setActiveTab('pages')}
-          >
-            Внутренние страницы
           </button>
         </div>
       </div>

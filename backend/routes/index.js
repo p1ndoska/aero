@@ -244,6 +244,7 @@ router.post('/register', authenticationToken, checkRole(['SUPER_ADMIN']), AdminC
 
 //user
 router.post('/login', UserController.login);
+router.post('/logout', authenticationToken, UserController.logout);
 router.get('/users/:id', authenticationToken, checkRole(['SUPER_ADMIN']), UserController.getUserById);
 router.put('/users/:id', authenticationToken, checkRole(['SUPER_ADMIN']), UserController.updateUser);
 router.delete('/users/:id', authenticationToken, checkRole(['SUPER_ADMIN']), UserController.deleteUser);

@@ -1,5 +1,6 @@
 const prisma = require ('../prisma/prisma-client');
 const { normalizeUploadPath, UPLOADS_URL_PREFIX } = require('../config/paths');
+const { logUserActivity } = require('../utils/activityLogger');
 
 const NewsController = {
     createNews: async (req, res) => {
@@ -86,7 +87,22 @@ const NewsController = {
 
             const news = await prisma.news.create({
                 data: newsData
-            })
+            });
+
+            // Логируем создание новости
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: 'CREATE_CONTENT',
+                userId,
+                description: `Создана новость "${news.name}" (ID=${news.id})`,
+                metadata: {
+                    entity: 'News',
+                    entityId: news.id,
+                    categoryId: news.categoryId,
+                },
+                req,
+            });
+
             return res.status(200).json(news);
         }catch(error){
             console.error('create news error', error);
@@ -170,6 +186,20 @@ const NewsController = {
                 data: updateData
             });
 
+            // Логируем обновление новости
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: 'UPDATE_CONTENT',
+                userId,
+                description: `Обновлена новость "${updatedNews.name}" (ID=${updatedNews.id})`,
+                metadata: {
+                    entity: 'News',
+                    entityId: updatedNews.id,
+                    categoryId: updatedNews.categoryId,
+                },
+                req,
+            });
+
             return res.status(200).json(updatedNews);
         } catch (error) {
             console.error('update news error', error);
@@ -184,11 +214,31 @@ const NewsController = {
         }
 
         try{
+            // Сначала находим новость для логирования
+            const existing = await prisma.news.findUnique({
+                where: { id: Number(id) },
+                select: { id: true, name: true, categoryId: true }
+            });
+
             const tranc = await prisma.news.delete({
                 where: {
                     id: Number(id),
                 }
-            })
+            });
+
+            // Логируем удаление новости
+            const userId = req.user?.userId || null;
+            await logUserActivity({
+                action: 'DELETE_CONTENT',
+                userId,
+                description: `Удалена новость "${existing?.name || tranc.name}" (ID=${tranc.id})`,
+                metadata: {
+                    entity: 'News',
+                    entityId: tranc.id,
+                    categoryId: existing?.categoryId ?? null,
+                },
+                req,
+            });
 
             return res.status(200).json(`Новость ${tranc.name} успешно удалена `);
         }catch(error){
