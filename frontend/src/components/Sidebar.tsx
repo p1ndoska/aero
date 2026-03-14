@@ -428,7 +428,7 @@ export const Sidebar = () => {
                                     }}
                                 />
                                 <div 
-                                    className="fixed bg-[#eff6ff] border shadow-lg z-50 py-2"
+                                    className="fixed bg-[#eff6ff] border shadow-lg z-50 py-2 a11y-content"
                                     style={{
                                         top: '0px',
                                         left: `${mainMenuPosition.left}px`,
@@ -726,7 +726,7 @@ export const Sidebar = () => {
                                     }}
                                 />
                                 <div 
-                                    className="fixed bg-[#eff6ff] border rounded-md shadow-lg z-[100] min-w-[250px]"
+                                    className="fixed bg-[#eff6ff] border rounded-md shadow-lg z-[100] min-w-[250px] a11y-content"
                                     style={{
                                         top: '0px',
                                         left: `${childMenuPosition.left}px`,
@@ -863,7 +863,7 @@ export const Sidebar = () => {
                         
                         return createPortal(
                             <div 
-                                className="fixed bg-[#eff6ff] border rounded-md shadow-lg z-[110] min-w-[250px]"
+                                className="fixed bg-[#eff6ff] border rounded-md shadow-lg z-[110] min-w-[250px] a11y-content"
                                 style={{
                                     top: '0px',
                                     left: `${childCategoryMenuPosition.left}px`,

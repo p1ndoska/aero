@@ -462,6 +462,10 @@ const translations = {
     'reduce_motion_description': 'Отключает анимации для пользователей с вестибулярными расстройствами',
     'show_focus': 'Подсветка фокуса',
     'show_focus_description': 'Четко показывает элемент в фокусе для навигации с клавиатуры',
+    'grayscale': 'Черно-белый режим',
+    'grayscale_description': 'Отображает сайт без цветов (в оттенках серого)',
+    'hide_images': 'Отключить изображения',
+    'hide_images_description': 'Скрывает картинки на странице для упрощения чтения',
     'reset': 'Сбросить',
     'apply_settings': 'Применить',
     
@@ -1041,6 +1045,10 @@ const translations = {
     'reduce_motion_description': 'Disables animations for users with vestibular disorders',
     'show_focus': 'Focus Highlight',
     'show_focus_description': 'Clearly shows the focused element for keyboard navigation',
+    'grayscale': 'Black and white mode',
+    'grayscale_description': 'Displays the site without color (grayscale)',
+    'hide_images': 'Disable images',
+    'hide_images_description': 'Hides images on the page for easier reading',
     'reset': 'Reset',
     'apply_settings': 'Apply',
     
@@ -1620,6 +1628,10 @@ const translations = {
     'reduce_motion_description': 'Адключае анімацыі для карыстальнікаў з вестыбулярнымі расстройствамі',
     'show_focus': 'Падсветка фокуса',
     'show_focus_description': 'Выразна паказвае элемент у фокусе для навігацыі з клавіятуры',
+    'grayscale': 'Чорна-белы рэжым',
+    'grayscale_description': 'Адлюстроўвае сайт без колераў (у адценнях шэрага)',
+    'hide_images': 'Адключыць выявы',
+    'hide_images_description': 'Хавае малюнкі на старонцы для палягчэння чытання',
     'reset': 'Скінуць',
     'apply_settings': 'Прымяніць',
     

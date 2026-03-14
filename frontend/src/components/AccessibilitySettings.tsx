@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -13,9 +13,10 @@ import { useLanguage } from '@/contexts/LanguageContext';
 const AccessibilitySettings: React.FC = () => {
   const { settings, updateSettings, resetSettings, isAccessibilityMode, toggleAccessibilityMode } = useAccessibility();
   const { t } = useLanguage();
+  const [open, setOpen] = useState(false);
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           variant="outline"
@@ -210,6 +211,40 @@ const AccessibilitySettings: React.FC = () => {
                 />
               </div>
 
+              {/* Черно-белый режим */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="grayscale" className="text-base">
+                    {t('grayscale')}
+                  </Label>
+                  <p className="text-sm text-gray-600">
+                    {t('grayscale_description')}
+                  </p>
+                </div>
+                <Switch
+                  id="grayscale"
+                  checked={settings.grayscale}
+                  onCheckedChange={(checked) => updateSettings({ grayscale: checked })}
+                />
+              </div>
+
+              {/* Отключить изображения */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="hide-images" className="text-base">
+                    {t('hide_images')}
+                  </Label>
+                  <p className="text-sm text-gray-600">
+                    {t('hide_images_description')}
+                  </p>
+                </div>
+                <Switch
+                  id="hide-images"
+                  checked={settings.hideImages}
+                  onCheckedChange={(checked) => updateSettings({ hideImages: checked })}
+                />
+              </div>
+
               {/* Показ фокуса */}
               <div className="flex items-center justify-between">
                 <div>
@@ -239,13 +274,7 @@ const AccessibilitySettings: React.FC = () => {
               <RotateCcw className="h-4 w-4" />
               {t('reset')}
             </Button>
-            <Button
-              onClick={() => {
-                // Закрыть диалог
-                const closeButton = document.querySelector('[data-state="open"] button[aria-label="Close"]') as HTMLButtonElement;
-                closeButton?.click();
-              }}
-            >
+            <Button onClick={() => setOpen(false)}>
               {t('apply_settings')}
             </Button>
           </div>

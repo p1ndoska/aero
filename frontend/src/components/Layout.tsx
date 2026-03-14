@@ -22,13 +22,13 @@ export const Layout = () => {
     return (
         <div className="flex flex-col min-h-screen relative z-10 bg-[url('/sky-bg.jpg')] bg-cover bg-center">
             <div className="flex flex-1">
-                {/* Десктопный сайдбар (слева, всегда виден) */}
-                <div className="hidden min-[951px]:block w-[260px] flex-shrink-0">
+                {/* Десктопный сайдбар (слева, к нему тоже применяется цветовая схема для слабовидящих) */}
+                <div className="hidden min-[951px]:block w-[260px] flex-shrink-0 a11y-content">
                     <Sidebar />
                 </div>
 
-                {/* Основной контент и футер */}
-                <div className="flex-1 flex flex-col overflow-x-hidden">
+                {/* Основной контент и футер (зона применения режима для слабовидящих) */}
+                <div className="flex-1 flex flex-col overflow-x-hidden a11y-content">
                     <div className="w-full px-4 sm:px-6 lg:px-8 flex-1">
                         <Outlet />
                     </div>
@@ -46,7 +46,7 @@ export const Layout = () => {
                 animate="visible"
                 variants={sidebarVariants}
                 transition={{ duration: 0.4, ease: "easeOut" }}
-                className="min-[951px]:hidden w-80 fixed inset-y-0 left-0 z-50"
+                className="min-[951px]:hidden w-80 fixed inset-y-0 left-0 z-50 a11y-content"
             >
                 <Sidebar />
             </motion.div>

@@ -24,6 +24,24 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set());
   const [editingCell, setEditingCell] = useState<{elementId: string; rowIndex: number; cellIndex: number} | null>(null);
   const [activeTab, setActiveTab] = useState<'content' | 'form'>('content');
+
+  const getHeadingSizeClass = (level?: number) => {
+    switch (level) {
+      case 1:
+        return 'text-3xl md:text-4xl';
+      case 2:
+        return 'text-2xl md:text-3xl';
+      case 3:
+        return 'text-xl md:text-2xl';
+      case 4:
+        return 'text-lg md:text-xl';
+      case 5:
+        return 'text-base md:text-lg';
+      case 6:
+      default:
+        return 'text-base';
+    }
+  };
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cellFileInputRef = useRef<HTMLInputElement>(null);
   const [uploadImage] = useUploadImageMutation();
@@ -442,7 +460,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
           return React.createElement(
             `h${headingLevel}`,
             {
-              className: `text-lg font-bold break-words min-w-0 force-break force-text-${headingAlign}`,
+              className: `${getHeadingSizeClass(headingLevel)} font-bold break-words min-w-0 force-break force-text-${headingAlign}`,
               style: { 
                 color: headingColor,
                 textAlign: headingAlign as any,

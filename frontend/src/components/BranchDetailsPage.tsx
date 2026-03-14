@@ -285,6 +285,23 @@ export default function BranchDetailsPage() {
                   console.log('Branch content:', content);
                   if (Array.isArray(content)) {
                     return content.map((element: any, index: number) => {
+                      const getHeadingSizeClass = (level?: number) => {
+                        switch (level) {
+                          case 1:
+                            return 'text-3xl md:text-4xl';
+                          case 2:
+                            return 'text-2xl md:text-3xl';
+                          case 3:
+                            return 'text-xl md:text-2xl';
+                          case 4:
+                            return 'text-lg md:text-xl';
+                          case 5:
+                            return 'text-base md:text-lg';
+                          case 6:
+                          default:
+                            return 'text-base';
+                        }
+                      };
                       switch (element.type) {
       case 'heading':
         const headingLevel = element.props?.level || 2;
@@ -293,7 +310,7 @@ export default function BranchDetailsPage() {
           HeadingTag,
           { 
             key: index, 
-            className: `text-lg font-bold mt-6 mb-2 force-text-${element.props?.textAlign || 'left'}`,
+            className: `${getHeadingSizeClass(headingLevel)} font-bold mt-6 mb-2 force-text-${element.props?.textAlign || 'left'}`,
             style: { 
               color: element.props?.color || '#213659',
               textAlign: element.props?.textAlign || 'left'
