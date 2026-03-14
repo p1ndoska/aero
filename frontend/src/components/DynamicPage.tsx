@@ -28,6 +28,7 @@ import SAIConsumerQuestionnaireForm from './SAIConsumerQuestionnaireForm';
 import QuestionnaireOfTheConsumerOfAirNavigationServices from './QuestionnaireOfTheConsumerOfAirNavigationServices';
 import { getRolePermissions } from '@/utils/roleUtils';
 import type { TableCellContent } from '@/types/branch';
+import { renderTableBody } from '@/utils/tableRender';
 import DynamicForm from './DynamicForm';
 import { useLoginMutation } from '@/app/services/userApi';
 import { useDispatch } from 'react-redux';
@@ -706,10 +707,8 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
 
   // Функция для рендеринга содержимого ячейки таблицы
   const renderTableCell = (cell: TableCellContent | string) => {
-    // Поддержка старого формата (строка) для обратной совместимости
-    if (typeof cell === 'string') {
-      return <span>{cell}</span>;
-    }
+    if (typeof cell === 'string') return <span>{cell}</span>;
+    if (cell.type === 'covered') return <span className="text-gray-400">—</span>;
 
     switch (cell.type) {
       case 'text':
@@ -992,15 +991,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
                 </thead>
               )}
               <tbody>
-                {rows.map((row: any, rowIdx: number) => (
-                  <tr key={row.id || rowIdx}>
-                    {row.cells.map((cell: TableCellContent | string, cellIdx: number) => (
-                      <td key={cellIdx} className="border border-gray-300 px-4 py-2">
-                        {renderTableCell(cell)}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
+                {renderTableBody(rows, headers.length || 1, (c) => renderTableCell(c), 'border border-gray-300 px-4 py-2')}
               </tbody>
             </table>
           </div>

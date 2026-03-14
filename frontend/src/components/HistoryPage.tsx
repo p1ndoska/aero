@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { History, Settings, FileText } from 'lucide-react';
 import type { TableCellContent } from '@/types/branch';
+import { renderTableBody } from '@/utils/tableRender';
 import { toast } from 'sonner';
 import { useGetHistoryPageContentQuery, useUpdateHistoryPageContentMutation } from '@/app/services/historyPageContentApi';
 import ContentConstructor from './admin/ContentConstructor';
@@ -63,10 +64,8 @@ export default function HistoryPage() {
 
   // Функция для рендеринга содержимого ячейки таблицы
   const renderTableCell = (cell: TableCellContent | string) => {
-    if (typeof cell === 'string') {
-      return <span>{cell}</span>;
-    }
-
+    if (typeof cell === 'string') return <span>{cell}</span>;
+    if (cell.type === 'covered') return <span className="text-gray-400">—</span>;
     switch (cell.type) {
       case 'text':
         return <span>{cell.value}</span>;
@@ -252,15 +251,7 @@ export default function HistoryPage() {
                 </thead>
               )}
               <tbody>
-                {rows.map((row: any, rowIdx: number) => (
-                  <tr key={row.id || rowIdx}>
-                    {row.cells.map((cell: TableCellContent | string, cellIdx: number) => (
-                      <td key={cellIdx} className="border border-gray-300 px-4 py-2">
-                        {renderTableCell(cell)}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
+                {renderTableBody(rows, headers.length || 1, (c) => renderTableCell(c), 'border border-gray-300 px-4 py-2')}
               </tbody>
             </table>
           </div>

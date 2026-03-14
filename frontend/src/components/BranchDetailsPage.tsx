@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useGetBranchByIdQuery } from '@/app/services/branchApi';
 import { Building2, ArrowLeft, MapPin, Phone, Mail, Image as ImageIcon, X, ChevronLeft, ChevronRight, Navigation, FileText } from 'lucide-react';
 import type { TableCellContent } from '@/types/branch';
+import { renderTableBody } from '@/utils/tableRender';
 import YandexMap from './YandexMap';
 import { BASE_URL } from '@/constants';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -415,10 +416,8 @@ export default function BranchDetailsPage() {
                           
                           // Функция для рендеринга содержимого ячейки таблицы
                           const renderTableCell = (cell: TableCellContent | string) => {
-                            if (typeof cell === 'string') {
-                              return <span>{cell}</span>;
-                            }
-
+                            if (typeof cell === 'string') return <span>{cell}</span>;
+                            if (cell.type === 'covered') return <span className="text-gray-400">—</span>;
                             switch (cell.type) {
                               case 'text':
                                 return <span>{cell.value}</span>;
@@ -487,15 +486,7 @@ export default function BranchDetailsPage() {
                                   </thead>
                                 )}
                                 <tbody>
-                                  {rows.map((row: any, rowIdx: number) => (
-                                    <tr key={row.id || rowIdx}>
-                                      {row.cells.map((cell: TableCellContent | string, cellIdx: number) => (
-                                        <td key={cellIdx} className="border border-gray-300 px-4 py-2">
-                                          {renderTableCell(cell)}
-                                        </td>
-                                      ))}
-                                    </tr>
-                                  ))}
+                                  {renderTableBody(rows, headers.length || 1, (c) => renderTableCell(c), 'border border-gray-300 px-4 py-2')}
                                 </tbody>
                               </table>
                             </div>

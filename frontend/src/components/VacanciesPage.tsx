@@ -13,6 +13,7 @@ import { setCredentials } from '@/features/user/userSlice';
 import type { AppDispatch } from '@/store';
 import { Label } from '@/components/ui/label';
 import type { TableCellContent } from '@/types/branch';
+import { renderTableBody } from '@/utils/tableRender';
 import { toast } from 'sonner';
 import { useGetAllVacanciesQuery } from '@/app/services/vacancyApi';
 import { useGetVacancyPageContentQuery, useUpdateVacancyPageContentMutation } from '@/app/services/vacancyPageContentApi';
@@ -220,10 +221,8 @@ export default function VacanciesPage() {
 
   // Функция для рендеринга содержимого ячейки таблицы
   const renderTableCell = (cell: TableCellContent | string) => {
-    if (typeof cell === 'string') {
-      return <span>{cell}</span>;
-    }
-
+    if (typeof cell === 'string') return <span>{cell}</span>;
+    if (cell.type === 'covered') return <span className="text-gray-400">—</span>;
     switch (cell.type) {
       case 'text':
         return <span>{cell.value}</span>;
@@ -409,15 +408,7 @@ export default function VacanciesPage() {
                 </thead>
               )}
               <tbody>
-                {rows.map((row: any, rowIdx: number) => (
-                  <tr key={row.id || rowIdx}>
-                    {row.cells.map((cell: TableCellContent | string, cellIdx: number) => (
-                      <td key={cellIdx} className="border border-gray-300 px-4 py-2">
-                        {renderTableCell(cell)}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
+                {renderTableBody(rows, headers.length || 1, (c) => renderTableCell(c), 'border border-gray-300 px-4 py-2')}
               </tbody>
             </table>
           </div>

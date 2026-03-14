@@ -137,9 +137,10 @@ export interface SingleBranchResponse {
 }
 
 export type TableCellContent =
-  | {type: 'text'; value: string}
-  | {type: 'link'; text: string; href: string; target?: string}
-  | {type: 'image'; src: string; alt?:string}
-  | {type: 'file'; fileName: string; fileUrl: string; fileSize: number};
+  | { type: 'text'; value: string; colspan?: number; rowspan?: number }
+  | { type: 'link'; text: string; href: string; target?: string; colspan?: number; rowspan?: number }
+  | { type: 'image'; src: string; alt?: string; colspan?: number; rowspan?: number }
+  | { type: 'file'; fileName: string; fileUrl: string; fileSize: number; colspan?: number; rowspan?: number }
+  | { type: 'covered' }; // ячейка скрыта объединением сверху (rowspan)
 
 

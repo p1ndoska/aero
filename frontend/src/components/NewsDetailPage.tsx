@@ -7,6 +7,7 @@ import { BASE_URL } from '@/constants';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getTranslatedField } from '@/utils/translationHelpers';
 import type { ContentElement, TableCellContent } from '@/types/branch';
+import { renderTableBody } from '@/utils/tableRender';
 import { useLoginMutation } from '@/app/services/userApi';
 import { setCredentials } from '@/features/user/userSlice';
 import type { AppDispatch } from '@/store';
@@ -66,10 +67,8 @@ const NewsDetailPage: React.FC = () => {
 
   // Функция для рендеринга содержимого ячейки таблицы
   const renderTableCell = (cell: TableCellContent | string) => {
-    if (typeof cell === 'string') {
-      return <span>{cell}</span>;
-    }
-
+    if (typeof cell === 'string') return <span>{cell}</span>;
+    if (cell.type === 'covered') return <span className="text-gray-400">—</span>;
     switch (cell.type) {
       case 'text':
         return <span>{cell.value}</span>;
@@ -285,15 +284,7 @@ const NewsDetailPage: React.FC = () => {
                 </thead>
               )}
               <tbody>
-                {rows.map((row: any, rowIdx: number) => (
-                  <tr key={row.id || rowIdx}>
-                    {row.cells.map((cell: TableCellContent | string, cellIdx: number) => (
-                      <td key={cellIdx} className="border border-gray-300 px-4 py-2">
-                        {renderTableCell(cell)}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
+                {renderTableBody(rows, headers.length || 1, (c) => renderTableCell(c), 'border border-gray-300 px-4 py-2')}
               </tbody>
             </table>
           </div>

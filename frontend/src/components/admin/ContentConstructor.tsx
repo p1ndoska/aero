@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Trash2, MoveUp, MoveDown, Type, Heading, Link, Image, Upload, List, Table, FileText, Lock as LockIcon, Video, FileStack, MapPin } from 'lucide-react';
+import { Plus, Trash2, MoveUp, MoveDown, Type, Heading, Link, Image, Upload, List, Table, FileText, Lock as LockIcon, Video, FileStack, MapPin, Rows3 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUploadImageMutation, useUploadFileMutation } from '@/app/services/uploadApi';
 import type { ContentElement, TableCellContent, TableRow } from '@/types/branch';
@@ -373,9 +373,11 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
 
   // Функция для рендеринга содержимого ячейки
   const renderCellContent = (cell: TableCellContent | string) => {
-    // Поддержка старого формата (строка) для обратной совместимости
     if (typeof cell === 'string') {
       return <span>{cell}</span>;
+    }
+    if (cell.type === 'covered') {
+      return <span className="text-gray-400">—</span>;
     }
 
     switch (cell.type) {
@@ -438,6 +440,50 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
       return { type: 'text', value: cell };
     }
     return cell;
+  };
+
+  const getColspan = (cell: TableCellContent): number =>
+    cell.type === 'covered' ? 1 : (cell.colspan ?? 1);
+  const getRowspan = (cell: TableCellContent): number =>
+    cell.type === 'covered' ? 1 : (cell.rowspan ?? 1);
+
+  // Рендер tbody с учётом colspan/rowspan и типа 'covered'
+  const renderTableBody = (
+    rows: TableRow[],
+    numCols: number,
+    cellRender: (cell: TableCellContent) => React.ReactNode,
+    tdClassName: string
+  ) => {
+    const rowspanRemaining: number[] = Array(numCols).fill(0);
+    return rows.map((row, rowIdx) => {
+      let colIndex = 0;
+      let cellIndex = 0;
+      const tds: React.ReactNode[] = [];
+      while (colIndex < numCols) {
+        if (rowspanRemaining[colIndex] > 0) {
+          rowspanRemaining[colIndex]--;
+          colIndex++;
+          continue;
+        }
+        const cell = row.cells[cellIndex];
+        if (!cell) break;
+        cellIndex++;
+        if (cell.type === 'covered') {
+          colIndex++;
+          continue;
+        }
+        const C = getColspan(cell);
+        const R = getRowspan(cell);
+        tds.push(
+          <td key={colIndex} className={tdClassName} colSpan={C > 1 ? C : undefined} rowSpan={R > 1 ? R : undefined}>
+            {cellRender(cell)}
+          </td>
+        );
+        for (let j = colIndex; j < colIndex + C; j++) rowspanRemaining[j] = R - 1;
+        colIndex += C;
+      }
+      return <tr key={row.id || rowIdx}>{tds}</tr>;
+    });
   };
 
   const renderElement = (element: ContentElement) => {
@@ -596,15 +642,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                 </thead>
               )}
               <tbody>
-                {rows.map((row, rowIdx) => (
-                  <tr key={row.id || rowIdx}>
-                    {row.cells.map((cell, cellIdx) => (
-                      <td key={cellIdx} className="border border-gray-300 px-2 py-1 text-sm">
-                        {renderCellContent(cell)}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
+                {renderTableBody(rows, headers.length || Math.max(...rows.map(r => r.cells.length), 1), (c) => renderCellContent(c), 'border border-gray-300 px-2 py-1 text-sm')}
               </tbody>
             </table>
           </div>
@@ -1278,33 +1316,77 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                     <div className="space-y-2">
                       {(element.props?.rows || []).map((row, rowIndex) => (
                         <div key={row.id || rowIndex} className="border rounded p-3">
-                          <div className="flex justify-between items-center mb-2">
+                          <div className="flex justify-between items-center mb-2 flex-wrap gap-1">
                             <span className="text-sm font-medium">Строка {rowIndex + 1}</span>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                const newRows = (element.props?.rows || []).filter((_, i) => i !== rowIndex);
-                                updateElement(element.id, {
-                                  props: { ...element.props, rows: newRows }
-                                });
-                              }}
-                              className="text-red-600"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                title="Вставить строку выше"
+                                onClick={() => {
+                                  const headersCount = element.props?.headers?.length || 2;
+                                  const newRow: TableRow = {
+                                    id: Date.now().toString(),
+                                    cells: Array(headersCount).fill(null).map(() => ({ type: 'text' as const, value: '' }))
+                                  };
+                                  const newRows = [...(element.props?.rows || [])];
+                                  newRows.splice(rowIndex, 0, newRow);
+                                  updateElement(element.id, { props: { ...element.props, rows: newRows } });
+                                }}
+                              >
+                                <Rows3 className="w-4 h-4" /> ↑
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                title="Вставить строку ниже"
+                                onClick={() => {
+                                  const headersCount = element.props?.headers?.length || 2;
+                                  const newRow: TableRow = {
+                                    id: Date.now().toString(),
+                                    cells: Array(headersCount).fill(null).map(() => ({ type: 'text' as const, value: '' }))
+                                  };
+                                  const newRows = [...(element.props?.rows || [])];
+                                  newRows.splice(rowIndex + 1, 0, newRow);
+                                  updateElement(element.id, { props: { ...element.props, rows: newRows } });
+                                }}
+                              >
+                                <Rows3 className="w-4 h-4" /> ↓
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  const newRows = (element.props?.rows || []).filter((_, i) => i !== rowIndex);
+                                  updateElement(element.id, {
+                                    props: { ...element.props, rows: newRows }
+                                  });
+                                }}
+                                className="text-red-600"
+                                title="Удалить строку"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
-                          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${element.props?.headers?.length || 2}, 1fr)` }}>
+                          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.max(row.cells.length, element.props?.headers?.length || 2)}, 1fr)` }}>
                             {row.cells.map((cell: TableCellContent | string, cellIndex: number) => {
                               const normalizedCell = normalizeCell(cell);
+                              const isCovered = normalizedCell.type === 'covered';
                               const isEditingThisCell = editingCell?.elementId === element.id && 
                                                        editingCell?.rowIndex === rowIndex && 
                                                        editingCell?.cellIndex === cellIndex;
                               
                               return (
                                 <div key={cellIndex} className="space-y-1">
-                                  {!isEditingThisCell ? (
+                                  {isCovered ? (
+                                    <div className="border border-dashed border-gray-300 rounded p-2 min-h-[40px] bg-gray-50 text-gray-500 text-sm flex items-center justify-center">
+                                      Объединено
+                                    </div>
+                                  ) : !isEditingThisCell ? (
                                     <div 
                                       className="border border-gray-300 rounded p-2 min-h-[40px] cursor-pointer hover:bg-gray-50"
                                       onClick={() => setEditingCell({ elementId: element.id, rowIndex, cellIndex })}
@@ -1320,30 +1402,35 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                                           let newCell: TableCellContent;
                                           
                                           if (type === 'text') {
-                                            newCell = { type: 'text', value: normalizedCell.type === 'text' ? normalizedCell.value : '' };
+                                            newCell = { type: 'text', value: normalizedCell.type === 'text' ? normalizedCell.value : '', colspan: normalizedCell.colspan, rowspan: normalizedCell.rowspan };
                                           } else if (type === 'link') {
                                             newCell = { 
                                               type: 'link', 
                                               text: normalizedCell.type === 'link' ? normalizedCell.text : '',
                                               href: normalizedCell.type === 'link' ? normalizedCell.href : '',
-                                              target: normalizedCell.type === 'link' ? normalizedCell.target : '_blank'
+                                              target: normalizedCell.type === 'link' ? normalizedCell.target : '_blank',
+                                              colspan: normalizedCell.colspan,
+                                              rowspan: normalizedCell.rowspan
                                             };
                                           } else if (type === 'image') {
                                             newCell = { 
                                               type: 'image', 
                                               src: normalizedCell.type === 'image' ? normalizedCell.src : '',
-                                              alt: normalizedCell.type === 'image' ? normalizedCell.alt : ''
+                                              alt: normalizedCell.type === 'image' ? normalizedCell.alt : '',
+                                              colspan: normalizedCell.colspan,
+                                              rowspan: normalizedCell.rowspan
                                             };
                                           } else {
                                             newCell = { 
                                               type: 'file', 
                                               fileName: normalizedCell.type === 'file' ? normalizedCell.fileName : '',
                                               fileUrl: normalizedCell.type === 'file' ? normalizedCell.fileUrl : '',
-                                              fileSize: normalizedCell.type === 'file' ? normalizedCell.fileSize : 0
+                                              fileSize: normalizedCell.type === 'file' ? normalizedCell.fileSize : 0,
+                                              colspan: normalizedCell.colspan,
+                                              rowspan: normalizedCell.rowspan
                                             };
                                           }
                                           
-                                          // Создаем новый массив cells вместо мутации существующего
                                           const newCells = [...newRows[rowIndex].cells];
                                           newCells[cellIndex] = newCell;
                                           newRows[rowIndex] = { ...newRows[rowIndex], cells: newCells };
@@ -1564,6 +1651,93 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                                           />
                                         </>
                                       )}
+
+                                      <div className="flex gap-4 flex-wrap">
+                                        <div>
+                                          <Label className="text-xs">Объединить по горизонтали (colspan)</Label>
+                                          <Select
+                                            value={String(getColspan(normalizedCell))}
+                                            onValueChange={(v) => {
+                                              const newRows = [...(element.props?.rows || [])];
+                                              const newCells = [...newRows[rowIndex].cells];
+                                              const oldC = getColspan(normalizedCell);
+                                              const newC = parseInt(v, 10);
+                                              const cellWithSpan = { ...normalizedCell, colspan: newC } as TableCellContent;
+                                              if (newC > oldC) {
+                                                newCells[cellIndex] = cellWithSpan;
+                                                for (let i = 0; i < newC - oldC; i++) {
+                                                  if (cellIndex + 1 < newCells.length) newCells.splice(cellIndex + 1, 1);
+                                                }
+                                              } else if (newC < oldC) {
+                                                newCells[cellIndex] = cellWithSpan;
+                                                for (let i = 0; i < oldC - newC; i++) {
+                                                  newCells.splice(cellIndex + 1, 0, { type: 'text' as const, value: '' });
+                                                }
+                                              } else {
+                                                newCells[cellIndex] = cellWithSpan;
+                                              }
+                                              newRows[rowIndex] = { ...newRows[rowIndex], cells: newCells };
+                                              updateElement(element.id, { props: { ...element.props, rows: newRows } });
+                                            }}
+                                          >
+                                            <SelectTrigger className="w-20">
+                                              <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                                                <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <div>
+                                          <Label className="text-xs">Объединить по вертикали (rowspan)</Label>
+                                          <Select
+                                            value={String(getRowspan(normalizedCell))}
+                                            onValueChange={(v) => {
+                                              const newRows = [...(element.props?.rows || [])];
+                                              const newR = parseInt(v, 10);
+                                              const spanC = getColspan(normalizedCell);
+                                              const colStart = (() => { let c = 0; for (let i = 0; i < cellIndex; i++) c += getColspan(newRows[rowIndex].cells[i]); return c; })();
+                                              const cellWithSpan = { ...normalizedCell, rowspan: newR } as TableCellContent;
+                                              newRows[rowIndex] = { ...newRows[rowIndex], cells: newRows[rowIndex].cells.map((ce, ci) => ci === cellIndex ? cellWithSpan : ce) };
+                                              if (newR > 1) {
+                                                for (let r = 1; r < newR; r++) {
+                                                  const nextRowIdx = rowIndex + r;
+                                                  if (nextRowIdx >= newRows.length) break;
+                                                  const nextRow = newRows[nextRowIdx];
+                                                  let colIdx = 0; let cellIdx = 0;
+                                                  const nextCells = [...nextRow.cells];
+                                                  while (cellIdx < nextCells.length && colIdx < colStart) {
+                                                    colIdx += getColspan(nextCells[cellIdx]);
+                                                    cellIdx++;
+                                                  }
+                                                  let colsToCover = spanC;
+                                                  let replaceStart = cellIdx;
+                                                  let replaceCount = 0;
+                                                  while (replaceStart + replaceCount < nextCells.length && colsToCover > 0) {
+                                                    colsToCover -= getColspan(nextCells[replaceStart + replaceCount]);
+                                                    replaceCount++;
+                                                  }
+                                                  const covered = Array(spanC).fill(null).map(() => ({ type: 'covered' as const }));
+                                                  nextCells.splice(replaceStart, replaceCount, ...covered);
+                                                  newRows[nextRowIdx] = { ...nextRow, cells: nextCells };
+                                                }
+                                              }
+                                              updateElement(element.id, { props: { ...element.props, rows: newRows } });
+                                            }}
+                                          >
+                                            <SelectTrigger className="w-20">
+                                              <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                                                <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                      </div>
 
                                       <Button
                                         type="button"

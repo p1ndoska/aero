@@ -16,6 +16,7 @@ import { getTranslatedField } from '../utils/translationHelpers';
 import { getRolePermissions } from '@/utils/roleUtils';
 import { isVisibleBySchedule, renderScheduleBadge } from '@/utils/scheduleVisibility';
 import type { TableCellContent } from '@/types/branch';
+import { renderTableBody } from '@/utils/tableRender';
 import { BASE_URL } from '@/constants';
 import { FileText, Mail, Lock as LockIcon } from 'lucide-react';
 import { useLoginMutation } from '@/app/services/userApi';
@@ -305,10 +306,8 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
 
   // Функция для рендеринга содержимого ячейки таблицы
   const renderTableCell = (cell: TableCellContent | string) => {
-    if (typeof cell === 'string') {
-      return <span>{cell}</span>;
-    }
-
+    if (typeof cell === 'string') return <span>{cell}</span>;
+    if (cell.type === 'covered') return <span className="text-gray-400">—</span>;
     switch (cell.type) {
       case 'text':
         return <span>{cell.value}</span>;
@@ -501,15 +500,7 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
                 </thead>
               )}
               <tbody>
-                {rows.map((row: any, rowIdx: number) => (
-                  <tr key={row.id || rowIdx}>
-                    {row.cells.map((cell: TableCellContent | string, cellIdx: number) => (
-                      <td key={cellIdx} className="border border-gray-300 px-4 py-2">
-                        {renderTableCell(cell)}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
+                {renderTableBody(rows, headers.length || 1, (c) => renderTableCell(c), 'border border-gray-300 px-4 py-2')}
               </tbody>
             </table>
           </div>
