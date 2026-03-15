@@ -29,7 +29,9 @@ export interface ContentElement {
     headers?: string[]; // Заголовки столбцов таблицы
     tableTitle?: string; // Заголовок всей таблицы
     tableTitleAlign?: 'left' | 'center' | 'right'; // Выравнивание заголовка таблицы
-    fileName?: string; // Для файлов
+    fileName?: string; // Для файлов (может перезаписываться)
+    originalFileName?: string; // Оригинальное имя при загрузке — для скачивания
+    displayName?: string; // Отображаемое название файла на странице
     fileUrl?: string; // URL файла
     fileSize?: number; // Размер файла
     fileType?: string; // Тип файла
@@ -140,7 +142,7 @@ export type TableCellContent =
   | { type: 'text'; value: string; colspan?: number; rowspan?: number }
   | { type: 'link'; text: string; href: string; target?: string; colspan?: number; rowspan?: number }
   | { type: 'image'; src: string; alt?: string; colspan?: number; rowspan?: number }
-  | { type: 'file'; fileName: string; fileUrl: string; fileSize: number; colspan?: number; rowspan?: number }
+  | { type: 'file'; fileName: string; fileUrl: string; fileSize: number; originalFileName?: string; colspan?: number; rowspan?: number }
   | { type: 'covered' }; // ячейка скрыта объединением сверху (rowspan)
 
 

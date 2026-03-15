@@ -220,11 +220,13 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
         formData.append('file', file);
 
         const result = await uploadFile(formData).unwrap();
-        
+        const originalName = result.originalFilename ?? file.name;
+
         updateElement(elementId, {
           props: {
             ...element.props,
             fileName: file.name,
+            originalFileName: originalName,
             fileUrl: result.url,
             fileSize: file.size,
             fileType: file.type
@@ -327,12 +329,14 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
         const formData = new FormData();
         formData.append('file', file);
         const result = await uploadFile(formData).unwrap();
-        
+        const originalName = result.originalFilename ?? file.name;
+
         const newRows = [...(element.props?.rows || [])];
         const newCells = [...newRows[rowIndex].cells];
         newCells[cellIndex] = { 
           type: 'file', 
           fileName: file.name, 
+          originalFileName: originalName,
           fileUrl: result.url, 
           fileSize: file.size 
         };
@@ -421,7 +425,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
             <FileText className="w-4 h-4 text-gray-600" />
             <a
               href={cell.fileUrl}
-              download={cell.fileName}
+              download={cell.originalFileName ?? cell.fileName}
               className="text-blue-600 hover:text-blue-800 text-sm"
               onClick={(e) => e.stopPropagation()}
             >
@@ -620,6 +624,11 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
       case 'table':
         const headers = element.props?.headers || [];
         const rows = element.props?.rows || [];
+        const tableNumCols = Math.max(
+          headers.length,
+          ...(rows.map(r => r.cells?.length ?? 0)),
+          1
+        );
         if (!headers.length && !rows.length) {
           return (
             <div className="p-4 border-2 border-dashed border-gray-300 rounded">
@@ -630,19 +639,17 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
         return (
           <div className="overflow-x-auto">
             <table className="min-w-full border border-gray-300">
-              {headers.length > 0 && (
-                <thead>
-                  <tr>
-                    {headers.map((header, idx) => (
-                      <th key={idx} className="border border-gray-300 px-2 py-1 bg-gray-100 text-sm font-medium">
-                        {header || `Колонка ${idx + 1}`}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-              )}
+              <thead>
+                <tr>
+                  {Array.from({ length: tableNumCols }, (_, idx) => (
+                    <th key={idx} className="border border-gray-300 px-2 py-1 bg-gray-100 text-sm font-medium">
+                      {headers[idx] ?? `Колонка ${idx + 1}`}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
               <tbody>
-                {renderTableBody(rows, headers.length || Math.max(...rows.map(r => r.cells.length), 1), (c) => renderCellContent(c), 'border border-gray-300 px-2 py-1 text-sm')}
+                {renderTableBody(rows, tableNumCols, (c) => renderCellContent(c), 'border border-gray-300 px-2 py-1 text-sm')}
               </tbody>
             </table>
           </div>
@@ -662,28 +669,39 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
           };
-          const fileDisplayName = (element.content && element.content.trim())
-            ? element.content.trim()
-            : (element.props.fileName || 'Неизвестный файл');
+          const fileHref = element.props.fileUrl.startsWith('http') ? element.props.fileUrl : `${BASE_URL}${element.props.fileUrl.startsWith('/') ? '' : '/'}${element.props.fileUrl}`;
+          const fileDisplayName =
+            (element.props?.displayName && element.props.displayName.trim())
+              ? element.props.displayName.trim()
+              : (element.props?.fileName && element.props.fileName.trim())
+              ? element.props.fileName.trim()
+              : (element.content && element.content.trim())
+              ? element.content.trim()
+              : 'Скачать файл';
           return (
-            <div className="flex items-center gap-2 p-3 border border-gray-300 rounded bg-gray-50">
-              <FileText className="w-5 h-5 text-gray-600" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 break-words">
-                  {fileDisplayName}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {element.props.fileType && `${element.props.fileType} • `}
-                  {element.props.fileSize && formatFileSize(element.props.fileSize)}
-                </p>
-              </div>
+            <div className="flex flex-col gap-2 p-3 border border-gray-300 rounded bg-gray-50">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-gray-600 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 break-words">
+                    {fileDisplayName}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {element.props.fileType && `${element.props.fileType} • `}
+                    {element.props.fileSize && formatFileSize(element.props.fileSize)}
+                  </p>
+                </div>
               <a
-                href={element.props.fileUrl}
-                download={element.props.fileName}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                href={fileHref}
+                download={element.props?.originalFileName ?? element.props?.fileName ?? undefined}
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium whitespace-nowrap"
               >
-                Скачать
-              </a>
+                  Открыть
+                </a>
+              </div>
+              {element.content && element.content.trim() && (
+                <p className="text-sm text-gray-600 pl-7 break-words">{element.content.trim()}</p>
+              )}
             </div>
           );
         case 'video':
@@ -828,14 +846,13 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
         <CardContent>
           {isEditing ? (
             <div className="space-y-3">
-              {/* Основной контент */}
-              {element.type !== 'page-link' && element.type !== 'table' && element.type !== 'map' && element.type !== 'list' && (
+              {/* Основной контент (для файла — название и описание в блоке файла ниже) */}
+              {element.type !== 'page-link' && element.type !== 'table' && element.type !== 'map' && element.type !== 'list' && element.type !== 'file' && (
               <div>
                 <Label htmlFor={`content-${element.id}`}>
                   {element.type === 'heading' ? 'Текст заголовка' :
                    element.type === 'paragraph' ? 'Текст абзаца' :
                    element.type === 'link' ? 'Текст ссылки' :
-                   element.type === 'file' ? 'Описание файла' :
                    'Описание изображения'}
                 </Label>
                 {element.type === 'paragraph' ? (
@@ -849,29 +866,11 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                 ) : (
                   <Input
                     id={`content-${element.id}`}
-                    value={
-                      element.type === 'file'
-                        ? (element.props?.fileName ?? element.content)
-                        : element.content
-                    }
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (element.type === 'file') {
-                        updateElement(element.id, { 
-                          content: value,
-                          props: { 
-                            ...element.props, 
-                            fileName: value 
-                          }
-                        });
-                      } else {
-                        updateElement(element.id, { content: value });
-                      }
-                    }}
+                    value={element.content}
+                    onChange={(e) => updateElement(element.id, { content: e.target.value })}
                     placeholder={
                       element.type === 'heading' ? 'Введите заголовок' :
                       element.type === 'link' ? 'Введите текст ссылки' :
-                      element.type === 'file' ? 'Введите описание файла' :
                       'Введите описание изображения'
                     }
                     className="break-words min-w-0 force-break"
@@ -1426,6 +1425,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                                               fileName: normalizedCell.type === 'file' ? normalizedCell.fileName : '',
                                               fileUrl: normalizedCell.type === 'file' ? normalizedCell.fileUrl : '',
                                               fileSize: normalizedCell.type === 'file' ? normalizedCell.fileSize : 0,
+                                              originalFileName: normalizedCell.type === 'file' ? (normalizedCell as { originalFileName?: string }).originalFileName : undefined,
                                               colspan: normalizedCell.colspan,
                                               rowspan: normalizedCell.rowspan
                                             };
@@ -1621,7 +1621,8 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                                                     type: 'file', 
                                                     fileName: '', 
                                                     fileUrl: '', 
-                                                    fileSize: 0 
+                                                    fileSize: 0,
+                                                    originalFileName: undefined
                                                   };
                                                   newRows[rowIndex] = { ...newRows[rowIndex], cells: newCells };
                                                   updateElement(element.id, {
@@ -1802,7 +1803,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                           variant="ghost"
                           size="sm"
                           onClick={() => updateElement(element.id, { 
-                            props: { ...element.props, fileUrl: '', fileName: '', fileType: '', fileSize: 0 }
+                            props: { ...(element.props || {}), fileUrl: '', fileName: '', fileType: '', fileSize: 0 }
                           })}
                         >
                           Удалить
@@ -1815,29 +1816,38 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                   </div>
 
                   <div>
-                    <Label htmlFor={`fileName-${element.id}`}>Название файла</Label>
+                    <Label htmlFor={`fileName-${element.id}`}>Название файла (отображается на странице)</Label>
                     <Input
                       id={`fileName-${element.id}`}
-                      value={element.props?.fileName || ''}
-                      onChange={(e) => updateElement(element.id, { 
-                        props: { ...element.props, fileName: e.target.value }
-                      })}
-                      placeholder="Введите название файла"
+                      value={element.props?.displayName ?? element.props?.fileName ?? ''}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        updateElement(element.id, { 
+                          props: { ...(element.props || {}), displayName: value }
+                        });
+                      }}
+                      placeholder="Введите название, например: Инструкция PDF"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Это название будет показано посетителям рядом с кнопкой «Открыть».
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor={`fileDescription-${element.id}`}>Описание (необязательно)</Label>
+                    <Textarea
+                      id={`fileDescription-${element.id}`}
+                      value={element.content ?? ''}
+                      onChange={(e) => updateElement(element.id, { content: e.target.value })}
+                      placeholder="Краткое описание файла для посетителей"
+                      className="min-h-[80px] resize-none"
                     />
                   </div>
 
                   {element.props?.fileUrl && (
-                    <div>
-                      <Label htmlFor={`fileUrl-${element.id}`}>URL файла</Label>
-                      <Input
-                        id={`fileUrl-${element.id}`}
-                        value={element.props?.fileUrl || ''}
-                        onChange={(e) => updateElement(element.id, { 
-                          props: { ...element.props, fileUrl: e.target.value }
-                        })}
-                        placeholder="URL файла"
-                      />
-                    </div>
+                    <p className="text-xs text-gray-500">
+                      Файл загружен. Ссылка для скачивания сохраняется автоматически.
+                    </p>
                   )}
                 </div>
               )}

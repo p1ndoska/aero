@@ -234,8 +234,9 @@ router.post('/upload-file', authenticationToken, checkRole(['SUPER_ADMIN', 'ABOU
         
         console.log('Any file uploaded:', req.file);
         const fileUrl = `${UPLOADS_URL_PREFIX}/${req.file.filename}`;
-        console.log('File URL:', fileUrl);
-        res.json({ url: fileUrl });
+        const originalFilename = req.file.originalname || req.file.filename;
+        console.log('File URL:', fileUrl, 'originalFilename:', originalFilename);
+        res.json({ url: fileUrl, originalFilename });
     });
 });
 

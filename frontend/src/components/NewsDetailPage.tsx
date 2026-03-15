@@ -110,7 +110,7 @@ const NewsDetailPage: React.FC = () => {
             <FileText className="w-4 h-4 text-gray-600" />
             <a
               href={`${BASE_URL}${cell.fileUrl?.startsWith('/') ? '' : '/'}${cell.fileUrl}`}
-              download={cell.fileName}
+              download={cell.originalFileName ?? cell.fileName}
               className="text-blue-600 hover:text-blue-800 text-sm"
             >
               {cell.fileName} ({formatFileSize(cell.fileSize)})
@@ -272,19 +272,17 @@ const NewsDetailPage: React.FC = () => {
               </h3>
             )}
             <table className="min-w-full border border-gray-300 bg-white">
-              {headers.length > 0 && (
-                <thead>
-                  <tr>
-                    {headers.map((header: string, idx: number) => (
-                      <th key={idx} className="border border-gray-300 px-4 py-2 bg-gray-100 text-left font-medium">
-                        {header || `Колонка ${idx + 1}`}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-              )}
+              <thead>
+                <tr>
+                  {Array.from({ length: Math.max(headers.length, ...(rows.map(r => r.cells?.length ?? 0)), 1) }, (_, idx) => (
+                    <th key={idx} className="border border-gray-300 px-4 py-2 bg-gray-100 text-left font-medium">
+                      {headers[idx] ?? `Колонка ${idx + 1}`}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
               <tbody>
-                {renderTableBody(rows, headers.length || 1, (c) => renderTableCell(c), 'border border-gray-300 px-4 py-2')}
+                {renderTableBody(rows, Math.max(headers.length, ...(rows.map(r => r.cells?.length ?? 0)), 1), (c) => renderTableCell(c), 'border border-gray-300 px-4 py-2')}
               </tbody>
             </table>
           </div>
@@ -298,31 +296,41 @@ const NewsDetailPage: React.FC = () => {
           const i = Math.floor(Math.log(bytes) / Math.log(k));
           return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         };
+        const fileHref = element.props.fileUrl.startsWith('http') ? element.props.fileUrl : `${BASE_URL}${element.props.fileUrl?.startsWith('/') ? '' : '/'}${element.props.fileUrl}`;
         const fileDisplayName =
-          (element.content && String(element.content).trim())
+          (element.props?.displayName && String(element.props.displayName).trim())
+            ? String(element.props.displayName).trim()
+            : (element.props?.fileName && String(element.props.fileName).trim())
+            ? String(element.props.fileName).trim()
+            : (element.content && String(element.content).trim())
             ? String(element.content).trim()
-            : (element.props.fileName || 'Неизвестный файл');
+            : 'Скачать файл';
         return (
-          <div className="mb-4 flex items-center gap-3 p-4 border border-gray-300 rounded-lg bg-gray-50">
-            <div className="flex-shrink-0">
-              <FileText className="w-8 h-8 text-gray-600" />
+          <div className="mb-4 flex flex-col gap-2 p-4 border border-gray-300 rounded-lg bg-gray-50">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <FileText className="w-8 h-8 text-gray-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 break-words">
+                  {fileDisplayName}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {element.props.fileType && `${element.props.fileType} • `}
+                  {element.props.fileSize && formatFileSize(element.props.fileSize)}
+                </p>
+              </div>
+              <a
+                href={fileHref}
+                download={element.props?.originalFileName ?? element.props?.fileName ?? undefined}
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                Открыть
+              </a>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 break-words">
-                {fileDisplayName}
-              </p>
-              <p className="text-xs text-gray-500">
-                {element.props.fileType && `${element.props.fileType} • `}
-                {element.props.fileSize && formatFileSize(element.props.fileSize)}
-              </p>
-            </div>
-            <a
-              href={`${BASE_URL}${element.props.fileUrl?.startsWith('/') ? '' : '/'}${element.props.fileUrl}`}
-              download={element.props.fileName}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-            >
-              Скачать
-            </a>
+            {element.content && String(element.content).trim() && (
+              <p className="text-sm text-gray-600 pl-11 break-words">{String(element.content).trim()}</p>
+            )}
           </div>
         );
       case 'video':

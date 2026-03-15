@@ -61,6 +61,7 @@ const translations = {
     'categories_not_found': 'Категории не найдены',
     'error_loading_data': 'Не удалось загрузить данные',
     'download': 'Скачать',
+    'open': 'Открыть',
     'unknown_file': 'Неизвестный файл',
     'column': 'Колонка',
     
@@ -674,6 +675,7 @@ const translations = {
     'categories_not_found': 'Categories not found',
     'error_loading_data': 'Failed to load data',
     'download': 'Download',
+    'open': 'Open',
     'unknown_file': 'Unknown file',
     'column': 'Column',
     
@@ -1257,6 +1259,7 @@ const translations = {
     'categories_not_found': 'Катэгорыі не знойдзены',
     'error_loading_data': 'Не ўдалося загрузіць даныя',
     'download': 'Спампаваць',
+    'open': 'Адкрыць',
     'unknown_file': 'Невядомы файл',
     'column': 'Калонка',
     

@@ -19,17 +19,14 @@ export const uploadApi = createApi({
         return { url: response.url };
       },
     }),
-    uploadFile: builder.mutation<{ url: string }, FormData>({
+    uploadFile: builder.mutation<{ url: string; originalFilename?: string }, FormData>({
       query: (formData) => ({
         url: '/upload-file',
         method: 'POST',
         body: formData,
       }),
-      transformResponse: (response: any) => {
-        // Возвращаем относительный путь как есть (например, /uploads/file.pdf)
-        // BASE_URL будет добавляться при отображении файлов
-        console.log('File upload response:', response);
-        return { url: response.url };
+      transformResponse: (response: { url: string; originalFilename?: string }) => {
+        return { url: response.url, originalFilename: response.originalFilename };
       },
     }),
   }),

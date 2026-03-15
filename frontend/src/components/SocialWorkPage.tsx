@@ -349,7 +349,7 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
             <FileText className="w-4 h-4 text-gray-600" />
             <a
               href={cell.fileUrl}
-              download={cell.fileName}
+              download={cell.originalFileName ?? cell.fileName}
               className="text-blue-600 hover:text-blue-800 text-sm"
             >
               {cell.fileName} ({formatFileSize(cell.fileSize)})
@@ -488,19 +488,17 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
               </h3>
             )}
             <table className="min-w-full border border-gray-300 bg-white">
-              {headers.length > 0 && (
-                <thead>
-                  <tr>
-                    {headers.map((header: string, idx: number) => (
-                      <th key={idx} className="border border-gray-300 px-4 py-2 bg-gray-100 text-left font-medium">
-                        {header || `Колонка ${idx + 1}`}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-              )}
+              <thead>
+                <tr>
+                  {Array.from({ length: Math.max(headers.length, ...(rows.map(r => r.cells?.length ?? 0)), 1) }, (_, idx) => (
+                    <th key={idx} className="border border-gray-300 px-4 py-2 bg-gray-100 text-left font-medium">
+                      {headers[idx] ?? `Колонка ${idx + 1}`}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
               <tbody>
-                {renderTableBody(rows, headers.length || 1, (c) => renderTableCell(c), 'border border-gray-300 px-4 py-2')}
+                {renderTableBody(rows, Math.max(headers.length, ...(rows.map(r => r.cells?.length ?? 0)), 1), (c) => renderTableCell(c), 'border border-gray-300 px-4 py-2')}
               </tbody>
             </table>
           </div>
@@ -514,29 +512,43 @@ export default function SocialWorkPage({ pageType }: SocialWorkPageProps) {
           const i = Math.floor(Math.log(bytes) / Math.log(k));
           return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         };
+        const fileHref = element.props.fileUrl.startsWith('http') ? element.props.fileUrl : `${BASE_URL}${element.props.fileUrl.startsWith('/') ? '' : '/'}${element.props.fileUrl}`;
+        const fileDisplayName =
+          (element.props?.displayName && String(element.props.displayName).trim())
+            ? String(element.props.displayName).trim()
+            : (element.props?.fileName && String(element.props.fileName).trim())
+            ? String(element.props.fileName).trim()
+            : (element.content && String(element.content).trim())
+            ? String(element.content).trim()
+            : 'Скачать файл';
         return (
-          <div className="mb-4 flex items-center gap-3 p-4 border border-gray-300 rounded-lg bg-gray-50">
-            <div className="flex-shrink-0">
-              <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+          <div className="mb-4 flex flex-col gap-2 p-4 border border-gray-300 rounded-lg bg-gray-50">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 break-words">
+                  {fileDisplayName}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {element.props.fileType && `${element.props.fileType} • `}
+                  {element.props.fileSize && formatFileSize(element.props.fileSize)}
+                </p>
+              </div>
+              <a
+                href={fileHref}
+                download={element.props?.originalFileName ?? element.props?.fileName ?? undefined}
+                className="flex-shrink-0 text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                Открыть
+              </a>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 break-words">
-                {element.props.fileName || 'Неизвестный файл'}
-              </p>
-              <p className="text-xs text-gray-500">
-                {element.props.fileType && `${element.props.fileType} • `}
-                {element.props.fileSize && formatFileSize(element.props.fileSize)}
-              </p>
-            </div>
-            <a
-              href={element.props.fileUrl}
-              download={element.props.fileName}
-              className="flex-shrink-0 text-blue-600 hover:text-blue-800 text-sm font-medium"
-            >
-              Скачать
-            </a>
+            {element.content && String(element.content).trim() && (
+              <p className="text-sm text-gray-600 pl-11 break-words">{String(element.content).trim()}</p>
+            )}
           </div>
         );
       case 'video':
