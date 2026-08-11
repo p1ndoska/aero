@@ -1,55 +1,43 @@
 import { useEffect, useRef } from 'react';
 import { useAccessibility } from '@/contexts/AccessibilityContext';
+import { BASE_URL } from '@/constants';
+
+const PLANE_ICON = `${BASE_URL}/uploads/hero/hero-plain.png`;
+const PLANE_SIZE = 9;
+const PLANE_HALF = PLANE_SIZE / 2;
+const PLANE_ROTATION_OFFSET = 45;
 
 interface FlightConfig {
   path: string;
   duration: number;
   delay: number;
   stroke: string;
-  planeFill: string;
 }
 
 const FLIGHTS: FlightConfig[] = [
   {
-    path: 'M 8 72 Q 28 18, 52 48 T 92 26',
-    duration: 20000,
+    path: 'M 10 78 Q 38 42, 55 40 T 90 32',
+    duration: 22000,
     delay: 0,
     stroke: '#213659',
-    planeFill: '#213659',
   },
   {
-    path: 'M 12 28 C 32 58, 58 32, 72 52 S 94 78, 86 88',
-    duration: 26000,
-    delay: 7000,
+    path: 'M 14 22 C 38 38, 62 58, 88 72',
+    duration: 28000,
+    delay: 9000,
     stroke: '#2563eb',
-    planeFill: '#2563eb',
   },
 ];
-
-function PlaneShape({ fill }: { fill: string }) {
-  return (
-    <g transform="translate(-7, 0)">
-      <path
-        d="M 0 0 L 14 0 M 4 -5 L 6 0 L 4 5 M -1 -3 L -3.5 0 L -1 3"
-        fill="none"
-        stroke={fill}
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </g>
-  );
-}
 
 interface AnimatedPlaneProps {
   pathD: string;
   duration: number;
   delay: number;
-  planeFill: string;
+  stroke: string;
   reduceMotion: boolean;
 }
 
-function AnimatedPlane({ pathD, duration, delay, planeFill, reduceMotion }: AnimatedPlaneProps) {
+function AnimatedPlane({ pathD, duration, delay, stroke, reduceMotion }: AnimatedPlaneProps) {
   const pathRef = useRef<SVGPathElement>(null);
   const planeRef = useRef<SVGGElement>(null);
 
@@ -65,11 +53,14 @@ function AnimatedPlane({ pathD, duration, delay, planeFill, reduceMotion }: Anim
       const point = path.getPointAtLength(distance);
       const lookAhead = path.getPointAtLength((distance + 1.5) % totalLength);
       const angle = (Math.atan2(lookAhead.y - point.y, lookAhead.x - point.x) * 180) / Math.PI;
-      plane.setAttribute('transform', `translate(${point.x}, ${point.y}) rotate(${angle})`);
+      plane.setAttribute(
+        'transform',
+        `translate(${point.x}, ${point.y}) rotate(${angle + PLANE_ROTATION_OFFSET})`,
+      );
     };
 
     if (reduceMotion) {
-      setPosition(0.35);
+      setPosition(0.4);
       return;
     }
 
@@ -101,14 +92,21 @@ function AnimatedPlane({ pathD, duration, delay, planeFill, reduceMotion }: Anim
         ref={pathRef}
         d={pathD}
         fill="none"
-        stroke={planeFill}
+        stroke={stroke}
         strokeWidth="0.35"
         strokeDasharray="1.2 1.2"
         strokeLinecap="round"
         opacity={0.45}
       />
       <g ref={planeRef}>
-        <PlaneShape fill={planeFill} />
+        <image
+          href={PLANE_ICON}
+          x={-PLANE_HALF}
+          y={-PLANE_HALF}
+          width={PLANE_SIZE}
+          height={PLANE_SIZE}
+          preserveAspectRatio="xMidYMid meet"
+        />
       </g>
     </>
   );
@@ -130,7 +128,7 @@ export default function HeroFlightAnimation() {
           pathD={flight.path}
           duration={flight.duration}
           delay={flight.delay}
-          planeFill={flight.planeFill}
+          stroke={flight.stroke}
           reduceMotion={settings.reduceMotion}
         />
       ))}
