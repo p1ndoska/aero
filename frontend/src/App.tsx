@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { useForceStyles } from './hooks/useForceStyles';
 import BranchesCarousel from './components/BranchesCarousel';
 import LogosCarousel from './components/LogosCarousel';
+import HeroFlightAnimation from './components/HeroFlightAnimation';
 import { BASE_URL } from './constants';
 
 const App = () => {
@@ -101,24 +102,26 @@ const App = () => {
                     
                     {/* Контент поверх изображения - карта или hero image */}
                     <div className="relative z-10 flex items-center justify-center h-full p-6 bg-white">
-                        {heroImage?.hasImage && heroImage.imageUrl ? (
-                            <img 
-                                key={`hero-map-${imageKey}-${imageTimestamp}`}
-                                src={`${BASE_URL}${heroImage.imageUrl.startsWith('/') ? '' : '/'}${heroImage.imageUrl}?t=${imageTimestamp}&v=${imageKey}`}
-                                alt="Map"
-                                className="max-w-full max-h-full object-contain"
-                                onError={(e) => {
-                                    console.error('Ошибка загрузки hero image (карта) в App.tsx:', heroImage.imageUrl);
-                                    // Fallback на старую карту при ошибке
-                                    e.currentTarget.src = '/Group5.png';
-                                }}
-                                onLoad={() => {
-                                    console.log('Hero image (карта) загружено в App.tsx:', heroImage.imageUrl);
-                                }}
-                            />
-                        ) : (
-                            <img src='/Group5.png' alt="Map" className="max-w-full max-h-full object-contain"/>
-                        )}
+                        <div className="relative inline-flex max-w-full max-h-full items-center justify-center">
+                            {heroImage?.hasImage && heroImage.imageUrl ? (
+                                <img 
+                                    key={`hero-map-${imageKey}-${imageTimestamp}`}
+                                    src={`${BASE_URL}${heroImage.imageUrl.startsWith('/') ? '' : '/'}${heroImage.imageUrl}?t=${imageTimestamp}&v=${imageKey}`}
+                                    alt="Map"
+                                    className="max-w-full max-h-full object-contain block"
+                                    onError={(e) => {
+                                        console.error('Ошибка загрузки hero image (карта) в App.tsx:', heroImage.imageUrl);
+                                        e.currentTarget.src = '/Group5.png';
+                                    }}
+                                    onLoad={() => {
+                                        console.log('Hero image (карта) загружено в App.tsx:', heroImage.imageUrl);
+                                    }}
+                                />
+                            ) : (
+                                <img src='/Group5.png' alt="Map" className="max-w-full max-h-full object-contain block"/>
+                            )}
+                            <HeroFlightAnimation />
+                        </div>
                     </div>
                 </motion.div>
 
