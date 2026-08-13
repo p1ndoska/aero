@@ -10,21 +10,42 @@ import { Settings, Eye, RotateCcw } from 'lucide-react';
 import { useAccessibility } from '@/contexts/AccessibilityContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-const AccessibilitySettings: React.FC = () => {
+interface AccessibilitySettingsProps {
+  variant?: 'default' | 'header' | 'header-mobile';
+}
+
+const AccessibilitySettings: React.FC<AccessibilitySettingsProps> = ({ variant = 'default' }) => {
   const { settings, updateSettings, resetSettings, isAccessibilityMode, toggleAccessibilityMode } = useAccessibility();
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
+
+  const triggerClassName =
+    variant === 'header'
+      ? 'site-header__icon-btn site-header__a11y-btn'
+      : variant === 'header-mobile'
+        ? 'header-mobile__a11y-btn'
+        : 'flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border-[#213659] text-[#213659]';
+
+  const triggerContent =
+    variant === 'header' || variant === 'header-mobile' ? (
+      <Eye className="site-header__action-icon" />
+    ) : (
+      <>
+        <Eye className="h-4 w-4" />
+        {t('version_visually_impaired')}
+      </>
+    );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border-[#213659] text-[#213659]"
+          variant={variant === 'default' ? 'outline' : 'ghost'}
+          size={variant === 'default' ? 'sm' : 'icon'}
+          className={triggerClassName}
+          aria-label={t('version_visually_impaired')}
         >
-          <Eye className="h-4 w-4" />
-          {t('version_visually_impaired')}
+          {triggerContent}
         </Button>
       </DialogTrigger>
       

@@ -10,7 +10,10 @@ COPY package*.json ./
 # В Docker используем npm install, а не npm ci, потому что package-lock.json
 # может быть не полностью синхронизирован с package.json (особенно для dev-зависимостей тестов).
 # --legacy-peer-deps отключает строгую проверку peerDependencies.
-RUN npm install --legacy-peer-deps
+# NPM_STRICT_SSL=false helps behind corporate SSL-inspecting proxies (SELF_SIGNED_CERT_IN_CHAIN).
+ARG NPM_STRICT_SSL=true
+RUN if [ "$NPM_STRICT_SSL" = "false" ]; then npm config set strict-ssl false; fi && \
+    npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .
@@ -21,10 +24,8 @@ ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # Production stage - только статика, без nginx
+# Alpine busybox already provides sh, cp, and tail used by CMD below
 FROM alpine:latest
-
-# Install only what's needed
-RUN apk add --no-cache bash
 
 # Create directory for static files
 RUN mkdir -p /app/dist

@@ -1,0 +1,94 @@
+:root {
+  /* Brand palette */
+  --color-primary: #213659;
+  --color-primary-hover: #1a2a4a;
+  --color-accent: #e87722;
+  --color-light-blue: #b1d1e0;
+  --color-link: #2a52be;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Neutrals */
+  --color-gray-50: #f1f5f9;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #cbd5e1;
+  --color-gray-400: #94a3b8;
+
+  /* Status */
+  --color-error: #dc2626;
+  --color-error-light: #fca5a5;
+
+  /* Focus */
+  --color-focus: #0066cc;
+  --color-focus-ring: rgba(0, 102, 204, 0.3);
+
+  /* Accessibility: high contrast */
+  --a11y-hc-text: #000000;
+  --a11y-hc-bg: #ffffff;
+  --a11y-hc-link: #0000ff;
+  --a11y-hc-link-hover: #000080;
+  --a11y-hc-highlight: #e5e5e5;
+
+  /* Accessibility: dark */
+  --a11y-dark-text: #e5e5e5;
+  --a11y-dark-bg: #1a1a1a;
+  --a11y-dark-surface: #2d2d2d;
+  --a11y-dark-link: #7dd3fc;
+
+  /* Accessibility: inverted */
+  --a11y-inverted-text: #ffff00;
+  --a11y-inverted-bg: #000080;
+  --a11y-inverted-highlight: #1a1a80;
+
+  /* Overlays & shadows */
+  --overlay-backdrop: rgba(0, 0, 0, 0.45);
+  --shadow-header: 0 2px 12px rgba(0, 0, 0, 0.12);
+  --shadow-dropdown: 0 16px 40px rgba(33, 54, 89, 0.2);
+  --shadow-mobile-panel: -8px 0 24px rgba(0, 0, 0, 0.15);
+  --shadow-radix: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  /* Header layout */
+  --header-height: clamp(3.75rem, 3.2rem + 1.5vw, 4.5rem);
+  --header-breakpoint: 990px;
+  --header-padding-x: clamp(0.75rem, 0.2rem + 2.2vw, 4.5rem);
+  --header-inner-gap: clamp(0.85rem, 0.5rem + 1.15vw, 2.15rem);
+  --header-actions-gap: clamp(0.2rem, 0.05rem + 0.35vw, 0.5rem);
+  --header-nav-font-size: clamp(0.46rem, -0.15rem + 0.82vw, 0.74rem);
+  --header-nav-padding-x: clamp(0.1rem, -0.08rem + 0.26vw, 0.45rem);
+  --header-nav-padding-y: clamp(0.26rem, 0.08rem + 0.22vw, 0.5rem);
+  --header-nav-gap: clamp(0.02rem, -0.02rem + 0.06vw, 0.12rem);
+  --header-icon-btn-size: clamp(1.85rem, 1.45rem + 0.85vw, 2.25rem);
+  --header-icon-size: clamp(0.95rem, 0.78rem + 0.4vw, 1.125rem);
+  --header-logo-height: clamp(2rem, 1.35rem + 1.5vw, 2.75rem);
+  --header-brand-font-size: clamp(0.56rem, 0.3rem + 0.38vw, 0.75rem);
+  --header-brand-max-width: clamp(6rem, 2rem + 10vw, 16rem);
+  --header-lang-font-size: clamp(0.62rem, 0.52rem + 0.18vw, 0.75rem);
+  --header-dropdown-link-font-size: clamp(0.68rem, 0.5rem + 0.32vw, 0.875rem);
+  --header-dropdown-link-marker-size: clamp(0.85rem, 0.65rem + 0.35vw, 1.15rem);
+  --header-dropdown-content-padding-y: clamp(0.65rem, 0.45rem + 0.35vw, 0.85rem);
+  --header-dropdown-content-padding-x: clamp(0.75rem, 0.5rem + 0.45vw, 1rem);
+  --header-dropdown-columns-gap: clamp(0.75rem, 0.45rem + 0.55vw, 1.25rem);
+
+  /* Header colors */
+  --header-bg: var(--color-primary);
+  --header-text: var(--color-white);
+  --header-text-muted: rgba(255, 255, 255, 0.85);
+  --header-hover-bg: rgba(255, 255, 255, 0.12);
+  --header-nav-hover-text: var(--color-primary);
+  --header-nav-hover-bg: var(--color-light-blue);
+  --header-active-border: var(--color-white);
+  --header-border: rgba(255, 255, 255, 0.18);
+  --header-dropdown-bg: var(--color-white);
+  --header-dropdown-text: var(--color-primary);
+  --header-dropdown-hover: var(--color-light-blue);
+  --header-dropdown-accent: var(--color-accent);
+  --header-dropdown-trajectory: var(--color-light-blue);
+  --header-dropdown-shadow: var(--shadow-dropdown);
+  --header-icon-hover: rgba(255, 255, 255, 0.16);
+  --header-search-bg: rgba(255, 255, 255, 0.12);
+  --header-mobile-bg: var(--color-white);
+  --header-mobile-text: var(--color-primary);
+  --header-mobile-border: var(--color-gray-200);
+  --header-brand-subtitle: rgba(255, 255, 255, 0.9);
+}

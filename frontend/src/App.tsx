@@ -59,7 +59,7 @@ const App = () => {
 
     return (
         <div
-            className="App h-screen flex flex-col md:flex-row md:items-stretch bg-cover bg-center p-4 gap-4"
+            className="App h-[calc(100vh-var(--header-height))] flex flex-col md:flex-row md:items-stretch bg-cover bg-center p-4 gap-4"
             style={{ backgroundImage: "url('/bg-sky.jpg')" }}
         >
             {/* Левый блок (2/4) поделен на 3 части */}

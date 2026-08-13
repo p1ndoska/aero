@@ -54,7 +54,9 @@ if not exist nginx\ssl\cert.pem (
         echo 2. Ispolzuyte Git Bash: cd nginx ^&^& bash generate-ssl.sh
         echo 3. Ili sozdayte vruchnuyu: cd nginx ^&^& .\generate-ssl.ps1
         echo.
-        echo [VAZHNO] Bez SSL sertifikatov HTTPS ne budet rabotat!
+        echo [VAZHNO] Bez SSL sertifikatov nginx NE zapustitsya!
+        echo [INFO] Mozhno takzhe sozdat cherez Docker:
+        echo   docker run --rm -v "%CD%\nginx\ssl:/ssl" alpine/openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /ssl/key.pem -out /ssl/cert.pem -subj "/CN=localhost"
         set /p continue="Prodolzhit vse ravno? (y/n): "
         if /i not "!continue!"=="y" (
             exit /b 1
@@ -132,6 +134,11 @@ echo [SBORKA] Sbornka konteynerov (tolko pri neobhodimosti)...
 docker-compose -f docker-compose.https.yml build
 if errorlevel 1 (
     echo [OSHIBKA] Oshibka pri sbornke!
+    echo.
+    echo Esli v logah est SELF_SIGNED_CERT_IN_CHAIN, ECONNRESET ili TLS certificate not trusted:
+    echo   Ubedites, chto v .env est: NPM_STRICT_SSL=false
+    echo   i zapustite START.bat snova.
+    echo.
     pause
     exit /b 1
 )

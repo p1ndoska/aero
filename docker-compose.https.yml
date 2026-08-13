@@ -25,6 +25,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        NPM_STRICT_SSL: ${NPM_STRICT_SSL:-true}
     container_name: aero-backend
     environment:
       # Server Configuration
@@ -79,6 +81,7 @@ services:
       dockerfile: Dockerfile.static
       args:
         VITE_API_URL: ${VITE_API_URL:-https://localhost:8443}
+        NPM_STRICT_SSL: ${NPM_STRICT_SSL:-true}
     container_name: aero-frontend
     command: sh -c "cp -r /app/dist/* /shared/dist/ && tail -f /dev/null"
     volumes:
