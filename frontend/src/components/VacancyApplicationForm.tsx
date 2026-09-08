@@ -389,7 +389,7 @@ export default function VacancyApplicationForm({
             <Button type="button" variant="outline" onClick={handleClose}>
               Отмена
             </Button>
-            <Button type="submit" disabled={isLoading} className="bg-[#213659] hover:bg-[#1a2a4a] text-white">
+            <Button type="submit" disabled={isLoading} className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white">
               {isLoading ? 'Отправка...' : 'Отправить отклик'}
             </Button>
           </div>

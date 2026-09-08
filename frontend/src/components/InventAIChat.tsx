@@ -102,7 +102,7 @@ export const InventAIChat: React.FC = () => {
         }}
       >
         {/* Заголовок с кнопками управления */}
-        <div className="bg-[#213659] text-white px-4 py-3 flex items-center justify-between">
+        <div className="bg-[var(--color-primary)] text-white px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MessageCircle size={20} />
             <span className="font-semibold">Белаэронавигация</span>

@@ -29,9 +29,8 @@ export default function CategoryListPage<TCategory extends Record<string, any>>(
   const { data: categories = [], isLoading, error } = useCategoriesHook();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      <div className="container mx-auto px-4 py-12">
-        <div className="bg-blue-50 backdrop-blur-sm rounded-2xl shadow-lg p-8">
+    <div>
+      <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-8">
           <div className="text-center mb-10">
             <h1 className="text-4xl font-bold text-gray-900 mb-2">{title}</h1>
             {subtitle && (
@@ -48,7 +47,7 @@ export default function CategoryListPage<TCategory extends Record<string, any>>(
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {categories
-                .filter((c: any) => c.isActive !== false)
+                .filter((c: any) => c.isActive !== false && !c.parentId)
                 .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
                 .map((category: any) => {
                   const name = getTranslatedField(category, 'name', language) || category.name;
@@ -66,7 +65,7 @@ export default function CategoryListPage<TCategory extends Record<string, any>>(
                           <p className="text-gray-600 mb-4 line-clamp-3">{description}</p>
                         )}
                         <Link to={`${basePath}/${slug}`} className="block">
-                          <Button className="w-full transition-colors bg-[#213659] text-white hover:bg-[#1a2a4a]">
+                          <Button className="w-full transition-colors bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)]">
                             {t('go')}
                           </Button>
                         </Link>
@@ -77,7 +76,6 @@ export default function CategoryListPage<TCategory extends Record<string, any>>(
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 }

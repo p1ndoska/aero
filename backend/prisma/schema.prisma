@@ -317,6 +317,9 @@ model SocialWorkCategory {
   pageType    String    @unique // Уникальный тип страницы (например: trade-union, belaya-rus)
   isActive    Boolean   @default(true) // Активна ли категория
   sortOrder   Int       @default(0) // Порядок сортировки
+  parentId    Int?      // ID родительской категории (для подкатегорий)
+  parent      SocialWorkCategory?  @relation("SocialWorkCategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children    SocialWorkCategory[] @relation("SocialWorkCategoryHierarchy")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }

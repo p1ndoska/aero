@@ -22,7 +22,7 @@ export interface MenuItem {
   submenu: SubMenuItem[] | null;
 }
 
-const buildAirNavTree = (categories: any[]) => {
+const buildCategoryTree = (categories: any[]) => {
   if (!categories || !Array.isArray(categories)) return [];
 
   const activeCategories = categories.filter((c: any) => c.isActive);
@@ -60,14 +60,20 @@ const buildAirNavTree = (categories: any[]) => {
   return rootCategories;
 };
 
-const mapAirNavToSubmenu = (categories: any[], language: string): SubMenuItem[] =>
+const mapCategoryTreeToSubmenu = (
+  categories: any[],
+  language: string,
+  basePath: string,
+): SubMenuItem[] =>
   categories.map((cat) => ({
     name: getTranslatedField(cat, 'name', language),
-    href: `/air-navigation/${cat.pageType}`,
+    href: `${basePath}/${cat.pageType}`,
     id: cat.id,
     hasChildren: cat.children?.length > 0,
     children:
-      cat.children?.length > 0 ? mapAirNavToSubmenu(cat.children, language) : undefined,
+      cat.children?.length > 0
+        ? mapCategoryTreeToSubmenu(cat.children, language, basePath)
+        : undefined,
   }));
 
 export function useNavigationMenu() {
@@ -101,20 +107,32 @@ export function useNavigationMenu() {
           { name: t('energy_saving') || 'Энергосбережение', href: '/news/energy-saving' },
         ];
 
+  const socialWorkTree = buildCategoryTree(socialWorkCategories ?? []);
   const socialWorkSubmenu: SubMenuItem[] =
-    socialWorkCategories && Array.isArray(socialWorkCategories) && socialWorkCategories.length > 0
-      ? socialWorkCategories.map((category: any) => ({
-          name: getTranslatedField(category, 'name', language),
-          href: `/social/${category.pageType}`,
-        }))
+    socialWorkTree.length > 0
+      ? mapCategoryTreeToSubmenu(socialWorkTree, language, '/social')
       : [
+          {
+            name: t('ideological_work'),
+            href: '/social/ideological-work',
+            children: [
+              { name: t('directive_12'), href: '/social/directive-12' },
+              { name: t('information_day'), href: '/social/information-day' },
+              { name: t('belarusian_woman_year'), href: '/social/belarusian-woman-year' },
+              { name: t('memory_pain'), href: '/social/memory' },
+            ],
+          },
           { name: t('united_trade_union'), href: '/social/trade-union' },
-          { name: t('white_rus'), href: '/social/belaya-rus' },
-          { name: t('brsm'), href: '/social/brsm' },
-          { name: t('belarusian_women_union'), href: '/social/women-union' },
+          {
+            name: t('public_associations'),
+            href: '/social/public-associations',
+            children: [
+              { name: t('white_rus'), href: '/social/belaya-rus' },
+              { name: t('brsm'), href: '/social/brsm' },
+              { name: t('belarusian_women_union'), href: '/social/women-union' },
+            ],
+          },
           { name: t('healthy_lifestyle'), href: '/social/healthy-lifestyle' },
-          { name: t('improvement_year'), href: '/social/improvement-year' },
-          { name: t('memory_pain'), href: '/social/memory' },
         ];
 
   const servicesSubmenu: SubMenuItem[] | null =
@@ -139,8 +157,8 @@ export function useNavigationMenu() {
           }))
       : [];
 
-  const airNavTree = buildAirNavTree(aeronauticalInfoCategories ?? []);
-  const airNavSubmenu = mapAirNavToSubmenu(airNavTree, language);
+  const airNavTree = buildCategoryTree(aeronauticalInfoCategories ?? []);
+  const airNavSubmenu = mapCategoryTreeToSubmenu(airNavTree, language, '/air-navigation');
 
   const appealsSubmenu: SubMenuItem[] =
     appealsCategories && Array.isArray(appealsCategories) && appealsCategories.length > 0

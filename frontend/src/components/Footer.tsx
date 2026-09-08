@@ -7,7 +7,7 @@ const Footer: React.FC = () => {
   const { t } = useLanguage();
 
   return (
-    <footer className="bg-[#213659] text-white py-8 px-4">
+    <footer className="bg-[var(--color-primary)] text-white py-8 px-4">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Контакты */}
         <div>

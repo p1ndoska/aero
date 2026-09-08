@@ -314,24 +314,24 @@ export default function ManagementManagement() {
       <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="name" className="text-[#213659] font-medium">ФИО руководителя (Русский) *</Label>
+          <Label htmlFor="name" className="text-[var(--color-primary)] font-medium">ФИО руководителя (Русский) *</Label>
           <Input
             id="name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder="Введите ФИО"
-            className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+            className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
             required
           />
         </div>
         <div>
-          <Label htmlFor="position" className="text-[#213659] font-medium">Должность (Русский) *</Label>
+          <Label htmlFor="position" className="text-[var(--color-primary)] font-medium">Должность (Русский) *</Label>
           <Input
             id="position"
             value={formData.position}
             onChange={(e) => setFormData({ ...formData, position: e.target.value })}
             placeholder="Введите должность"
-            className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+            className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
             required
           />
         </div>
@@ -339,132 +339,132 @@ export default function ManagementManagement() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="nameEn" className="text-[#213659] font-medium">ФИО руководителя (Английский)</Label>
+          <Label htmlFor="nameEn" className="text-[var(--color-primary)] font-medium">ФИО руководителя (Английский)</Label>
           <Input
             id="nameEn"
             value={formData.nameEn}
             onChange={(e) => setFormData({ ...formData, nameEn: e.target.value })}
             placeholder="Enter full name"
-            className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+            className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
           />
         </div>
         <div>
-          <Label htmlFor="positionEn" className="text-[#213659] font-medium">Должность (Английский)</Label>
+          <Label htmlFor="positionEn" className="text-[var(--color-primary)] font-medium">Должность (Английский)</Label>
           <Input
             id="positionEn"
             value={formData.positionEn}
             onChange={(e) => setFormData({ ...formData, positionEn: e.target.value })}
             placeholder="Enter position"
-            className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+            className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="nameBe" className="text-[#213659] font-medium">ФИО руководителя (Белорусский)</Label>
+          <Label htmlFor="nameBe" className="text-[var(--color-primary)] font-medium">ФИО руководителя (Белорусский)</Label>
           <Input
             id="nameBe"
             value={formData.nameBe}
             onChange={(e) => setFormData({ ...formData, nameBe: e.target.value })}
             placeholder="Увядзіце поўнае імя"
-            className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+            className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
           />
         </div>
         <div>
-          <Label htmlFor="positionBe" className="text-[#213659] font-medium">Должность (Белорусский)</Label>
+          <Label htmlFor="positionBe" className="text-[var(--color-primary)] font-medium">Должность (Белорусский)</Label>
           <Input
             id="positionBe"
             value={formData.positionBe}
             onChange={(e) => setFormData({ ...formData, positionBe: e.target.value })}
             placeholder="Увядзіце пасаду"
-            className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+            className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
           />
         </div>
       </div>
 
       <div>
-        <Label htmlFor="phone" className="text-[#213659] font-medium">Телефон *</Label>
+        <Label htmlFor="phone" className="text-[var(--color-primary)] font-medium">Телефон *</Label>
         <Input
           id="phone"
           value={formData.phone}
           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
           placeholder="Введите телефон"
-          className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+          className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
           required
         />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <Label htmlFor="offices" className="text-[#213659] font-medium">Кабинеты (Русский)</Label>
+          <Label htmlFor="offices" className="text-[var(--color-primary)] font-medium">Кабинеты (Русский)</Label>
           <Input
             id="offices"
             value={formData.offices}
             onChange={(e) => setFormData({ ...formData, offices: e.target.value })}
             placeholder="Введите номера кабинетов"
-            className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+            className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
           />
         </div>
         <div>
-          <Label htmlFor="officesEn" className="text-[#213659] font-medium">Кабинеты (Английский)</Label>
+          <Label htmlFor="officesEn" className="text-[var(--color-primary)] font-medium">Кабинеты (Английский)</Label>
           <Input
             id="officesEn"
             value={formData.officesEn}
             onChange={(e) => setFormData({ ...formData, officesEn: e.target.value })}
             placeholder="Enter office numbers"
-            className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+            className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
           />
         </div>
         <div>
-          <Label htmlFor="officesBe" className="text-[#213659] font-medium">Кабинеты (Белорусский)</Label>
+          <Label htmlFor="officesBe" className="text-[var(--color-primary)] font-medium">Кабинеты (Белорусский)</Label>
           <Input
             id="officesBe"
             value={formData.officesBe}
             onChange={(e) => setFormData({ ...formData, officesBe: e.target.value })}
             placeholder="Увядзіце нумары кабінетаў"
-            className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+            className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
           />
         </div>
       </div>
 
       <div className="space-y-3">
         <div>
-          <Label htmlFor="receptionSchedule" className="text-[#213659] font-medium">Расписание приема (Русский) *</Label>
+          <Label htmlFor="receptionSchedule" className="text-[var(--color-primary)] font-medium">Расписание приема (Русский) *</Label>
           <Input
             id="receptionSchedule"
             value={formData.receptionSchedule}
             onChange={(e) => setFormData({ ...formData, receptionSchedule: e.target.value })}
             placeholder="Укажите расписание приема"
-            className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+            className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
             required
           />
         </div>
         <div>
-          <Label htmlFor="receptionScheduleEn" className="text-[#213659] font-medium">Расписание приема (Английский)</Label>
+          <Label htmlFor="receptionScheduleEn" className="text-[var(--color-primary)] font-medium">Расписание приема (Английский)</Label>
           <Input
             id="receptionScheduleEn"
             value={formData.receptionScheduleEn}
             onChange={(e) => setFormData({ ...formData, receptionScheduleEn: e.target.value })}
             placeholder="Enter reception schedule"
-            className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+            className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
           />
         </div>
         <div>
-          <Label htmlFor="receptionScheduleBe" className="text-[#213659] font-medium">Расписание приема (Белорусский)</Label>
+          <Label htmlFor="receptionScheduleBe" className="text-[var(--color-primary)] font-medium">Расписание приема (Белорусский)</Label>
           <Input
             id="receptionScheduleBe"
             value={formData.receptionScheduleBe}
             onChange={(e) => setFormData({ ...formData, receptionScheduleBe: e.target.value })}
             placeholder="Укажыце расклад прыёму"
-            className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+            className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
           />
         </div>
       </div>
 
       {/* Секция загрузки изображений */}
       <div>
-        <Label className="text-[#213659] font-medium">Фотографии руководителя</Label>
+        <Label className="text-[var(--color-primary)] font-medium">Фотографии руководителя</Label>
         <div className="mt-2">
           <input
             ref={fileInputRef}
@@ -478,7 +478,7 @@ export default function ManagementManagement() {
             type="button"
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
-            className="w-full border-dashed border-2 border-[#B1D1E0] hover:border-[#2A52BE] text-[#213659]"
+            className="w-full border-dashed border-2 border-[#B1D1E0] hover:border-[#2A52BE] text-[var(--color-primary)]"
           >
             <Upload className="w-4 h-4 mr-2" />
             Выберите фотографии
@@ -553,7 +553,7 @@ export default function ManagementManagement() {
         <Button 
           type="submit"
           disabled={isEdit ? isUpdating : isCreating}
-          className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+          className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
         >
           {isEdit ? (isUpdating ? 'Сохранение...' : 'Сохранить') : (isCreating ? 'Создание...' : 'Создать')}
         </Button>
@@ -565,7 +565,7 @@ export default function ManagementManagement() {
   if (isLoading) {
     return (
       <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#213659] mx-auto mb-4"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)] mx-auto mb-4"></div>
         <p className="text-gray-600">Загрузка руководителей...</p>
       </div>
     );
@@ -574,7 +574,7 @@ export default function ManagementManagement() {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-[#213659] mb-2 flex items-center justify-center gap-3">
+        <h2 className="text-2xl font-bold text-[var(--color-primary)] mb-2 flex items-center justify-center gap-3">
           <Users className="w-6 h-6" />
           Управление руководителями
         </h2>
@@ -584,7 +584,7 @@ export default function ManagementManagement() {
       <div className="flex justify-end">
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm} className="bg-[#213659] hover:bg-[#1a2a4a] text-white flex items-center gap-2">
+            <Button onClick={resetForm} className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white flex items-center gap-2">
               <Plus className="w-4 h-4" />
               Добавить руководителя
             </Button>
@@ -599,7 +599,7 @@ export default function ManagementManagement() {
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-[#213659]">Список руководителей</h3>
+        <h3 className="text-lg font-semibold text-[var(--color-primary)]">Список руководителей</h3>
         {!managers?.managers?.length ? (
           <div className="text-center py-12 bg-gray-50 rounded-lg">
             <Users className="w-16 h-16 mx-auto mb-4 text-gray-400" />
@@ -613,7 +613,7 @@ export default function ManagementManagement() {
                 <div className="border border-gray-200 rounded-lg p-6 bg-white hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
-                    <h4 className="text-xl font-bold text-[#213659] mb-2">{manager.name}</h4>
+                    <h4 className="text-xl font-bold text-[var(--color-primary)] mb-2">{manager.name}</h4>
                     <div className="space-y-1">
                       <p className="text-gray-600 flex items-center gap-2">
                         <span className="font-medium">Должность:</span>
@@ -642,7 +642,7 @@ export default function ManagementManagement() {
                         size="sm"
                         onClick={() => handleMoveUp(managers.managers.findIndex(m => m.id === manager.id))}
                         disabled={isUpdatingOrder || managers.managers.findIndex(m => m.id === manager.id) === 0}
-                        className="border-[#B1D1E0] hover:border-[#2A52BE] text-[#213659] p-1 h-8"
+                        className="border-[#B1D1E0] hover:border-[#2A52BE] text-[var(--color-primary)] p-1 h-8"
                         title="Переместить вверх"
                       >
                         <ChevronUp className="w-4 h-4" />
@@ -652,7 +652,7 @@ export default function ManagementManagement() {
                         size="sm"
                         onClick={() => handleMoveDown(managers.managers.findIndex(m => m.id === manager.id))}
                         disabled={isUpdatingOrder || managers.managers.findIndex(m => m.id === manager.id) === managers.managers.length - 1}
-                        className="border-[#B1D1E0] hover:border-[#2A52BE] text-[#213659] p-1 h-8"
+                        className="border-[#B1D1E0] hover:border-[#2A52BE] text-[var(--color-primary)] p-1 h-8"
                         title="Переместить вниз"
                       >
                         <ChevronDown className="w-4 h-4" />
@@ -664,7 +664,7 @@ export default function ManagementManagement() {
                       onClick={() => setShowScheduleCalendar(
                         showScheduleCalendar === manager.id ? null : manager.id
                       )}
-                      className="border-[#B1D1E0] hover:border-[#2A52BE] text-[#213659]"
+                      className="border-[#B1D1E0] hover:border-[#2A52BE] text-[var(--color-primary)]"
                     >
                       <Calendar className="w-4 h-4 mr-1" />
                       {showScheduleCalendar === manager.id ? 'Скрыть' : 'Календарь'}
@@ -673,7 +673,7 @@ export default function ManagementManagement() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(manager)}
-                      className="border-[#B1D1E0] hover:border-[#2A52BE] text-[#213659]"
+                      className="border-[#B1D1E0] hover:border-[#2A52BE] text-[var(--color-primary)]"
                     >
                       <Edit className="w-4 h-4 mr-1" />
                       Редактировать
@@ -693,7 +693,7 @@ export default function ManagementManagement() {
                 
                 {manager.images && manager.images.length > 0 && (
                   <div>
-                    <span className="font-medium text-[#213659]">Изображения:</span>
+                    <span className="font-medium text-[var(--color-primary)]">Изображения:</span>
                     <div className="flex gap-2 mt-2">
                       {manager.images.slice(0, 3).map((image, index) => {
                         // Обрабатываем как относительные пути, так и полные URL

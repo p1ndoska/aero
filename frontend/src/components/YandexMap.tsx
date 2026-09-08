@@ -18,6 +18,11 @@ declare global {
   }
 }
 
+const getPrimaryColor = () => {
+  if (typeof window === 'undefined') return '#213659';
+  return getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#213659';
+};
+
 const YandexMap: React.FC<YandexMapProps> = ({ 
   address, 
   branchName, 
@@ -91,7 +96,7 @@ const YandexMap: React.FC<YandexMapProps> = ({
           const placemark = new window.ymaps.Placemark(coords, {
             balloonContent: `
               <div style="padding: 10px;">
-                <h3 style="margin: 0 0 8px 0; color: #213659; font-weight: bold;">${branchName}</h3>
+                <h3 style="margin: 0 0 8px 0; color: var(--color-primary); font-weight: bold;">${branchName}</h3>
                 <p style="margin: 0; color: #666;">${address}</p>
                 <p style="margin: 4px 0 0 0; color: #999; font-size: 12px;">Координаты: ${lat}, ${lng}</p>
               </div>
@@ -101,7 +106,7 @@ const YandexMap: React.FC<YandexMapProps> = ({
             iconLayout: 'default#image',
             iconImageHref: 'data:image/svg+xml;base64,' + btoa(`
               <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="16" cy="16" r="12" fill="#213659" stroke="white" stroke-width="2"/>
+                <circle cx="16" cy="16" r="12" fill="${getPrimaryColor()}" stroke="white" stroke-width="2"/>
                 <circle cx="16" cy="16" r="4" fill="white"/>
               </svg>
             `),
@@ -135,7 +140,7 @@ const YandexMap: React.FC<YandexMapProps> = ({
           const placemark = new window.ymaps.Placemark(coords, {
             balloonContent: `
               <div style="padding: 10px;">
-                <h3 style="margin: 0 0 8px 0; color: #213659; font-weight: bold;">${branchName}</h3>
+                <h3 style="margin: 0 0 8px 0; color: var(--color-primary); font-weight: bold;">${branchName}</h3>
                 <p style="margin: 0; color: #666;">${address}</p>
               </div>
             `,
@@ -144,7 +149,7 @@ const YandexMap: React.FC<YandexMapProps> = ({
             iconLayout: 'default#image',
             iconImageHref: 'data:image/svg+xml;base64,' + btoa(`
               <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="16" cy="16" r="12" fill="#213659" stroke="white" stroke-width="2"/>
+                <circle cx="16" cy="16" r="12" fill="${getPrimaryColor()}" stroke="white" stroke-width="2"/>
                 <circle cx="16" cy="16" r="4" fill="white"/>
               </svg>
             `),
@@ -164,7 +169,7 @@ const YandexMap: React.FC<YandexMapProps> = ({
           const notification = new window.ymaps.Placemark([53.9006, 27.5590], {
             balloonContent: `
               <div style="padding: 10px; text-align: center;">
-                <h3 style="margin: 0 0 8px 0; color: #213659; font-weight: bold;">${branchName}</h3>
+                <h3 style="margin: 0 0 8px 0; color: var(--color-primary); font-weight: bold;">${branchName}</h3>
                 <p style="margin: 0; color: #666;">Адрес не найден: ${address}</p>
                 <p style="margin: 4px 0 0 0; color: #999; font-size: 12px;">Проверьте правильность адреса</p>
               </div>

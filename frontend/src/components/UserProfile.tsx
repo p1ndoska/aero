@@ -267,7 +267,7 @@ export default function UserProfile() {
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6">
         {/* Заголовок */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#213659] mb-2">{t('profile')}</h1>
+          <h1 className="text-3xl font-bold text-[var(--color-primary)] mb-2">{t('profile')}</h1>
           <p className="text-gray-600">{t('manage_profile_settings')}</p>
         </div>
 
@@ -283,7 +283,7 @@ export default function UserProfile() {
                       {profile.firstName?.[0] || profile.email[0].toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <h2 className="text-xl font-semibold text-[#213659] break-words">
+                  <h2 className="text-xl font-semibold text-[var(--color-primary)] break-words">
                     {profile.firstName && profile.lastName 
                       ? `${profile.firstName} ${profile.lastName}` 
                       : profile.email

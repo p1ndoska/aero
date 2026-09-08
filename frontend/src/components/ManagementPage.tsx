@@ -116,7 +116,7 @@ export default function ManagementPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#213659] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)] mx-auto mb-4"></div>
           <p className="text-gray-600">{t('loading_managers') || 'Загрузка информации о руководителях...'}</p>
         </div>
       </div>
@@ -140,7 +140,7 @@ export default function ManagementPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-[#213659] mb-4 flex items-center justify-space-between gap-3">
+        <h1 className="text-3xl font-bold text-[var(--color-primary)] mb-4 flex items-center justify-space-between gap-3">
           <Users className="w-8 h-8" />
           {t('management_title') || 'РУКОВОДСТВО ГОСУДАРСТВЕННОГО ПРЕДПРИЯТИЯ «БЕЛАЭРОНАВИГАЦИЯ»'}
         </h1>
@@ -163,7 +163,7 @@ export default function ManagementPage() {
                     <img
                       src={getImageUrl(manager.images[0])}
                       alt={manager.name}
-                      className="w-56 h-80 md:w-64 md:h-96 lg:w-80 lg:h-[28rem] rounded-xl object-cover object-center mx-auto mb-4 border-4 border-[#213659]"
+                      className="w-56 h-80 md:w-64 md:h-96 lg:w-80 lg:h-[28rem] rounded-xl object-cover object-center mx-auto mb-4 border-4 border-[var(--color-primary)]"
                       onError={(e) => {
                         console.error(' Ошибка загрузки изображения для', manager.name, ':', manager.images[0]);
                         e.currentTarget.style.display = 'none';
@@ -176,11 +176,11 @@ export default function ManagementPage() {
                     />
                   ) : null}
                   {(!manager.images || manager.images.length === 0) && (
-                    <div className="w-56 h-80 md:w-64 md:h-96 lg:w-80 lg:h-[28rem] rounded-xl bg-[#213659] mx-auto mb-4 flex items-center justify-center border-4 border-[#213659]">
+                    <div className="w-56 h-80 md:w-64 md:h-96 lg:w-80 lg:h-[28rem] rounded-xl bg-[var(--color-primary)] mx-auto mb-4 flex items-center justify-center border-4 border-[var(--color-primary)]">
                       <Users className="w-16 h-16 md:w-20 md:h-20 text-white" />
                     </div>
                   )}
-                  <h3 className="text-xl font-bold text-[#213659] mb-1">
+                  <h3 className="text-xl font-bold text-[var(--color-primary)] mb-1">
                     {getTranslatedField(manager, 'name', language)}
                   </h3>
                   <p className="text-[#6A81A9] font-medium">
@@ -190,13 +190,13 @@ export default function ManagementPage() {
 
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <Phone className="w-5 h-5 text-[#213659]" />
+                    <Phone className="w-5 h-5 text-[var(--color-primary)]" />
                     <span className="text-gray-700">{manager.phone}</span>
                   </div>
 
                   {manager.offices && (
                     <div className="flex items-center gap-3">
-                      <MapPin className="w-5 h-5 text-[#213659]" />
+                      <MapPin className="w-5 h-5 text-[var(--color-primary)]" />
                       <span className="text-gray-700">
                         {language === 'en' ? 'Offices: ' : language === 'be' ? 'Кабінеты: ' : 'Кабинеты: '}
                         {getTranslatedField(manager, 'offices', language) || manager.offices}
@@ -205,7 +205,7 @@ export default function ManagementPage() {
                   )}
 
                   <div className="flex items-center gap-3">
-                    <Clock className="w-5 h-5 text-[#213659]" />
+                    <Clock className="w-5 h-5 text-[var(--color-primary)]" />
                     <span className="text-gray-700">
                       {language === 'en' ? 'Reception schedule: ' : language === 'be' ? 'Расклад прыёму: ' : 'Расписание приема: '}
                       {getTranslatedField(manager, 'receptionSchedule', language) || manager.receptionSchedule}
@@ -220,7 +220,7 @@ export default function ManagementPage() {
                     onClick={() => setSelectedManagerForBooking(
                       selectedManagerForBooking === manager.id ? null : manager.id
                     )}
-                    className="w-full flex items-center justify-center gap-2 bg-[#213659] text-white hover:bg-[#1a2a4a] border-[#213659]"
+                    className="w-full flex items-center justify-center gap-2 bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] border-[var(--color-primary)]"
                   >
                     <UserPlus className="w-4 h-4" />
                     {selectedManagerForBooking === manager.id 
@@ -286,38 +286,38 @@ export default function ManagementPage() {
             )}
             
             <div>
-              <Label htmlFor="fullName" className="text-[#213659] font-medium">{t('full_name') || 'ФИО'} *</Label>
+              <Label htmlFor="fullName" className="text-[var(--color-primary)] font-medium">{t('full_name') || 'ФИО'} *</Label>
               <Input
                 id="fullName"
                 value={bookingForm.fullName}
                 onChange={(e) => setBookingForm({ ...bookingForm, fullName: e.target.value })}
                 placeholder={t('enter_full_name') || 'Введите ваше полное имя'}
-                className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+                className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
                 required
               />
             </div>
             
             <div>
-              <Label htmlFor="email" className="text-[#213659] font-medium">Email *</Label>
+              <Label htmlFor="email" className="text-[var(--color-primary)] font-medium">Email *</Label>
               <Input
                 id="email"
                 type="email"
                 value={bookingForm.email}
                 onChange={(e) => setBookingForm({ ...bookingForm, email: e.target.value })}
                 placeholder={t('enter_email') || 'Введите ваш email'}
-                className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+                className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
                 required
               />
             </div>
             
             <div>
-              <Label htmlFor="notes" className="text-[#213659] font-medium">{t('additional_info') || 'Дополнительная информация'}</Label>
+              <Label htmlFor="notes" className="text-[var(--color-primary)] font-medium">{t('additional_info') || 'Дополнительная информация'}</Label>
               <Input
                 id="notes"
                 value={bookingForm.notes}
                 onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
                 placeholder={t('describe_visit_purpose') || 'Опишите цель визита (необязательно)'}
-                className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+                className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
               />
             </div>
           </div>
@@ -329,7 +329,7 @@ export default function ManagementPage() {
             <Button 
               onClick={handleBookingSubmit}
               disabled={!bookingForm.fullName || !bookingForm.email}
-              className="bg-[#213659] hover:bg-[#213659] text-white"
+              className="bg-[var(--color-primary)] hover:bg-[var(--color-primary)] text-white"
             >
               <Check className="w-4 h-4 mr-2" />
               {t('book') || 'Записаться'}
@@ -390,7 +390,7 @@ function ManagerBookingSection({
       
       {slotsLoading ? (
         <div className="text-center py-4">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#213659] mx-auto mb-2"></div>
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--color-primary)] mx-auto mb-2"></div>
           <p className="text-sm text-gray-600">{t('loading_schedule') || 'Загрузка расписания...'}</p>
         </div>
       ) : allSlots.length > 0 ? (
@@ -430,7 +430,7 @@ function ManagerBookingSection({
                   className={`text-xs px-3 py-1 ${
                     !canBook
                       ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
-                      : 'bg-[#213659] hover:bg-[#1a2a4a] text-white'
+                      : 'bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white'
                   }`}
                 >
                   <UserPlus className="w-3 h-3 mr-1" />

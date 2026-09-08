@@ -101,7 +101,7 @@ export default function CookieConsent() {
                   </Button>
                   <Button
                     onClick={handleAcceptAll}
-                    className="bg-[#213659] hover:bg-[#1a2a4a] text-white whitespace-nowrap"
+                    className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white whitespace-nowrap"
                   >
                     {t('accept_all')}
                   </Button>
@@ -236,7 +236,7 @@ export default function CookieConsent() {
                   </Button>
                   <Button
                     onClick={handleAcceptSelected}
-                    className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                    className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
                   >
                     Сохранить настройки
                   </Button>

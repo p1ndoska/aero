@@ -187,7 +187,7 @@ export default function ReceptionBooking({ manager, onBookAppointment }: Recepti
                 <Button 
                   onClick={handleBookAppointment}
                   disabled={(selectedSlot as any).isBooked || !selectedSlot.isAvailable}
-                  className="w-full bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                  className="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
                 >
                   Записаться на прием
                 </Button>

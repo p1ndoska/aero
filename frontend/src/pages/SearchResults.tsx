@@ -62,7 +62,7 @@ const SearchResults: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4">
           <Card>
             <CardContent className="py-12 flex flex-col items-center justify-center">
-              <Loader2 className="h-12 w-12 animate-spin text-[#213659] mb-4" />
+              <Loader2 className="h-12 w-12 animate-spin text-[var(--color-primary)] mb-4" />
               <p className="text-gray-600">{t('search_loading')}</p>
             </CardContent>
           </Card>
@@ -92,7 +92,7 @@ const SearchResults: React.FC = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-[#213659] mb-2">
+          <h1 className="text-3xl font-bold text-[var(--color-primary)] mb-2">
             {t('search_results')}
           </h1>
           <p className="text-gray-600">
@@ -110,7 +110,7 @@ const SearchResults: React.FC = () => {
                     <CardTitle className="text-xl">
                       <Link
                         to={result.url}
-                        className="text-[#213659] hover:text-blue-700 transition-colors"
+                        className="text-[var(--color-primary)] hover:text-blue-700 transition-colors"
                       >
                         {result.title}
                       </Link>

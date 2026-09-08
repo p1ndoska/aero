@@ -97,18 +97,22 @@ export const Sidebar = () => {
 
     // Создаем динамическое подменю для социальной работы
     const socialWorkSubmenu = socialWorkCategories && Array.isArray(socialWorkCategories) && socialWorkCategories.length > 0
-        ? socialWorkCategories.map((category: any) => ({ 
-            name: getTranslatedField(category, 'name', language), 
-            href: `/social/${category.pageType}` 
+        ? socialWorkCategories
+            .filter((category: any) => !category.parentId)
+            .map((category: any) => ({
+            name: getTranslatedField(category, 'name', language),
+            href: `/social/${category.pageType}`,
+            children: (category.children || socialWorkCategories.filter((child: any) => child.parentId === category.id))
+                .map((child: any) => ({
+                    name: getTranslatedField(child, 'name', language),
+                    href: `/social/${child.pageType}`,
+                })),
         }))
         : [
+            { name: t('ideological_work'), href: "/social/ideological-work" },
             { name: t('united_trade_union'), href: "/social/trade-union" },
-            { name: t('white_rus'), href: "/social/belaya-rus" },
-            { name: t('brsm'), href: "/social/brsm" },
-            { name: t('belarusian_women_union'), href: "/social/women-union" },
+            { name: t('public_associations'), href: "/social/public-associations" },
             { name: t('healthy_lifestyle'), href: "/social/healthy-lifestyle" },
-            { name: t('improvement_year'), href: "/social/improvement-year" },
-            { name: t('memory_pain'), href: "/social/memory" },
         ];
 
     // Динамическое подменю для услуг
@@ -280,15 +284,15 @@ export const Sidebar = () => {
                 onClick={() => setIsMobileOpen(!isMobileOpen)}
             >
                 <span
-                    className={`h-0.5 w-6 bg-[#213659] rounded transition-transform duration-300 ${isMobileOpen ? "rotate-45 translate-y-2" : ""
+                    className={`h-0.5 w-6 bg-[var(--color-primary)] rounded transition-transform duration-300 ${isMobileOpen ? "rotate-45 translate-y-2" : ""
                     }`}
                 />
                 <span
-                    className={`h-0.5 w-6 bg-[#213659] rounded transition-opacity duration-300 ${isMobileOpen ? "opacity-0" : "opacity-100"
+                    className={`h-0.5 w-6 bg-[var(--color-primary)] rounded transition-opacity duration-300 ${isMobileOpen ? "opacity-0" : "opacity-100"
                     }`}
                 />
                 <span
-                    className={`h-0.5 w-6 bg-[#213659] rounded transition-transform duration-300 ${isMobileOpen ? "-rotate-45 -translate-y-2" : ""
+                    className={`h-0.5 w-6 bg-[var(--color-primary)] rounded transition-transform duration-300 ${isMobileOpen ? "-rotate-45 -translate-y-2" : ""
                     }`}
                 />
             </button>
@@ -307,9 +311,9 @@ export const Sidebar = () => {
                         className="w-10 h-10 rounded-full bg-white border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors shadow-sm"
                     >
                         {showSocialMedia ? (
-                            <ChevronUp className="text-[#213659]" size={16} />
+                            <ChevronUp className="text-[var(--color-primary)]" size={16} />
                         ) : (
-                            <ChevronDown className="text-[#213659]" size={16} />
+                            <ChevronDown className="text-[var(--color-primary)]" size={16} />
                         )}
                     </button>
                 </div>
@@ -338,7 +342,7 @@ export const Sidebar = () => {
                     <div className="p-4 flex items-center justify-center w-full">
                         <Link to="/" className="flex flex-col items-center text-center">
                             <img src="/logo.png" className="h-24 w-auto max-w-xs object-contain" alt="Логотип Белаэронавигация" />
-                            <p className="text-sm font-light leading-relaxed max-w-xs mx-auto whitespace-pre-line text-[#213659] break-words">
+                            <p className="text-sm font-light leading-relaxed max-w-xs mx-auto whitespace-pre-line text-[var(--color-primary)] break-words">
                                 {t('company_full_name')}
                             </p>
                         </Link>
@@ -383,7 +387,7 @@ export const Sidebar = () => {
                                 >
                                     <Link
                                         to={item.href}
-                                        className="block rounded-md px-3 py-2 text-[#213659] hover:bg-[#B1D1E0] transition-colors"
+                                        className="block rounded-md px-3 py-2 text-[var(--color-primary)] hover:bg-[#B1D1E0] transition-colors"
                                     >
                                         {item.name}
                                     </Link>
@@ -522,7 +526,7 @@ export const Sidebar = () => {
                                                                 {!hasChildren && <div className="w-4 flex-shrink-0" />}
                                                                 <Link
                                                                     to={`/air-navigation/${cat.pageType}`}
-                                                                    className="flex-1 block px-2 py-2 text-[#213659] hover:bg-[#B1D1E0]"
+                                                                    className="flex-1 block px-2 py-2 text-[var(--color-primary)] hover:bg-[#B1D1E0]"
                                                                     onClick={() => {
                                                                         setActiveSubmenu(null);
                                                                         setMainMenuPosition(null);
@@ -548,14 +552,14 @@ export const Sidebar = () => {
                                                         href={subItem.href}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="block px-4 py-2 text-[#213659] hover:bg-[#B1D1E0]"
+                                                        className="block px-4 py-2 text-[var(--color-primary)] hover:bg-[#B1D1E0]"
                                                     >
                                                         {subItem.name}
                                                     </a>
                                                 ) : (
                                                     <Link
                                                         to={subItem.href}
-                                                        className="block px-4 py-2 text-[#213659] hover:bg-[#B1D1E0]"
+                                                        className="block px-4 py-2 text-[var(--color-primary)] hover:bg-[#B1D1E0]"
                                                     >
                                                         {subItem.name}
                                                     </Link>
@@ -619,7 +623,7 @@ export const Sidebar = () => {
                                                                             {!hasChildren && <div className="w-4 flex-shrink-0" />}
                                                                             <Link
                                                                                 to={`/air-navigation/${cat.pageType}`}
-                                                                                className="flex-1 block px-2 py-2 text-[#213659] hover:bg-[#B1D1E0]"
+                                                                                className="flex-1 block px-2 py-2 text-[var(--color-primary)] hover:bg-[#B1D1E0]"
                                                                                 onClick={() => setActiveSubmenu(null)}
                                                                             >
                                                                                 {getTranslatedField(cat, 'name', language)}
@@ -642,14 +646,14 @@ export const Sidebar = () => {
                                                                 href={subItem.href}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
-                                                                className="block px-4 py-2 text-[#213659] hover:bg-[#B1D1E0]"
+                                                                className="block px-4 py-2 text-[var(--color-primary)] hover:bg-[#B1D1E0]"
                                                             >
                                                                 {subItem.name}
                                                             </a>
                                                         ) : (
                                                             <Link
                                                                 to={subItem.href}
-                                                                className="block px-4 py-2 text-[#213659] hover:bg-[#B1D1E0]"
+                                                                className="block px-4 py-2 text-[var(--color-primary)] hover:bg-[#B1D1E0]"
                                                             >
                                                                 {subItem.name}
                                                             </Link>
@@ -815,7 +819,7 @@ export const Sidebar = () => {
                                                 >
                                                     <Link
                                                         to={`/air-navigation/${child.pageType}`}
-                                                        className="flex items-center block px-4 py-2 text-[#213659] hover:bg-[#B1D1E0]"
+                                                        className="flex items-center block px-4 py-2 text-[var(--color-primary)] hover:bg-[#B1D1E0]"
                                                         onClick={() => {
                                                             setActiveSubmenu(null);
                                                             setHoveredAirNavCategory(null);
@@ -892,7 +896,7 @@ export const Sidebar = () => {
                                             <li key={child.id}>
                                                 <Link
                                                     to={`/air-navigation/${child.pageType}`}
-                                                    className="block px-4 py-2 text-[#213659] hover:bg-[#B1D1E0]"
+                                                    className="block px-4 py-2 text-[var(--color-primary)] hover:bg-[#B1D1E0]"
                                                     onClick={() => {
                                                         setActiveSubmenu(null);
                                                         setHoveredAirNavCategory(null);
@@ -920,11 +924,11 @@ export const Sidebar = () => {
                                     placeholder={t('search')}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-8 pr-3 py-1 text-sm bg-transparent border-b border-[#213659] focus:outline-none focus:border-b-2 focus:border-[#213659]"
+                                    className="w-full pl-8 pr-3 py-1 text-sm bg-transparent border-b border-[var(--color-primary)] focus:outline-none focus:border-b-2 focus:border-[var(--color-primary)]"
                                 />
                                 <button 
                                     type="submit"
-                                    className="absolute left-0 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#213659] transition-colors"
+                                    className="absolute left-0 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[var(--color-primary)] transition-colors"
                                 >
                                     <FaSearch size={14} />
                                 </button>
@@ -937,7 +941,7 @@ export const Sidebar = () => {
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="text-xs flex items-center gap-1 text-[#213659]"
+                                    className="text-xs flex items-center gap-1 text-[var(--color-primary)]"
                                     onClick={() => setIsLoginModalOpen(true)}
                                 >
                                     <FaUserCircle size={14} />
@@ -957,7 +961,7 @@ export const Sidebar = () => {
                                         </Button>
                                     </Link>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs text-[#213659] truncate max-w-[120px]" title={user?.email}>
+                                        <span className="text-xs text-[var(--color-primary)] truncate max-w-[120px]" title={user?.email}>
                                             {user?.firstName || user?.email}
                                         </span>
                                         <Button
@@ -977,7 +981,7 @@ export const Sidebar = () => {
                     {/* Контакты - прижаты к низу */}
                     <div className="mt-auto">
                         <div className="border-t p-3 text-xs text-[#6A81A9]">
-                            <h3 className="font-semibold mb-1 text-[#213659]">{t('contacts')}</h3>
+                            <h3 className="font-semibold mb-1 text-[var(--color-primary)]">{t('contacts')}</h3>
                             <div className="space-y-0.5">
                                 <div className="flex items-center">
                                     <FaPhone className="mr-1" size={10} />
@@ -1016,7 +1020,7 @@ export const Sidebar = () => {
                             {menuItems.map((item) => (
                                 <li key={item.href}>
                                     <details className="group">
-                                        <summary className="flex justify-between items-center px-3 py-2 cursor-pointer text-[#213659] hover:bg-[#B1D1E0] rounded-md">
+                                        <summary className="flex justify-between items-center px-3 py-2 cursor-pointer text-[var(--color-primary)] hover:bg-[#B1D1E0] rounded-md">
                                             {item.name}
                                             {item.submenu && Array.isArray(item.submenu) && item.submenu.length > 0 && (
                                                 <span className="ml-2 transition-transform group-open:rotate-180">▼</span>
@@ -1055,7 +1059,7 @@ export const Sidebar = () => {
                                                                             {!hasChildren && <div className="w-4 flex-shrink-0" />}
                                                                             <Link
                                                                                 to={`/air-navigation/${cat.pageType}`}
-                                                                                className="flex-1 block px-2 py-1 text-sm text-[#213659] hover:bg-[#B1D1E0] rounded"
+                                                                                className="flex-1 block px-2 py-1 text-sm text-[var(--color-primary)] hover:bg-[#B1D1E0] rounded"
                                                                             >
                                                                                 {getTranslatedField(cat, 'name', language)}
                                                                             </Link>
@@ -1066,7 +1070,7 @@ export const Sidebar = () => {
                                                                                     <li key={child.id}>
                                                                                         <Link
                                                                                             to={`/air-navigation/${child.pageType}`}
-                                                                                            className="block px-2 py-1 text-sm text-[#213659] hover:bg-[#B1D1E0] rounded"
+                                                                                            className="block px-2 py-1 text-sm text-[var(--color-primary)] hover:bg-[#B1D1E0] rounded"
                                                                                         >
                                                                                             {getTranslatedField(child, 'name', language)}
                                                                                         </Link>
@@ -1091,14 +1095,14 @@ export const Sidebar = () => {
                                                                 href={subItem.href}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
-                                                                className="block px-3 py-1 text-sm text-[#213659] hover:bg-[#B1D1E0] rounded"
+                                                                className="block px-3 py-1 text-sm text-[var(--color-primary)] hover:bg-[#B1D1E0] rounded"
                                                             >
                                                                 {subItem.name}
                                                             </a>
                                                         ) : (
                                                             <Link
                                                                 to={subItem.href}
-                                                                className="block px-3 py-1 text-sm text-[#213659] hover:bg-[#B1D1E0] rounded"
+                                                                className="block px-3 py-1 text-sm text-[var(--color-primary)] hover:bg-[#B1D1E0] rounded"
                                                             >
                                                                 {subItem.name}
                                                             </Link>
@@ -1122,18 +1126,18 @@ export const Sidebar = () => {
                                     placeholder={t('search')}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-8 pr-3 py-1 text-sm bg-white border border-[#213659] rounded focus:outline-none focus:border-[#213659] focus:ring-1 focus:ring-[#213659]"
+                                    className="w-full pl-8 pr-3 py-1 text-sm bg-white border border-[var(--color-primary)] rounded focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]"
                                 />
                                 <button 
                                     type="submit"
-                                    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#213659] transition-colors"
+                                    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[var(--color-primary)] transition-colors"
                                 >
                                     <FaSearch size={14} />
                                 </button>
                             </div>
                         </form>
                         
-                        <button className="flex items-center gap-2 text-[#213659] text-sm">
+                        <button className="flex items-center gap-2 text-[var(--color-primary)] text-sm">
                             <FaLowVision size={14} />
                             {t('version_visually_impaired')}
                         </button>
@@ -1142,7 +1146,7 @@ export const Sidebar = () => {
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-xs flex items-center gap-1 text-[#213659]"
+                                className="text-xs flex items-center gap-1 text-[var(--color-primary)]"
                                 onClick={() => setIsLoginModalOpen(true)}
                             >
                                 <FaUserCircle size={14} />
@@ -1150,7 +1154,7 @@ export const Sidebar = () => {
                             </Button>
                         ) : (
                             <div className="flex items-center justify-between">
-                                <span className="text-xs text-[#213659] truncate" title={user?.email}>
+                                <span className="text-xs text-[var(--color-primary)] truncate" title={user?.email}>
                                     {user?.firstName || user?.email}
                                 </span>
                                 <Button

@@ -4,7 +4,7 @@ import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaFacebook, FaInstagram, FaTelegra
 
 export default function Footer() {
   return (
-    <footer className="bg-[#213659] text-white py-12 mt-auto">
+    <footer className="bg-[var(--color-primary)] text-white py-12 mt-auto">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* О предприятии */}

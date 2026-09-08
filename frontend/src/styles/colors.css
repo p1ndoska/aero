@@ -1,12 +1,15 @@
 :root {
   /* Brand palette */
   --color-primary: #213659;
+  --color-primary-rgb: 33, 54, 89;
   --color-primary-hover: #1a2a4a;
-  --color-accent: #e87722;
+  --color-accent: #ffbb00;
+  --color-accent-rgb: 255, 208, 0;
   --color-light-blue: #b1d1e0;
   --color-link: #2a52be;
   --color-white: #ffffff;
   --color-black: #000000;
+  --color-page-bg: #f3f8ff;
 
   /* Neutrals */
   --color-gray-50: #f1f5f9;
@@ -20,14 +23,20 @@
   --color-error-light: #fca5a5;
 
   /* Focus */
-  --color-focus: #0066cc;
-  --color-focus-ring: rgba(0, 102, 204, 0.3);
+  --color-focus: #213659;
+  --color-focus-ring: rgba(33, 54, 89, 0.3);
+
+  /* Accessibility settings dialog */
+  --a11y-settings-accent: var(--color-primary);
+  --a11y-settings-accent-hover: var(--color-primary-hover);
+  --a11y-settings-accent-soft: rgba(33, 54, 89, 0.08);
+  --a11y-settings-accent-soft-hover: rgba(33, 54, 89, 0.14);
 
   /* Accessibility: high contrast */
   --a11y-hc-text: #000000;
   --a11y-hc-bg: #ffffff;
-  --a11y-hc-link: #0000ff;
-  --a11y-hc-link-hover: #000080;
+  --a11y-hc-link: #213659;
+  --a11y-hc-link-hover: #1a2a4a;
   --a11y-hc-highlight: #e5e5e5;
 
   /* Accessibility: dark */
@@ -69,6 +78,12 @@
   --header-dropdown-content-padding-y: clamp(0.65rem, 0.45rem + 0.35vw, 0.85rem);
   --header-dropdown-content-padding-x: clamp(0.75rem, 0.5rem + 0.45vw, 1rem);
   --header-dropdown-columns-gap: clamp(0.75rem, 0.45rem + 0.55vw, 1.25rem);
+
+  /* Content layout below hero */
+  --content-max-width: 100rem;
+  --content-padding-x: var(--header-padding-x);
+  --hero-strip-height: 12.6rem;
+  --hero-strip-arrow: #3e6f8c;
 
   /* Header colors */
   --header-bg: var(--color-primary);

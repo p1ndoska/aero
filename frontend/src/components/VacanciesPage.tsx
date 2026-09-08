@@ -602,7 +602,7 @@ export default function VacanciesPage() {
           <div className="mt-6">
             <Button 
               onClick={() => setIsResumeUploadFormOpen(true)}
-              className="bg-[#213659] hover:bg-[#1a2a4a] text-white flex items-center gap-2"
+              className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white flex items-center gap-2"
             >
               <FileText className="w-4 h-4" />
               {t('send_resume')}
@@ -720,7 +720,7 @@ export default function VacanciesPage() {
 
                         <Button
                           type="submit"
-                          className="w-full bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                          className="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
                           disabled={isLoggingIn}
                         >
                           {isLoggingIn ? 'Вход...' : 'Войти'}
@@ -841,7 +841,7 @@ export default function VacanciesPage() {
                       <Button onClick={() => handleViewDetails(vacancy)} variant="outline">
                         {t('details')}
                       </Button>
-                      <Button onClick={() => handleApply(vacancy)} className="bg-[#213659] hover:bg-[#1a2a4a] text-white">
+                      <Button onClick={() => handleApply(vacancy)} className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white">
                         {t('apply_to_vacancy')}
                       </Button>
                     </div>
@@ -973,7 +973,7 @@ export default function VacanciesPage() {
                   <Button variant="outline" onClick={() => setIsDetailDialogOpen(false)}>
                     {t('close')}
                   </Button>
-                  <Button onClick={() => handleApply(selectedVacancy)} className="bg-[#213659] hover:bg-[#1a2a4a] text-white">
+                  <Button onClick={() => handleApply(selectedVacancy)} className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white">
                     {t('apply_to_vacancy')}
                   </Button>
                 </div>

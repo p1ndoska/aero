@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
-import { Mail, Lock as LockIcon } from "lucide-react";
+import { Mail, Lock as LockIcon, Eye, EyeOff } from "lucide-react";
 import { toast } from "react-toastify";
 
 interface LoginModalProps {
@@ -27,6 +27,7 @@ interface LoginModalProps {
 export const LoginForm: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const [login, { isLoading }] = useLoginMutation();
   const dispatch = useDispatch<AppDispatch>();
@@ -67,6 +68,7 @@ export const LoginForm: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const handleClose = () => {
     setEmail("");
     setPassword("");
+    setShowPassword(false);
     onClose();
   };
 
@@ -74,7 +76,7 @@ export const LoginForm: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-md bg-white border-2 border-gray-200 rounded-lg">
           <DialogHeader className="flex flex-row items-center justify-between">
-            <DialogTitle className="text-[#213659] text-xl">
+            <DialogTitle className="text-[var(--color-primary)] text-xl">
               Вход в систему
             </DialogTitle>
             <DialogDescription className="sr-only">
@@ -85,7 +87,7 @@ export const LoginForm: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           <form onSubmit={handleSubmit} className="space-y-4 mt-4">
             {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-[#213659]">
+              <Label htmlFor="email" className="text-[var(--color-primary)]">
                 Email
               </Label>
               <div className="relative">
@@ -97,33 +99,41 @@ export const LoginForm: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="pl-10 bg-white border-[#B1D1E0] text-[#213659] focus:border-[#213659]"
+                    className="pl-10 bg-white border-[#B1D1E0] text-[var(--color-primary)] focus:border-[var(--color-primary)]"
                 />
               </div>
             </div>
 
             {/* Password */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-[#213659]">
+              <Label htmlFor="password" className="text-[var(--color-primary)]">
                 Пароль
               </Label>
               <div className="relative">
                 <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6A81A9] h-4 w-4" />
                 <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Введите пароль"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="pl-10 bg-white border-[#B1D1E0] text-[#213659] focus:border-[#213659]"
+                    className="pl-10 pr-10 bg-white border-[#B1D1E0] text-[var(--color-primary)] focus:border-[var(--color-primary)]"
                 />
+                <button
+                    type="button"
+                    onClick={() => setShowPassword((value) => !value)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6A81A9] hover:text-[var(--color-primary)]"
+                    aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
 
             <Button
                 type="submit"
-                className="w-full bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                className="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
                 disabled={isLoading}
             >
               {isLoading ? "Вход..." : "Войти"}

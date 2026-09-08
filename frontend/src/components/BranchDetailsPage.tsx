@@ -126,7 +126,7 @@ export default function BranchDetailsPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#213659] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)] mx-auto mb-4"></div>
           <p className="text-gray-600">{t('loading_branch') || 'Загрузка информации о филиале...'}</p>
         </div>
       </div>
@@ -151,7 +151,7 @@ export default function BranchDetailsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
-        <Link to="/about/branches" className="text-[#213659] flex items-center gap-2 hover:underline">
+        <Link to="/about/branches" className="text-[var(--color-primary)] flex items-center gap-2 hover:underline">
           <ArrowLeft className="w-4 h-4" />
           {t('back_to_list') || 'Назад к списку'}
         </Link>
@@ -160,7 +160,7 @@ export default function BranchDetailsPage() {
       {/* Закругленный белый квадрат для всего контента */}
       <div className="bg-white rounded-xl p-8 shadow-lg">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-[#213659] mb-2 flex items-center justify-center gap-3">
+          <h1 className="text-3xl font-bold text-[var(--color-primary)] mb-2 flex items-center justify-center gap-3">
             <Building2 className="w-8 h-8" />
             {getTranslatedField(branch, 'name', language)}
           </h1>
@@ -172,7 +172,7 @@ export default function BranchDetailsPage() {
             <img
               src={mainImage && mainImage.startsWith('http') ? mainImage : `${BASE_URL}${mainImage?.startsWith('/') ? '' : '/'}${mainImage}`}
               alt={getTranslatedField(branch, 'name', language)}
-              className="w-full max-w-2xl h-80 md:h-96 lg:h-[28rem] rounded-xl object-cover object-center border-2 border-[#213659] cursor-pointer hover:opacity-90 transition-opacity"
+              className="w-full max-w-2xl h-80 md:h-96 lg:h-[28rem] rounded-xl object-cover object-center border-2 border-[var(--color-primary)] cursor-pointer hover:opacity-90 transition-opacity"
               onClick={() => {
                 const imageUrl = mainImage && mainImage.startsWith('http') ? mainImage : `${BASE_URL}${mainImage?.startsWith('/') ? '' : '/'}${mainImage}`;
                 setSelectedImage(imageUrl);
@@ -189,7 +189,7 @@ export default function BranchDetailsPage() {
           </div>
         ) : (
           <div className="flex justify-center mb-6">
-            <div className="w-full max-w-2xl h-80 md:h-96 lg:h-[28rem] rounded-xl bg-[#213659] flex items-center justify-center border-2 border-[#213659]">
+            <div className="w-full max-w-2xl h-80 md:h-96 lg:h-[28rem] rounded-xl bg-[var(--color-primary)] flex items-center justify-center border-2 border-[var(--color-primary)]">
               <ImageIcon className="w-16 h-16 text-white" />
             </div>
           </div>
@@ -199,7 +199,7 @@ export default function BranchDetailsPage() {
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           {getTranslatedField(branch, 'address', language) && (
             <div className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-[#213659] flex-shrink-0 mt-0.5" />
+              <MapPin className="w-5 h-5 text-[var(--color-primary)] flex-shrink-0 mt-0.5" />
               <span className="text-gray-700">{getTranslatedField(branch, 'address', language)}</span>
             </div>
           )}
@@ -207,7 +207,7 @@ export default function BranchDetailsPage() {
           {phones.length > 0 && (
             <div className="md:col-span-2">
               <div className="flex items-start gap-3 mb-2">
-                <Phone className="w-5 h-5 text-[#213659] flex-shrink-0 mt-0.5" />
+                <Phone className="w-5 h-5 text-[var(--color-primary)] flex-shrink-0 mt-0.5" />
                 <span className="text-gray-700 font-medium">{t('contact_phones') || 'Контактные телефоны:'}</span>
               </div>
               <div className="pl-8 space-y-1">
@@ -235,7 +235,7 @@ export default function BranchDetailsPage() {
           )}
           {branch.email && (
             <div className="flex items-start gap-3">
-              <Mail className="w-5 h-5 text-[#213659] flex-shrink-0 mt-0.5" />
+              <Mail className="w-5 h-5 text-[var(--color-primary)] flex-shrink-0 mt-0.5" />
               <span className="text-gray-700">{branch.email}</span>
             </div>
           )}
@@ -246,7 +246,7 @@ export default function BranchDetailsPage() {
           const translatedDescription = getTranslatedField(branch, 'description', language);
           return translatedDescription && (
             <div className="mb-8">
-              <h3 className="text-xl font-bold text-[#213659] mb-4">{t('description') || 'Описание'}</h3>
+              <h3 className="text-xl font-bold text-[var(--color-primary)] mb-4">{t('description') || 'Описание'}</h3>
               <p className="text-gray-700 leading-relaxed">{translatedDescription}</p>
             </div>
           );
@@ -278,7 +278,7 @@ export default function BranchDetailsPage() {
           
           return hasContent && (
             <div className="mb-8 branch-content-container">
-              <h3 className="text-xl font-bold text-[#213659] mb-4">{t('additional_information') || 'Дополнительная информация'}</h3>
+              <h3 className="text-xl font-bold text-[var(--color-primary)] mb-4">{t('additional_information') || 'Дополнительная информация'}</h3>
               <div className="space-y-4">
                 {(() => {
                   try {
@@ -313,11 +313,11 @@ export default function BranchDetailsPage() {
             key: index, 
             className: `${getHeadingSizeClass(headingLevel)} font-bold mt-6 mb-2 force-text-${element.props?.textAlign || 'left'}`,
             style: { 
-              color: element.props?.color || '#213659',
+              color: element.props?.color || 'var(--color-primary)',
               textAlign: element.props?.textAlign || 'left'
             },
             'data-align': element.props?.textAlign || 'left',
-            'data-color': element.props?.color || '#213659'
+            'data-color': element.props?.color || 'var(--color-primary)'
           },
           element.content
         );
@@ -598,7 +598,7 @@ export default function BranchDetailsPage() {
 
         {/* Карта расположения */}
         <div className="mt-8 pt-8 border-t border-gray-200 branch-map-container">
-          <h3 className="text-xl font-bold text-[#213659] mb-4 flex items-center gap-2">
+          <h3 className="text-xl font-bold text-[var(--color-primary)] mb-4 flex items-center gap-2">
             <Navigation className="w-5 h-5" />
             {t('location_on_map') || 'Расположение на карте'}
           </h3>
@@ -626,7 +626,7 @@ export default function BranchDetailsPage() {
         {/* Дополнительные фото */}
         {additionalImages.length > 0 && (
           <div className="mt-8 pt-8 border-t border-gray-200">
-            <h3 className="text-xl font-bold text-[#213659] mb-4">{t('additional_photos') || 'Дополнительные фото'}</h3>
+            <h3 className="text-xl font-bold text-[var(--color-primary)] mb-4">{t('additional_photos') || 'Дополнительные фото'}</h3>
             <div className="relative">
               {/* Стрелка влево */}
               <button

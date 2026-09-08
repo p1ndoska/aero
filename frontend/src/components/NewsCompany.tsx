@@ -192,7 +192,7 @@ export const NewsCompany = () => {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#213659]"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)]"></div>
             </div>
         );
     }
@@ -215,18 +215,18 @@ export const NewsCompany = () => {
         <div className="container mx-auto px-4 py-8">
             {/* Заголовок */}
             <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold text-[#213659]">Новости компании</h1>
+                <h1 className="text-3xl font-bold text-[var(--color-primary)]">Новости компании</h1>
             </div>
 
             {/* Диалог редактирования */}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogContent className="sm:max-w-md bg-white border-2 border-gray-200">
                     <DialogHeader>
-                        <DialogTitle className="text-[#213659]">Редактирование новости</DialogTitle>
+                        <DialogTitle className="text-[var(--color-primary)]">Редактирование новости</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleEditSubmit} className="space-y-4 mt-4">
                         <div className="space-y-2">
-                            <Label htmlFor="edit-name" className="text-[#213659]">Заголовок *</Label>
+                            <Label htmlFor="edit-name" className="text-[var(--color-primary)]">Заголовок *</Label>
                             <Input
                                 id="edit-name"
                                 name="name"
@@ -238,7 +238,7 @@ export const NewsCompany = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="edit-content" className="text-[#213659]">Содержание</Label>
+                            <Label htmlFor="edit-content" className="text-[var(--color-primary)]">Содержание</Label>
                             <Textarea
                                 id="edit-content"
                                 name="content"
@@ -250,7 +250,7 @@ export const NewsCompany = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="edit-categoryId" className="text-[#213659]">ID категории *</Label>
+                            <Label htmlFor="edit-categoryId" className="text-[var(--color-primary)]">ID категории *</Label>
                             <Input
                                 id="edit-categoryId"
                                 name="categoryId"
@@ -263,7 +263,7 @@ export const NewsCompany = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="edit-photo" className="text-[#213659]">Изображение</Label>
+                            <Label htmlFor="edit-photo" className="text-[var(--color-primary)]">Изображение</Label>
                             <div className="flex items-center gap-2">
                                 <Input
                                     id="edit-photo"
@@ -290,7 +290,7 @@ export const NewsCompany = () => {
                         <div className="flex gap-2">
                             <Button
                                 type="submit"
-                                className="flex-1 bg-[#213659] hover:bg-[#1a2a4a]"
+                                className="flex-1 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)]"
                                 disabled={isUpdating}
                             >
                                 {isUpdating ? 'Сохранение...' : 'Сохранить'}
@@ -347,7 +347,7 @@ export const NewsCompany = () => {
                                 </div>
                             )}
                             <CardHeader className="pb-4">
-                                <CardTitle className="text-lg text-[#213659] line-clamp-2">{translatedName}</CardTitle>
+                                <CardTitle className="text-lg text-[var(--color-primary)] line-clamp-2">{translatedName}</CardTitle>
                             </CardHeader>
                         </Link>
 

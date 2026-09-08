@@ -85,7 +85,7 @@ export default function AppealsCategoryManagement() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Подкатегории "Обращения"</h1>
-        <Button onClick={() => setCreateOpen(true)} className="bg-[#213659] hover:bg-[#1a2a4a] text-white" style={{backgroundColor: '#213659', color: 'white'}}><Plus className="w-4 h-4 mr-2"/>Добавить подкатегорию</Button>
+        <Button onClick={() => setCreateOpen(true)} className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white" style={{backgroundColor: 'var(--color-primary)', color: 'white'}}><Plus className="w-4 h-4 mr-2"/>Добавить подкатегорию</Button>
       </div>
 
       {isLoading && <div className="py-6 text-center">Загрузка...</div>}

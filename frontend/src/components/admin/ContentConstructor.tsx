@@ -915,13 +915,13 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-white text-[#213659] border border-[#B1D1E0]">
-                        <SelectItem value="1" className="focus:bg-[#EFF6FF] focus:text-[#213659]">H1 - Главный заголовок</SelectItem>
-                        <SelectItem value="2" className="focus:bg-[#EFF6FF] focus:text-[#213659]">H2 - Подзаголовок</SelectItem>
-                        <SelectItem value="3" className="focus:bg-[#EFF6FF] focus:text-[#213659]">H3 - Заголовок секции</SelectItem>
-                        <SelectItem value="4" className="focus:bg-[#EFF6FF] focus:text-[#213659]">H4 - Заголовок подсекции</SelectItem>
-                        <SelectItem value="5" className="focus:bg-[#EFF6FF] focus:text-[#213659]">H5 - Малый заголовок</SelectItem>
-                        <SelectItem value="6" className="focus:bg-[#EFF6FF] focus:text-[#213659]">H6 - Минимальный заголовок</SelectItem>
+                      <SelectContent className="bg-white text-[var(--color-primary)] border border-[#B1D1E0]">
+                        <SelectItem value="1" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">H1 - Главный заголовок</SelectItem>
+                        <SelectItem value="2" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">H2 - Подзаголовок</SelectItem>
+                        <SelectItem value="3" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">H3 - Заголовок секции</SelectItem>
+                        <SelectItem value="4" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">H4 - Заголовок подсекции</SelectItem>
+                        <SelectItem value="5" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">H5 - Малый заголовок</SelectItem>
+                        <SelectItem value="6" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">H6 - Минимальный заголовок</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -950,11 +950,11 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-white text-[#213659] border border-[#B1D1E0]">
-                        <SelectItem value="left" className="focus:bg-[#EFF6FF] focus:text-[#213659]">По левому краю</SelectItem>
-                        <SelectItem value="center" className="focus:bg-[#EFF6FF] focus:text-[#213659]">По центру</SelectItem>
-                        <SelectItem value="right" className="focus:bg-[#EFF6FF] focus:text-[#213659]">По правому краю</SelectItem>
-                        <SelectItem value="justify" className="focus:bg-[#EFF6FF] focus:text-[#213659]">По ширине</SelectItem>
+                      <SelectContent className="bg-white text-[var(--color-primary)] border border-[#B1D1E0]">
+                        <SelectItem value="left" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">По левому краю</SelectItem>
+                        <SelectItem value="center" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">По центру</SelectItem>
+                        <SelectItem value="right" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">По правому краю</SelectItem>
+                        <SelectItem value="justify" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">По ширине</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -988,11 +988,11 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-white text-[#213659] border border-[#B1D1E0]">
-                        <SelectItem value="left" className="focus:bg-[#EFF6FF] focus:text-[#213659]">По левому краю</SelectItem>
-                        <SelectItem value="center" className="focus:bg-[#EFF6FF] focus:text-[#213659]">По центру</SelectItem>
-                        <SelectItem value="right" className="focus:bg-[#EFF6FF] focus:text-[#213659]">По правому краю</SelectItem>
-                        <SelectItem value="justify" className="focus:bg-[#EFF6FF] focus:text-[#213659]">По ширине</SelectItem>
+                      <SelectContent className="bg-white text-[var(--color-primary)] border border-[#B1D1E0]">
+                        <SelectItem value="left" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">По левому краю</SelectItem>
+                        <SelectItem value="center" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">По центру</SelectItem>
+                        <SelectItem value="right" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">По правому краю</SelectItem>
+                        <SelectItem value="justify" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">По ширине</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -1021,9 +1021,9 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-white text-[#213659] border border-[#B1D1E0]">
-                        <SelectItem value="_blank" className="focus:bg-[#EFF6FF] focus:text-[#213659]">Новой вкладке</SelectItem>
-                        <SelectItem value="_self" className="focus:bg-[#EFF6FF] focus:text-[#213659]">Текущей вкладке</SelectItem>
+                      <SelectContent className="bg-white text-[var(--color-primary)] border border-[#B1D1E0]">
+                        <SelectItem value="_blank" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">Новой вкладке</SelectItem>
+                        <SelectItem value="_self" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">Текущей вкладке</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -1275,15 +1275,15 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                         <SelectTrigger className="w-32">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-white text-[#213659] border border-[#B1D1E0]">
-                          <SelectItem value="1" className="focus:bg-[#EFF6FF] focus:text-[#213659]">1 колонка</SelectItem>
-                          <SelectItem value="2" className="focus:bg-[#EFF6FF] focus:text-[#213659]">2 колонки</SelectItem>
-                          <SelectItem value="3" className="focus:bg-[#EFF6FF] focus:text-[#213659]">3 колонки</SelectItem>
-                          <SelectItem value="4" className="focus:bg-[#EFF6FF] focus:text-[#213659]">4 колонки</SelectItem>
-                          <SelectItem value="5" className="focus:bg-[#EFF6FF] focus:text-[#213659]">5 колонок</SelectItem>
-                          <SelectItem value="6" className="focus:bg-[#EFF6FF] focus:text-[#213659]">6 колонок</SelectItem>
-                          <SelectItem value="7" className="focus:bg-[#EFF6FF] focus:text-[#213659]">7 колонок</SelectItem>
-                          <SelectItem value="8" className="focus:bg-[#EFF6FF] focus:text-[#213659]">8 колонок</SelectItem>
+                        <SelectContent className="bg-white text-[var(--color-primary)] border border-[#B1D1E0]">
+                          <SelectItem value="1" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">1 колонка</SelectItem>
+                          <SelectItem value="2" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">2 колонки</SelectItem>
+                          <SelectItem value="3" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">3 колонки</SelectItem>
+                          <SelectItem value="4" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">4 колонки</SelectItem>
+                          <SelectItem value="5" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">5 колонок</SelectItem>
+                          <SelectItem value="6" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">6 колонок</SelectItem>
+                          <SelectItem value="7" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">7 колонок</SelectItem>
+                          <SelectItem value="8" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">8 колонок</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -2189,7 +2189,7 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
                               <label
                                 key={role.id}
                                 className={`flex items-center gap-1 text-xs border rounded-full px-2 py-1 bg-white ${
-                                  selected ? 'border-[#2A52BE] text-[#213659]' : 'border-gray-300 text-gray-700'
+                                  selected ? 'border-[#2A52BE] text-[var(--color-primary)]' : 'border-gray-300 text-gray-700'
                                 }`}
                               >
                                 <Checkbox
@@ -2315,8 +2315,8 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
             type="button"
             className={`text-sm pb-1 border-b-2 transition-colors ${
               activeTab === 'content'
-                ? 'border-[#213659] text-[#213659] font-semibold'
-                : 'border-transparent text-gray-500 hover:text-[#213659]'
+                ? 'border-[var(--color-primary)] text-[var(--color-primary)] font-semibold'
+                : 'border-transparent text-gray-500 hover:text-[var(--color-primary)]'
             }`}
             onClick={() => setActiveTab('content')}
           >
@@ -2326,8 +2326,8 @@ export default function ContentConstructor({ content, onChange }: ContentConstru
             type="button"
             className={`text-sm pb-1 border-b-2 transition-colors ${
               activeTab === 'form'
-                ? 'border-[#213659] text-[#213659] font-semibold'
-                : 'border-transparent text-gray-500 hover:text-[#213659]'
+                ? 'border-[var(--color-primary)] text-[var(--color-primary)] font-semibold'
+                : 'border-transparent text-gray-500 hover:text-[var(--color-primary)]'
             }`}
             onClick={() => setActiveTab('form')}
           >

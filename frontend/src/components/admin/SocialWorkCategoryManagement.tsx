@@ -117,7 +117,7 @@ export default function SocialWorkCategoryManagement() {
     <div className="container mx-auto px-4 py-8 bg-white min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Управление категориями социальной работы</h1>
-        <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-[#213659] hover:bg-[#1a2a4a] text-white" style={{backgroundColor: '#213659', color: 'white'}}>
+        <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white" style={{backgroundColor: 'var(--color-primary)', color: 'white'}}>
           <Plus className="w-4 h-4 mr-2" />
           Добавить категорию
         </Button>

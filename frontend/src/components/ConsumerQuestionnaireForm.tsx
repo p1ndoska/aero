@@ -142,10 +142,10 @@ const ConsumerQuestionnaireForm: React.FC = () => {
         <Card className="bg-white rounded-lg shadow-lg">
           <CardContent className="p-8">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-[#213659] mb-4">
+            <h1 className="text-3xl font-bold text-[var(--color-primary)] mb-4">
               {t('consumer_questionnaire_title')}
             </h1>
-            <div className="text-[#213659] font-medium mb-4">
+            <div className="text-[var(--color-primary)] font-medium mb-4">
               {t('dear_colleagues')}
             </div>
             <div className="text-gray-700 space-y-3 max-w-4xl mx-auto">
@@ -162,7 +162,7 @@ const ConsumerQuestionnaireForm: React.FC = () => {
         {/* Информация о пользователе */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-[#213659]">
+            <CardTitle className="text-xl font-bold text-[var(--color-primary)]">
               1. {t('user_information')}
             </CardTitle>
           </CardHeader>
@@ -226,7 +226,7 @@ const ConsumerQuestionnaireForm: React.FC = () => {
         {/* Удовлетворенность услугами */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-[#213659]">
+            <CardTitle className="text-xl font-bold text-[var(--color-primary)]">
               2. {t('satisfaction_with_service')}
             </CardTitle>
             <div className="text-sm text-gray-600 space-y-1">
@@ -388,7 +388,7 @@ const ConsumerQuestionnaireForm: React.FC = () => {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="bg-[#213659] hover:bg-[#1a2a4a] text-white px-8 py-3 text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-8 py-3 text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? t('sending_uppercase') : t('submit')}
           </Button>

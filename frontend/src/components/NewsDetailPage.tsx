@@ -442,7 +442,7 @@ const NewsDetailPage: React.FC = () => {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#213659] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)] mx-auto mb-4"></div>
           <p className="text-gray-600">Загрузка новости...</p>
         </div>
       </div>
@@ -475,7 +475,7 @@ const NewsDetailPage: React.FC = () => {
       <div className="mb-6">
         <Link 
           to="/news" 
-          className="text-[#213659] flex items-center gap-2 hover:underline"
+          className="text-[var(--color-primary)] flex items-center gap-2 hover:underline"
         >
           <ArrowLeft className="w-4 h-4" />
           {t('back_to_news')}
@@ -524,7 +524,7 @@ const NewsDetailPage: React.FC = () => {
                   }}
                 />
                 <div 
-                  className="hidden w-full h-full bg-[#213659] items-center justify-center"
+                  className="hidden w-full h-full bg-[var(--color-primary)] items-center justify-center"
                 >
                   <ImageIcon className="w-16 h-16 text-white" />
                 </div>
@@ -534,7 +534,7 @@ const NewsDetailPage: React.FC = () => {
             {/* Заголовок и метаданные */}
             <div className="p-6 md:p-8">
               <header className="mb-6">
-                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#213659] mb-4 leading-tight">
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-[var(--color-primary)] mb-4 leading-tight">
                   {translatedName}
                 </h1>
                 
@@ -554,7 +554,7 @@ const NewsDetailPage: React.FC = () => {
                   {news.newsCategory && (
                     <div className="flex items-center gap-2">
                       <Tag className="w-4 h-4" />
-                      <span className="bg-[#213659] text-white px-2 py-1 rounded-full text-xs">
+                      <span className="bg-[var(--color-primary)] text-white px-2 py-1 rounded-full text-xs">
                         {translatedCategoryName}
                       </span>
                     </div>
@@ -677,7 +677,7 @@ const NewsDetailPage: React.FC = () => {
 
                                 <Button
                                   type="submit"
-                                  className="w-full bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                                  className="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
                                   disabled={isLoggingIn}
                                 >
                                   {isLoggingIn ? 'Вход...' : 'Войти'}
@@ -736,7 +736,7 @@ const NewsDetailPage: React.FC = () => {
       {/* Дополнительные фото */}
       {news.images && news.images.length > 0 && (
         <div className="mt-8 pt-8 border-t border-gray-200">
-          <h3 className="text-xl font-bold text-[#213659] mb-4">{t('additional_photos')}</h3>
+          <h3 className="text-xl font-bold text-[var(--color-primary)] mb-4">{t('additional_photos')}</h3>
           <div className="relative">
             {/* Стрелка влево */}
             <button
@@ -800,7 +800,7 @@ const NewsDetailPage: React.FC = () => {
       <div className="mt-8 text-center">
         <Link 
           to="/news" 
-          className="inline-flex items-center gap-2 px-6 py-3 bg-[#213659] text-white rounded-lg hover:bg-[#1a2a4a] transition-colors"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           {t('all_news')}

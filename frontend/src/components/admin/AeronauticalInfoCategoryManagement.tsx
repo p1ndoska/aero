@@ -244,7 +244,7 @@ export default function AeronauticalInfoCategoryManagement() {
         <Button onClick={() => {
           setFormData(initialFormData);
           setIsCreateDialogOpen(true);
-        }} className="bg-[#213659] hover:bg-[#1a2a4a] text-white" style={{backgroundColor: '#213659', color: 'white'}}>
+        }} className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white" style={{backgroundColor: 'var(--color-primary)', color: 'white'}}>
           <Plus className="w-4 h-4 mr-2" />
           Добавить подкатегорию
         </Button>
@@ -473,7 +473,7 @@ export default function AeronauticalInfoCategoryManagement() {
               <Button variant="outline" type="button" onClick={() => setIsCreateDialogOpen(false)}>
                 Отмена
               </Button>
-              <Button type="submit" className="bg-[#213659] hover:bg-[#1a2a4a] text-white">
+              <Button type="submit" className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white">
                 Создать
               </Button>
             </div>
@@ -608,7 +608,7 @@ export default function AeronauticalInfoCategoryManagement() {
               <Button variant="outline" type="button" onClick={() => setIsEditDialogOpen(false)}>
                 Отмена
               </Button>
-              <Button type="submit" className="bg-[#213659] hover:bg-[#1a2a4a] text-white">
+              <Button type="submit" className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white">
                 Сохранить
               </Button>
             </div>

@@ -184,7 +184,7 @@ const QuestionnaireOfTheConsumerOfAirNavigationServices: React.FC = () => {
       <div className="container mx-auto px-4 max-w-4xl">
         <Card className="bg-white shadow-lg">
           <CardHeader className="text-center bg-white">
-            <CardTitle className="text-3xl font-bold text-[#213659] mb-4">
+            <CardTitle className="text-3xl font-bold text-[var(--color-primary)] mb-4">
               Анкета потребителя аэронавигационных услуг Республики Беларусь
             </CardTitle>
             <div className="text-center">
@@ -522,7 +522,7 @@ const QuestionnaireOfTheConsumerOfAirNavigationServices: React.FC = () => {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full sm:w-auto px-8 py-2 bg-[#213659] hover:bg-[#213659] text-white text-lg font-medium"
+                  className="w-full sm:w-auto px-8 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary)] text-white text-lg font-medium"
                 >
                   {isSubmitting ? "Отправка..." : "ОТПРАВИТЬ"}
                 </Button>

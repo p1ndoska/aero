@@ -276,7 +276,7 @@ export default function OrganizationLogoManagement() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#213659] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)] mx-auto mb-4"></div>
           <p className="text-gray-600">Загрузка логотипов...</p>
         </div>
       </div>
@@ -289,7 +289,7 @@ export default function OrganizationLogoManagement() {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-4">Ошибка загрузки</h2>
           <p className="text-gray-600 mb-4">Не удалось загрузить логотипы организаций.</p>
-          <Button onClick={() => refetch()} className="bg-[#213659] hover:bg-[#1a2a4a] text-white">
+          <Button onClick={() => refetch()} className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white">
             Попробовать снова
           </Button>
         </div>
@@ -301,7 +301,7 @@ export default function OrganizationLogoManagement() {
     <div className="container mx-auto px-4 py-8 bg-white min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Управление логотипами организаций</h1>
-        <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-[#213659] hover:bg-[#1a2a4a] text-white">
+        <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white">
           <Plus className="w-4 h-4 mr-2" />
           Добавить логотип
         </Button>
@@ -421,7 +421,7 @@ export default function OrganizationLogoManagement() {
             <p className="text-gray-500 mb-4">Добавьте первый логотип организации, чтобы начать работу.</p>
             <Button 
               onClick={() => setIsCreateDialogOpen(true)} 
-              className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+              className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
               Добавить логотип
@@ -620,7 +620,7 @@ export default function OrganizationLogoManagement() {
                 </Button>
                 <Button 
                   type="submit" 
-                  className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                  className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
                 >
                   Создать
                 </Button>
@@ -820,7 +820,7 @@ export default function OrganizationLogoManagement() {
                 </Button>
                 <Button 
                   type="submit" 
-                  className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                  className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
                 >
                   Сохранить
                 </Button>

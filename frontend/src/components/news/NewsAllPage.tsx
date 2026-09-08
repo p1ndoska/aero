@@ -280,7 +280,7 @@ export const NewsAllPage: React.FC = () => {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#213659]"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)]"></div>
             </div>
         );
     }
@@ -301,11 +301,11 @@ export const NewsAllPage: React.FC = () => {
         <div className="container mx-auto px-4 py-8">
             <div className="bg-blue-50 backdrop-blur-sm rounded-2xl shadow-lg p-8">
             <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold text-[#213659]">{t('all_news')}</h1>
+                <h1 className="text-3xl font-bold text-[var(--color-primary)]">{t('all_news')}</h1>
                 {isAdmin && (
                     <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button className="bg-[#213659] hover:bg-[#1a2a4a]">
+                            <Button className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)]">
                                 <Plus className="w-4 h-4 mr-2" />
                                 {t('create_news')}
                             </Button>
@@ -391,7 +391,7 @@ export const NewsAllPage: React.FC = () => {
                                                 value={createForm.content || ''}
                                                 onChange={handleCreateChange}
                                                 placeholder="Введите содержание новости"
-                                                className="w-full min-h-[300px] p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#213659] focus:border-[#213659] resize-vertical text-base"
+                                                className="w-full min-h-[300px] p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] resize-vertical text-base"
                                             />
                                         </div>
                                         <div>
@@ -402,7 +402,7 @@ export const NewsAllPage: React.FC = () => {
                                                 value={createForm.contentEn || ''}
                                                 onChange={handleCreateChange}
                                                 placeholder="Enter news content"
-                                                className="w-full min-h-[300px] p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#213659] focus:border-[#213659] resize-vertical text-base"
+                                                className="w-full min-h-[300px] p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] resize-vertical text-base"
                                             />
                                         </div>
                                         <div>
@@ -413,7 +413,7 @@ export const NewsAllPage: React.FC = () => {
                                                 value={createForm.contentBe || ''}
                                                 onChange={handleCreateChange}
                                                 placeholder="Увядзіце змест навіны"
-                                                className="w-full min-h-[300px] p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#213659] focus:border-[#213659] resize-vertical text-base"
+                                                className="w-full min-h-[300px] p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] resize-vertical text-base"
                                             />
                                         </div>
                                 </div>
@@ -426,12 +426,12 @@ export const NewsAllPage: React.FC = () => {
                                             accept="image/*"
                                             onChange={handleCreatePhotoChange}
                                             ref={createFileInputRef}
-                                            className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#213659] file:text-white hover:file:bg-[#1a2a47]"
+                                            className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[var(--color-primary)] file:text-white hover:file:bg-[#1a2a47]"
                                         />
                                 </div>
 
                                     <div>
-                                        <Label className="text-[#213659] font-medium">Дополнительные фото</Label>
+                                        <Label className="text-[var(--color-primary)] font-medium">Дополнительные фото</Label>
                                         <div className="mt-2">
                                             <input
                                                 ref={additionalImagesRef}
@@ -445,7 +445,7 @@ export const NewsAllPage: React.FC = () => {
                                                 type="button"
                                                 variant="outline"
                                                 onClick={() => additionalImagesRef.current?.click()}
-                                                className="w-full border-dashed border-2 border-[#B1D1E0] hover:border-[#2A52BE] text-[#213659]"
+                                                className="w-full border-dashed border-2 border-[#B1D1E0] hover:border-[#2A52BE] text-[var(--color-primary)]"
                                             >
                                                 <Upload className="w-4 h-4 mr-2" />
                                                 Выберите дополнительные фотографии
@@ -491,7 +491,7 @@ export const NewsAllPage: React.FC = () => {
                                     <Button 
                                         type="submit"
                                         disabled={isCreating}
-                                        className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                                        className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
                                     >
                                         {isCreating ? t('creating') : t('create')}
                                 </Button>
@@ -528,7 +528,7 @@ export const NewsAllPage: React.FC = () => {
                                 </div>
                             )}
                             <CardHeader className="pb-4">
-                                <CardTitle className="text-lg text-[#213659] line-clamp-2">{translatedName}</CardTitle>
+                                <CardTitle className="text-lg text-[var(--color-primary)] line-clamp-2">{translatedName}</CardTitle>
                             </CardHeader>
                         </Link>
 
@@ -632,7 +632,7 @@ export const NewsAllPage: React.FC = () => {
                                             value={editForm.content || ''}
                                             onChange={handleEditFormChange}
                                             placeholder="Введите содержание новости"
-                                            className="w-full min-h-[300px] p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#213659] focus:border-[#213659] resize-vertical text-base"
+                                            className="w-full min-h-[300px] p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] resize-vertical text-base"
                                         />
                                     </div>
                                     <div>
@@ -643,7 +643,7 @@ export const NewsAllPage: React.FC = () => {
                                             value={editForm.contentEn || ''}
                                             onChange={handleEditFormChange}
                                             placeholder="Enter news content"
-                                            className="w-full min-h-[300px] p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#213659] focus:border-[#213659] resize-vertical text-base"
+                                            className="w-full min-h-[300px] p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] resize-vertical text-base"
                                         />
                                     </div>
                                     <div>
@@ -654,7 +654,7 @@ export const NewsAllPage: React.FC = () => {
                                             value={editForm.contentBe || ''}
                                             onChange={handleEditFormChange}
                                             placeholder="Увядзіце змест навіны"
-                                            className="w-full min-h-[300px] p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#213659] focus:border-[#213659] resize-vertical text-base"
+                                            className="w-full min-h-[300px] p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] resize-vertical text-base"
                                         />
                                     </div>
                                 </div>
@@ -667,7 +667,7 @@ export const NewsAllPage: React.FC = () => {
                                         accept="image/*"
                                         onChange={handleEditPhotoChange}
                                         ref={editFileInputRef}
-                                        className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#213659] file:text-white hover:file:bg-[#1a2a47]"
+                                        className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[var(--color-primary)] file:text-white hover:file:bg-[#1a2a47]"
                                     />
                                     {selectedNews?.photo && (
                                         <div className="mt-2">
@@ -686,7 +686,7 @@ export const NewsAllPage: React.FC = () => {
                                 </div>
 
                                 <div>
-                                    <Label className="text-[#213659] font-medium">Дополнительные фото</Label>
+                                    <Label className="text-[var(--color-primary)] font-medium">Дополнительные фото</Label>
                                     <div className="mt-2">
                                         <input
                                             ref={additionalImagesRef}
@@ -700,7 +700,7 @@ export const NewsAllPage: React.FC = () => {
                                             type="button"
                                             variant="outline"
                                             onClick={() => additionalImagesRef.current?.click()}
-                                            className="w-full border-dashed border-2 border-[#B1D1E0] hover:border-[#2A52BE] text-[#213659]"
+                                            className="w-full border-dashed border-2 border-[#B1D1E0] hover:border-[#2A52BE] text-[var(--color-primary)]"
                                         >
                                             <Upload className="w-4 h-4 mr-2" />
                                             Выберите дополнительные фотографии
@@ -746,7 +746,7 @@ export const NewsAllPage: React.FC = () => {
                                 <Button 
                                     type="submit"
                                     disabled={isUpdating}
-                                    className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                                    className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
                                 >
                                     {isUpdating ? t('saving') : t('save')}
                                 </Button>

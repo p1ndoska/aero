@@ -466,7 +466,7 @@ export default function HistoryPage() {
                   <Button
                     onClick={handleOpenContentEditor}
                     variant="outline"
-                    className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                    className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
                   >
                     <Settings className="w-4 h-4 mr-2" />
                     Добавить контент

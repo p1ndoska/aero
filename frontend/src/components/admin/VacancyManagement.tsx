@@ -226,7 +226,7 @@ export default function VacancyManagement() {
         {isAuthenticated && isAdmin && (
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-[#213659] hover:bg-[#1a2a4a] text-white">
+              <Button className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white">
                 <Plus className="w-4 h-4 mr-2" />
                 Добавить вакансию
               </Button>
@@ -495,7 +495,7 @@ export default function VacancyManagement() {
                   <Button 
                     type="submit" 
                     disabled={isCreating} 
-                    className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                    className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
                   >
                     {isCreating ? 'Создание...' : 'Создать'}
                   </Button>
@@ -856,7 +856,7 @@ export default function VacancyManagement() {
                 <Button 
                   type="submit" 
                   disabled={isUpdating} 
-                  className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                  className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
                 >
                   {isUpdating ? 'Сохранение...' : 'Сохранить'}
                 </Button>

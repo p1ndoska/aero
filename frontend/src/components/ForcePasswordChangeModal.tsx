@@ -81,7 +81,7 @@ export const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> =
     <Dialog open={true} onOpenChange={handleOpenChange} modal={true}>
       <DialogContent className="sm:max-w-md bg-white border-2 border-red-300 rounded-lg" onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle className="text-[#213659] text-xl">
+          <DialogTitle className="text-[var(--color-primary)] text-xl">
             {t('force_password_change_title') || 'Требуется смена пароля'}
           </DialogTitle>
           <DialogDescription className="text-gray-600">
@@ -92,7 +92,7 @@ export const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> =
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           {/* Новый пароль */}
           <div className="space-y-2">
-            <Label htmlFor="newPassword" className="text-[#213659]">
+            <Label htmlFor="newPassword" className="text-[var(--color-primary)]">
               {t('new_password') || 'Новый пароль'} *
             </Label>
             <div className="relative">
@@ -104,12 +104,12 @@ export const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> =
                 value={passwordData.newPassword}
                 onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                 required
-                className={`pl-10 pr-10 bg-white border-[#B1D1E0] text-[#213659] focus:border-[#213659] ${errors.newPassword ? 'border-red-500' : ''}`}
+                className={`pl-10 pr-10 bg-white border-[#B1D1E0] text-[var(--color-primary)] focus:border-[var(--color-primary)] ${errors.newPassword ? 'border-red-500' : ''}`}
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6A81A9] hover:text-[#213659]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6A81A9] hover:text-[var(--color-primary)]"
               >
                 {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -121,7 +121,7 @@ export const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> =
 
           {/* Подтверждение пароля */}
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-[#213659]">
+            <Label htmlFor="confirmPassword" className="text-[var(--color-primary)]">
               {t('confirm_password') || 'Подтвердите пароль'} *
             </Label>
             <div className="relative">
@@ -133,12 +133,12 @@ export const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> =
                 value={passwordData.confirmPassword}
                 onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                 required
-                className={`pl-10 pr-10 bg-white border-[#B1D1E0] text-[#213659] focus:border-[#213659] ${errors.confirmPassword ? 'border-red-500' : ''}`}
+                className={`pl-10 pr-10 bg-white border-[#B1D1E0] text-[var(--color-primary)] focus:border-[var(--color-primary)] ${errors.confirmPassword ? 'border-red-500' : ''}`}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6A81A9] hover:text-[#213659]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6A81A9] hover:text-[var(--color-primary)]"
               >
                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -150,7 +150,7 @@ export const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> =
 
           <Button
             type="submit"
-            className="w-full bg-[#213659] hover:bg-[#1a2a4a] text-white"
+            className="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
             disabled={isLoading}
           >
             {isLoading ? (t('changing') || "Изменение...") : (t('change_password') || "Изменить пароль")}

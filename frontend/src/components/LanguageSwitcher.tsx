@@ -33,9 +33,9 @@ export default function LanguageSwitcher() {
         className="flex flex-col items-center gap-1 h-auto py-2 px-3 hover:bg-[#B1D1E0] transition-colors"
       >
         <div className="relative">
-          <Globe className="w-6 h-6 text-[#213659]" />
+          <Globe className="w-6 h-6 text-[var(--color-primary)]" />
         </div>
-        <span className="text-xs font-medium text-[#213659] uppercase">
+        <span className="text-xs font-medium text-[var(--color-primary)] uppercase">
           {currentLanguage?.code || 'RU'}
         </span>
       </Button>
@@ -100,8 +100,8 @@ export function CompactLanguageSwitcher() {
         onClick={() => setIsOpen(true)}
         className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-[#B1D1E0] transition-colors"
       >
-        <Globe className="w-4 h-4 text-[#213659]" />
-        <span className="text-sm font-medium text-[#213659] uppercase">
+        <Globe className="w-4 h-4 text-[var(--color-primary)]" />
+        <span className="text-sm font-medium text-[var(--color-primary)] uppercase">
           {currentLanguage?.code || 'RU'}
         </span>
       </button>

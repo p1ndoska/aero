@@ -329,7 +329,7 @@ export default function NewsManagement() {
           type="file"
           accept="image/*"
           onChange={(e) => setFormData({ ...formData, photo: e.target.files?.[0] || null })}
-          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#213659] file:text-white hover:file:bg-[#1a2a47]"
+          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[var(--color-primary)] file:text-white hover:file:bg-[#1a2a47]"
         />
         {isEdit && editingNews?.photo && (
           <div className="mt-2">
@@ -351,7 +351,7 @@ export default function NewsManagement() {
       </div>
 
       <div>
-        <Label className="text-[#213659] font-medium">Дополнительные фото</Label>
+        <Label className="text-[var(--color-primary)] font-medium">Дополнительные фото</Label>
         <div className="mt-2">
           <input
             ref={fileInputRef}
@@ -365,7 +365,7 @@ export default function NewsManagement() {
             type="button"
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
-            className="w-full border-dashed border-2 border-[#B1D1E0] hover:border-[#2A52BE] text-[#213659]"
+            className="w-full border-dashed border-2 border-[#B1D1E0] hover:border-[#2A52BE] text-[var(--color-primary)]"
           >
             <Upload className="w-4 h-4 mr-2" />
             Выберите дополнительные фотографии
@@ -406,7 +406,7 @@ export default function NewsManagement() {
   if (isLoading) {
     return (
       <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#213659] mx-auto mb-4"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)] mx-auto mb-4"></div>
         <p className="text-gray-600">Загрузка новостей...</p>
       </div>
     );
@@ -415,7 +415,7 @@ export default function NewsManagement() {
   return (
     <div className="space-y-6 max-w-full overflow-hidden">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-[#213659] mb-2 flex items-center justify-center gap-3">
+        <h2 className="text-2xl font-bold text-[var(--color-primary)] mb-2 flex items-center justify-center gap-3">
           <Newspaper className="w-6 h-6" />
           Управление новостями
         </h2>
@@ -425,7 +425,7 @@ export default function NewsManagement() {
       <div className="flex justify-end">
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm} className="bg-[#213659] hover:bg-[#1a2a4a] text-white flex items-center gap-2">
+            <Button onClick={resetForm} className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white flex items-center gap-2">
               <Plus className="w-4 h-4" />
               Добавить новость
             </Button>
@@ -447,7 +447,7 @@ export default function NewsManagement() {
                 type="button"
                 onClick={handleCreate}
                 disabled={isCreating}
-                className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
               >
                 {isCreating ? 'Создание...' : 'Создать'}
               </Button>
@@ -457,7 +457,7 @@ export default function NewsManagement() {
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-[#213659]">Список новостей</h3>
+        <h3 className="text-lg font-semibold text-[var(--color-primary)]">Список новостей</h3>
         {!news?.length ? (
           <div className="text-center py-12 bg-gray-50 rounded-lg">
             <Newspaper className="w-16 h-16 mx-auto mb-4 text-gray-400" />
@@ -470,7 +470,7 @@ export default function NewsManagement() {
               <div key={newsItem.id} className="border border-gray-200 rounded-lg p-6 bg-white hover:shadow-md transition-shadow overflow-hidden">
                 <div className="flex justify-between items-start mb-4 gap-4">
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-xl font-bold text-[#213659] mb-2 break-words">{newsItem.name}</h4>
+                    <h4 className="text-xl font-bold text-[var(--color-primary)] mb-2 break-words">{newsItem.name}</h4>
                     <div className="space-y-1">
                       <p className="text-gray-600 flex items-center gap-2 break-words">
                         <span className="font-medium flex-shrink-0">Категория:</span>
@@ -502,7 +502,7 @@ export default function NewsManagement() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(newsItem)}
-                      className="border-[#B1D1E0] hover:border-[#213659]"
+                      className="border-[#B1D1E0] hover:border-[var(--color-primary)]"
                     >
                       <Edit className="w-4 h-4 mr-1" />
                       Редактировать
@@ -522,7 +522,7 @@ export default function NewsManagement() {
                 
                 {newsItem.photo && (
                   <div>
-                    <span className="font-medium text-[#213659]">Фото:</span>
+                    <span className="font-medium text-[var(--color-primary)]">Фото:</span>
                     <div className="mt-2">
                       <img 
                         src={`${BASE_URL}${newsItem.photo.startsWith('/') ? '' : '/'}${newsItem.photo}`}
@@ -564,7 +564,7 @@ export default function NewsManagement() {
               type="button"
               onClick={handleUpdate}
               disabled={isUpdating}
-              className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+              className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
             >
               {isUpdating ? 'Сохранение...' : 'Сохранить'}
             </Button>

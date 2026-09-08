@@ -213,7 +213,7 @@ export default function ELTDeregistrationForm() {
     <div className="max-w-4xl mx-auto p-6">
       <Card className="bg-white rounded-lg shadow-lg">
         <CardHeader className="pb-4">
-          <CardTitle className="text-2xl font-bold text-center" style={{ color: '#213659' }}>
+          <CardTitle className="text-2xl font-bold text-center" style={{ color: 'var(--color-primary)' }}>
             {t('elt_deregistration_application')}
           </CardTitle>
         </CardHeader>
@@ -476,7 +476,7 @@ export default function ELTDeregistrationForm() {
                 disabled={isSubmitting}
                 className="text-white px-8 py-2 hover:opacity-90"
                 style={{ 
-                  backgroundColor: '#213659'
+                  backgroundColor: 'var(--color-primary)'
                 }}
               >
                 {isSubmitting ? t('sending') : t('submit_application')}

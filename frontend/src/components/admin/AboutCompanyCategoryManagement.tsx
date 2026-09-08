@@ -158,7 +158,7 @@ export default function AboutCompanyCategoryManagement() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Управление подкатегориями "О предприятии"</h1>
-        <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-[#213659] hover:bg-[#1a2a4a] text-white">
+        <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white">
           <Plus className="w-4 h-4 mr-2" />
           Добавить подкатегорию
         </Button>
@@ -340,7 +340,7 @@ export default function AboutCompanyCategoryManagement() {
               </Button>
               <Button 
                 type="submit" 
-                className="bg-[#213659] hover:bg-[#1a2a4a] text-white" 
+                className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white" 
                 disabled={isCreating || isUpdating}
               >
                 <Save className="w-4 h-4 mr-2" />

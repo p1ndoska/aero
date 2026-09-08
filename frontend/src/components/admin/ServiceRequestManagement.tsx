@@ -301,7 +301,7 @@ const ServiceRequestManagement: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-4">
-              <div className="text-2xl font-bold text-[#213659]">{stats.total}</div>
+              <div className="text-2xl font-bold text-[var(--color-primary)]">{stats.total}</div>
               <div className="text-sm text-gray-600">Всего заявок</div>
             </CardContent>
           </Card>
@@ -350,19 +350,19 @@ const ServiceRequestManagement: React.FC = () => {
                   <SelectValue placeholder="Все статусы" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border border-[#B1D1E0]">
-                  <SelectItem value="all" className="focus:bg-[#EFF6FF] focus:text-[#213659]">
+                  <SelectItem value="all" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">
                     Все статусы
                   </SelectItem>
-                  <SelectItem value="pending" className="focus:bg-[#EFF6FF] focus:text-[#213659]">
+                  <SelectItem value="pending" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">
                     Ожидает
                   </SelectItem>
-                  <SelectItem value="in_progress" className="focus:bg-[#EFF6FF] focus:text-[#213659]">
+                  <SelectItem value="in_progress" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">
                     В работе
                   </SelectItem>
-                  <SelectItem value="completed" className="focus:bg-[#EFF6FF] focus:text-[#213659]">
+                  <SelectItem value="completed" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">
                     Завершена
                   </SelectItem>
-                  <SelectItem value="cancelled" className="focus:bg-[#EFF6FF] focus:text-[#213659]">
+                  <SelectItem value="cancelled" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">
                     Отменена
                   </SelectItem>
                 </SelectContent>
@@ -375,7 +375,7 @@ const ServiceRequestManagement: React.FC = () => {
                   <SelectValue placeholder="Все типы" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border border-[#B1D1E0]">
-                  <SelectItem value="all" className="focus:bg-[#EFF6FF] focus:text-[#213659]">
+                  <SelectItem value="all" className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">
                     Все типы
                   </SelectItem>
                   {stats?.byServiceType.map((type) => {
@@ -384,7 +384,7 @@ const ServiceRequestManagement: React.FC = () => {
                       <SelectItem 
                         key={type.serviceType} 
                         value={type.serviceType}
-                        className="focus:bg-[#EFF6FF] focus:text-[#213659]"
+                        className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]"
                       >
                         {serviceName} ({type.count})
                       </SelectItem>

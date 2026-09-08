@@ -35,17 +35,21 @@ function flattenSubmenuItems(items: SubMenuItem[]): SubMenuItem[] {
 function DropdownLink({
   item,
   onNavigate,
+  className = '',
 }: {
   item: SubMenuItem;
   onNavigate?: () => void;
+  className?: string;
 }) {
+  const linkClassName = `header-dropdown__link${className ? ` ${className}` : ''}`;
+
   if (item.external) {
     return (
       <a
         href={item.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="header-dropdown__link"
+        className={linkClassName}
         onClick={onNavigate}
       >
         {item.name}
@@ -54,9 +58,78 @@ function DropdownLink({
   }
 
   return (
-    <Link to={item.href} className="header-dropdown__link" onClick={onNavigate}>
+    <Link to={item.href} className={linkClassName} onClick={onNavigate}>
       {item.name}
     </Link>
+  );
+}
+
+function ExpandableSubmenuItem({
+  item,
+  itemKey,
+  onNavigate,
+}: {
+  item: SubMenuItem;
+  itemKey: string;
+  onNavigate?: () => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const hasChildren = Boolean(item.children?.length);
+
+  if (!hasChildren) {
+    return (
+      <li className="header-dropdown__item">
+        <DropdownLink item={item} onNavigate={onNavigate} />
+      </li>
+    );
+  }
+
+  return (
+    <li className={`header-dropdown__item${expanded ? ' header-dropdown__item--expanded' : ''}`}>
+      <button
+        type="button"
+        className="header-dropdown__link header-dropdown__link--parent header-dropdown__toggle"
+        aria-expanded={expanded}
+        onClick={() => setExpanded((value) => !value)}
+      >
+        <span>{item.name}</span>
+        <ChevronDown
+          size={14}
+          className={`header-dropdown__chevron${expanded ? ' header-dropdown__chevron--open' : ''}`}
+          aria-hidden="true"
+        />
+      </button>
+      {expanded && (
+        <ul className="header-dropdown__nested">
+          {item.children?.map((child, childIndex) => (
+            <li
+              key={`${itemKey}-child-${child.href}-${child.name}-${childIndex}`}
+              className="header-dropdown__item"
+            >
+              <DropdownLink item={child} onNavigate={onNavigate} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+}
+
+function renderSubmenuItems(items: SubMenuItem[], keyPrefix: string, onNavigate?: () => void) {
+  return (
+    <ul className="header-dropdown__list">
+      {items.map((item, index) => {
+        const itemKey = `${keyPrefix}-${item.href}-${item.name}-${index}`;
+        return (
+          <ExpandableSubmenuItem
+            key={itemKey}
+            item={item}
+            itemKey={itemKey}
+            onNavigate={onNavigate}
+          />
+        );
+      })}
+    </ul>
   );
 }
 
@@ -69,32 +142,23 @@ function SubMenuLinks({
   onNavigate?: () => void;
   columns?: 1 | 2;
 }) {
-  const flatItems = flattenSubmenuItems(items);
+  const hasNested = items.some((item) => item.children && item.children.length > 0);
 
-  const renderList = (listItems: SubMenuItem[], keyPrefix: string) => (
-    <ul className="header-dropdown__list">
-      {listItems.map((item, index) => (
-        <li key={`${keyPrefix}-${item.href}-${item.name}-${index}`} className="header-dropdown__item">
-          <DropdownLink item={item} onNavigate={onNavigate} />
-        </li>
-      ))}
-    </ul>
-  );
-
-  if (columns === 2) {
-    const splitAt = Math.ceil(flatItems.length / 2);
-    const firstColumn = flatItems.slice(0, splitAt);
-    const secondColumn = flatItems.slice(splitAt);
-
-    return (
-      <div className="header-dropdown__columns">
-        {renderList(firstColumn, 'col1')}
-        {secondColumn.length > 0 && renderList(secondColumn, 'col2')}
-      </div>
-    );
+  if (hasNested || columns !== 2) {
+    return renderSubmenuItems(items, 'col1', onNavigate);
   }
 
-  return renderList(flatItems, 'col1');
+  const flatItems = flattenSubmenuItems(items);
+  const splitAt = Math.ceil(flatItems.length / 2);
+  const firstColumn = flatItems.slice(0, splitAt);
+  const secondColumn = flatItems.slice(splitAt);
+
+  return (
+    <div className="header-dropdown__columns">
+      {renderSubmenuItems(firstColumn, 'col1', onNavigate)}
+      {secondColumn.length > 0 && renderSubmenuItems(secondColumn, 'col2', onNavigate)}
+    </div>
+  );
 }
 
 function DesktopDropdown({ item }: { item: MenuItem }) {
@@ -118,7 +182,8 @@ function DesktopDropdown({ item }: { item: MenuItem }) {
   }, []);
 
   const submenuCount = flattenSubmenuItems(item.submenu ?? []).length;
-  const useTwoColumns = submenuCount >= 7;
+  const hasNested = item.submenu?.some((sub) => sub.children && sub.children.length > 0);
+  const useTwoColumns = !hasNested && submenuCount >= 7;
 
   useEffect(() => {
     if (!open) return;

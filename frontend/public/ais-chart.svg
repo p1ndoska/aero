@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-hidden="true">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#c5d4e0" stroke-width="0.6"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="560" fill="#eef4f8"/>
+  <rect width="800" height="560" fill="url(#grid)"/>
+  <path d="M 60 420 C 140 360, 180 300, 250 280 C 340 252, 410 210, 470 180 C 540 146, 620 120, 740 90" fill="none" stroke="#7a93a8" stroke-width="1.4" stroke-dasharray="7 5"/>
+  <path d="M 80 90 C 180 140, 240 210, 300 270 C 370 344, 430 390, 520 430 C 590 462, 670 490, 760 510" fill="none" stroke="#7a93a8" stroke-width="1.4" stroke-dasharray="7 5"/>
+  <path d="M 40 250 C 160 230, 280 200, 400 220 C 520 242, 640 280, 780 250" fill="none" stroke="#5b7a96" stroke-width="1.6" stroke-dasharray="10 6"/>
+  <path d="M 220 40 C 260 140, 290 250, 310 360 C 328 452, 360 510, 420 540" fill="none" stroke="#7a93a8" stroke-width="1.2" stroke-dasharray="6 5"/>
+  <path d="M 520 30 C 500 130, 540 230, 600 320 C 650 394, 710 450, 790 480" fill="none" stroke="#7a93a8" stroke-width="1.2" stroke-dasharray="6 5"/>
+  <g fill="none" stroke="#213659" stroke-width="1.6">
+    <polygon points="248,278 258,284 248,290 238,284"/>
+    <polygon points="468,178 478,184 468,190 458,184"/>
+    <polygon points="518,428 528,434 518,440 508,434"/>
+    <polygon points="308,268 318,274 308,280 298,274"/>
+    <polygon points="598,318 608,324 598,330 588,324"/>
+  </g>
+  <g fill="#213659" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">
+    <text x="258" y="268">UMMS</text>
+    <text x="478" y="168">UMMG</text>
+    <text x="528" y="458">UMGG</text>
+    <text x="200" y="258">UMBB</text>
+    <text x="608" y="308">UMII</text>
+  </g>
+  <g fill="#4a6580" font-family="Arial, Helvetica, sans-serif" font-size="11">
+    <text x="258" y="284">MINSK</text>
+    <text x="478" y="184">GRODNO</text>
+    <text x="528" y="474">GOMEL</text>
+    <text x="200" y="274">BREST</text>
+    <text x="608" y="324">VITEBSK</text>
+  </g>
+  <g fill="none" stroke="#213659" stroke-width="1.2">
+    <circle cx="400" cy="220" r="5"/>
+    <circle cx="250" cy="280" r="4"/>
+    <circle cx="470" cy="180" r="4"/>
+    <circle cx="520" cy="430" r="4"/>
+    <circle cx="600" cy="320" r="4"/>
+  </g>
+  <path d="M 120 480 L 210 410" stroke="#213659" stroke-width="1.3" marker-end="none"/>
+  <polygon points="206,402 220,408 204,418" fill="#213659"/>
+  <path d="M 640 80 L 710 140" stroke="#213659" stroke-width="1.3"/>
+  <polygon points="706,132 720,146 698,144" fill="#213659"/>
+</svg>

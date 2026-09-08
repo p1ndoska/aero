@@ -108,7 +108,7 @@ export default function StatisticsPanel() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-[#213659] mb-6">Статистика системы</h2>
+        <h2 className="text-2xl font-bold text-[var(--color-primary)] mb-6">Статистика системы</h2>
       </div>
 
       {/* Основные метрики */}
@@ -121,7 +121,7 @@ export default function StatisticsPanel() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600 mb-1">{stat.title}</p>
-                    <p className="text-3xl font-bold text-[#213659]">{stat.value}</p>
+                    <p className="text-3xl font-bold text-[var(--color-primary)]">{stat.value}</p>
                   </div>
                   <div className={`${stat.bgColor} p-3 rounded-lg`}>
                     <IconComponent className={`w-8 h-8 ${stat.color}`} />
@@ -148,7 +148,7 @@ export default function StatisticsPanel() {
                 {Object.entries(usersByRole).map(([role, count]) => (
                   <div key={role} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <span className="font-medium text-gray-700">{role}</span>
-                    <span className="text-lg font-bold text-[#213659]">{count}</span>
+                    <span className="text-lg font-bold text-[var(--color-primary)]">{count}</span>
                   </div>
                 ))}
               </div>
@@ -172,7 +172,7 @@ export default function StatisticsPanel() {
                 {Object.entries(requestsByStatus).map(([status, count]) => (
                   <div key={status} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <span className="font-medium text-gray-700 capitalize">{status}</span>
-                    <span className="text-lg font-bold text-[#213659]">{count}</span>
+                    <span className="text-lg font-bold text-[var(--color-primary)]">{count}</span>
                   </div>
                 ))}
               </div>
@@ -196,7 +196,7 @@ export default function StatisticsPanel() {
                 {newsByCategory.map((item, index) => (
                   <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <span className="font-medium text-gray-700">{item.categoryName}</span>
-                    <span className="text-lg font-bold text-[#213659]">{item.count}</span>
+                    <span className="text-lg font-bold text-[var(--color-primary)]">{item.count}</span>
                   </div>
                 ))}
               </div>

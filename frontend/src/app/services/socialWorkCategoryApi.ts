@@ -11,6 +11,7 @@ interface SocialWorkCategory {
   pageType: string; // Уникальный тип страницы
   isActive: boolean;
   sortOrder: number;
+  parentId?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -25,6 +26,7 @@ interface CreateSocialWorkCategoryRequest {
   pageType: string;
   isActive?: boolean;
   sortOrder?: number;
+  parentId?: number | null;
 }
 
 interface UpdateSocialWorkCategoryRequest extends CreateSocialWorkCategoryRequest {}

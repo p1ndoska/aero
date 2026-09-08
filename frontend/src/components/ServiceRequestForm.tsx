@@ -153,7 +153,7 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
   return (
     <Card className="w-full max-w-4xl mx-auto bg-white">
       <CardHeader className="bg-white">
-        <CardTitle className="text-2xl font-bold text-[#213659] text-center">
+        <CardTitle className="text-2xl font-bold text-[var(--color-primary)] text-center">
           {getTranslatedText(
             'Заявка на услугу',
             'Service Request',
@@ -172,7 +172,7 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Контактная информация */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-[#213659]">
+            <h3 className="text-lg font-semibold text-[var(--color-primary)]">
               {getTranslatedText(
                 'Контактная информация',
                 'Contact Information',
@@ -249,7 +249,7 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
 
           {/* Информация о заявке */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-[#213659]">
+            <h3 className="text-lg font-semibold text-[var(--color-primary)]">
               {getTranslatedText(
                 'Информация о заявке',
                 'Request Information',
@@ -376,7 +376,7 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-[#213659] hover:bg-[#1a2d4a]"
+              className="bg-[var(--color-primary)] hover:bg-[#1a2d4a]"
             >
               {isSubmitting 
                 ? getTranslatedText('Отправка...', 'Sending...', 'Адпраўка...')

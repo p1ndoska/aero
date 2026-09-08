@@ -6,6 +6,13 @@ const SocialWorkCategoryController = {
         try {
             const categories = await prisma.socialWorkCategory.findMany({
                 where: { isActive: true },
+                include: {
+                    parent: true,
+                    children: {
+                        where: { isActive: true },
+                        orderBy: { sortOrder: 'asc' }
+                    }
+                },
                 orderBy: { sortOrder: 'asc' }
             });
             res.json(categories);
@@ -42,7 +49,8 @@ const SocialWorkCategoryController = {
                 descriptionBe, 
                 pageType, 
                 isActive, 
-                sortOrder 
+                sortOrder,
+                parentId
             } = req.body;
 
             // Проверяем, что pageType уникален
@@ -63,7 +71,8 @@ const SocialWorkCategoryController = {
                     descriptionBe,
                     pageType,
                     isActive: isActive !== undefined ? isActive : true,
-                    sortOrder: sortOrder || 0
+                    sortOrder: sortOrder || 0,
+                    parentId: parentId ? parseInt(parentId) : null
                 }
             });
             // Автосоздание страницы контента для новой подкатегории
@@ -73,7 +82,7 @@ const SocialWorkCategoryController = {
                     update: {},
                     create: {
                         pageType,
-                        title: name || 'Социальная и идеологическая работа',
+                        title: name || 'Социальная сфера',
                         subtitle: '',
                         content: []
                     }
@@ -100,7 +109,8 @@ const SocialWorkCategoryController = {
                 descriptionBe, 
                 pageType, 
                 isActive, 
-                sortOrder 
+                sortOrder,
+                parentId
             } = req.body;
 
             // Проверяем, что pageType уникален (если изменился)
@@ -127,7 +137,8 @@ const SocialWorkCategoryController = {
                     descriptionBe,
                     pageType,
                     isActive,
-                    sortOrder
+                    sortOrder,
+                    parentId: parentId === undefined ? undefined : (parentId ? parseInt(parentId) : null)
                 }
             });
             res.json(category);

@@ -1159,24 +1159,22 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      <div className="container mx-auto px-4 py-12">
-        {/* Белый закругленный контейнер на фоне */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-8">
+    <div>
+      <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-8">
           {/* Заголовок */}
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3">
-                <IconComponent className="w-10 h-10 text-blue-600" />
+          <div className="mb-10">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-3">
+              <h1 className="text-3xl font-bold text-[var(--color-primary)] flex items-center gap-3">
+                <IconComponent className="w-9 h-9 text-[var(--color-primary)]" />
                 {pageTitle}
               </h1>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {actualPageType === 'services' && (
                   <Button
                     onClick={handleRequestService}
                     variant="outline"
                     size="sm"
-                    className="bg-[#213659] hover:bg-[#1a2a4a] text-white border-[#213659]"
+                    className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white border-[var(--color-primary)]"
                   >
                     <Send className="w-4 h-4 mr-2" />
                     {language === 'en' ? 'Request Service' : language === 'be' ? 'Запытаць паслугу' : 'Подать заявку'}
@@ -1194,7 +1192,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
                 )}
               </div>
             </div>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base text-gray-600">
               {pageSubtitleOverride ?? pageSubtitle}
             </p>
           </div>
@@ -1312,7 +1310,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
 
                             <Button
                               type="submit"
-                              className="w-full bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                              className="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
                               disabled={isLoggingIn}
                             >
                               {isLoggingIn ? 'Вход...' : 'Войти'}
@@ -1465,7 +1463,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
 
                               <Button
                                 type="submit"
-                                className="w-full bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                                className="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
                                 disabled={isLoggingIn}
                               >
                                 {isLoggingIn ? 'Вход...' : 'Войти под другой учетной записью'}
@@ -1498,7 +1496,7 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
                   <Button
                     onClick={handleOpenContentEditor}
                     variant="outline"
-                    className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                    className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
                   >
                     <Settings className="w-4 h-4 mr-2" />
                     Добавить контент
@@ -1508,7 +1506,6 @@ export default function DynamicPage({ pageType }: DynamicPageProps = {}) {
             </div>
             ) : null;
           })()}
-        </div>
       </div>
 
       {/* Редактор контента страницы */}

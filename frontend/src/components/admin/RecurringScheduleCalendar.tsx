@@ -131,7 +131,7 @@ export default function RecurringScheduleCalendar({ manager }: RecurringSchedule
         <div className="flex justify-between items-center">
           <Button 
             onClick={() => setIsCreateDialogOpen(true)}
-            className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+            className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
           >
             <Plus className="w-4 h-4 mr-2" />
             Добавить повторяющееся расписание
@@ -213,7 +213,7 @@ export default function RecurringScheduleCalendar({ manager }: RecurringSchedule
             
             <div className="space-y-4 py-4">
               <div>
-                <Label className="text-[#213659] font-medium">Выберите дату *</Label>
+                <Label className="text-[var(--color-primary)] font-medium">Выберите дату *</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -249,29 +249,29 @@ export default function RecurringScheduleCalendar({ manager }: RecurringSchedule
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="startTime" className="text-[#213659] font-medium">Время начала *</Label>
+                  <Label htmlFor="startTime" className="text-[var(--color-primary)] font-medium">Время начала *</Label>
                   <Input
                     id="startTime"
                     type="time"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
-                    className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+                    className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="endTime" className="text-[#213659] font-medium">Время окончания *</Label>
+                  <Label htmlFor="endTime" className="text-[var(--color-primary)] font-medium">Время окончания *</Label>
                   <Input
                     id="endTime"
                     type="time"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
-                    className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+                    className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
                   />
                 </div>
               </div>
 
               <div>
-                <Label className="text-[#213659] font-medium mb-3 block">Тип повторения</Label>
+                <Label className="text-[var(--color-primary)] font-medium mb-3 block">Тип повторения</Label>
                 <div className="flex gap-4">
                   <label className="flex items-center space-x-2">
                     <input
@@ -279,7 +279,7 @@ export default function RecurringScheduleCalendar({ manager }: RecurringSchedule
                       name="repeatType"
                       checked={!isWeekly}
                       onChange={() => setIsWeekly(false)}
-                      className="text-[#213659] focus:ring-[#213659]"
+                      className="text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
                     />
                     <span className="text-sm">Конкретная неделя месяца</span>
                   </label>
@@ -289,7 +289,7 @@ export default function RecurringScheduleCalendar({ manager }: RecurringSchedule
                       name="repeatType"
                       checked={isWeekly}
                       onChange={() => setIsWeekly(true)}
-                      className="text-[#213659] focus:ring-[#213659]"
+                      className="text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
                     />
                     <span className="text-sm">Каждую неделю</span>
                   </label>
@@ -304,7 +304,7 @@ export default function RecurringScheduleCalendar({ manager }: RecurringSchedule
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="slotDuration" className="text-[#213659] font-medium">Длительность слота (мин)</Label>
+                  <Label htmlFor="slotDuration" className="text-[var(--color-primary)] font-medium">Длительность слота (мин)</Label>
                   <Input
                     id="slotDuration"
                     type="number"
@@ -312,11 +312,11 @@ export default function RecurringScheduleCalendar({ manager }: RecurringSchedule
                     max={120}
                     value={slotDuration}
                     onChange={(e) => setSlotDuration(parseInt(e.target.value) || 10)}
-                    className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+                    className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="monthsAhead" className="text-[#213659] font-medium">Создать слоты на (месяцев вперед)</Label>
+                  <Label htmlFor="monthsAhead" className="text-[var(--color-primary)] font-medium">Создать слоты на (месяцев вперед)</Label>
                   <Input
                     id="monthsAhead"
                     type="number"
@@ -324,7 +324,7 @@ export default function RecurringScheduleCalendar({ manager }: RecurringSchedule
                     max="12"
                     value={monthsAhead}
                     onChange={(e) => setMonthsAhead(parseInt(e.target.value) || 6)}
-                    className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+                    className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     По умолчанию генерируется на полгода
@@ -372,7 +372,7 @@ export default function RecurringScheduleCalendar({ manager }: RecurringSchedule
               <Button 
                 onClick={handleCreateRecurringSchedule}
                 disabled={!selectedDate || !startTime || !endTime}
-                className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
               >
                 <Check className="w-4 h-4 mr-2" />
                 Создать повторяющееся расписание

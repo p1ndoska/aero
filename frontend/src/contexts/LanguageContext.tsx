@@ -282,6 +282,10 @@ const translations = {
     'training_services': 'Услуги по подготовке персонала',
     'consulting_services': 'Консультационные услуги',
     'technical_support': 'Техническая поддержка',
+    'home_card_air_navigation': 'Аэронавигационное обслуживание воздушных судов в воздушном пространстве Республики Беларусь',
+    'home_card_airport_services': 'Аэропортовые услуги',
+    'home_card_kpts': 'Пользование веб-сервисом «КПТС интернет-заявка»',
+    'home_card_other_services': 'Прочие услуги',
     
     // Контакты
     'address': 'Адрес',
@@ -422,7 +426,12 @@ const translations = {
     
     // Меню и навигация
     'appeals': 'Обращения',
-    'social_ideological_work': 'Социальная и идеологическая работа',
+    'social_ideological_work': 'Социальная сфера',
+    'ideological_work': 'Идеологическая работа',
+    'directive_12': 'Директива № 12. О реализации основ идеологии белорусского государства',
+    'information_day': 'Единый день информирования',
+    'belarusian_woman_year': 'Год белорусской женщины',
+    'public_associations': 'Общественные объединения',
     'electronic_appeals': 'Электронные обращения',
     'voluntary_report': 'Добровольное сообщение о небезопасном событии',
     'appeal_methods': 'Способы подачи обращений и порядок рассмотрения',
@@ -844,6 +853,10 @@ const translations = {
     'training_services': 'Training Services',
     'consulting_services': 'Consulting Services',
     'technical_support': 'Technical Support',
+    'home_card_air_navigation': 'Air navigation services for aircraft in the airspace of the Republic of Belarus',
+    'home_card_airport_services': 'Airport services',
+    'home_card_kpts': 'Use of the “KPTS internet application” web service',
+    'home_card_other_services': 'Other services',
     
     // Contacts
     'address': 'Address',
@@ -1007,7 +1020,12 @@ const translations = {
     
     // Menu and navigation
     'appeals': 'Appeals',
-    'social_ideological_work': 'Social and Ideological Work',
+    'social_ideological_work': 'Social Sphere',
+    'ideological_work': 'Ideological Work',
+    'directive_12': 'Directive No. 12. On the implementation of the foundations of the ideology of the Belarusian state',
+    'information_day': 'Unified Information Day',
+    'belarusian_woman_year': 'Year of the Belarusian Woman',
+    'public_associations': 'Public Associations',
     'electronic_appeals': 'Electronic Appeals',
     'voluntary_report': 'Voluntary Report on Unsafe Event',
     'appeal_methods': 'Methods of Submitting Appeals and Procedure for Consideration',
@@ -1429,6 +1447,10 @@ const translations = {
     'training_services': 'Паслугі па падрыхтоўцы персаналу',
     'consulting_services': 'Кансультацыйныя паслугі',
     'technical_support': 'Тэхнічная падтрымка',
+    'home_card_air_navigation': 'Аэранавігацыйнае абслугоўванне паветраных суднаў у паветранай прасторы Рэспублікі Беларусь',
+    'home_card_airport_services': 'Аэрапортавыя паслугі',
+    'home_card_kpts': 'Карыстанне вэб-сэрвісам «КПТС інтэрнэт-заяўка»',
+    'home_card_other_services': 'Іншыя паслугі',
     
     // Кантакты
     'address': 'Адрас',
@@ -1592,7 +1614,12 @@ const translations = {
     
     // Меню і навігацыя
     'appeals': 'Звароты',
-    'social_ideological_work': 'Сацыяльная і ідэалагічная работа',
+    'social_ideological_work': 'Сацыяльная сфера',
+    'ideological_work': 'Ідэалагічная работа',
+    'directive_12': 'Дырэктыва № 12. Аб рэалізацыі асноў ідэалогіі беларускай дзяржавы',
+    'information_day': 'Адзіны дзень інфармавання',
+    'belarusian_woman_year': 'Год беларускай жанчыны',
+    'public_associations': 'Грамадскія аб\'яднанні',
     'electronic_appeals': 'Электронныя звароты',
     'voluntary_report': 'Добраахвотнае паведамленне аб небяспечнай падзеі',
     'appeal_methods': 'Спосабы падачы зваротаў і парадак разгляду',

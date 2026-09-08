@@ -10,14 +10,18 @@ export const INTERNAL_PAGES = [
   { value: '/about/contacts', label: 'Контакты' },
   { value: '/about/vacancies', label: 'Вакансии' },
   
-  // Социальная и идеологическая работа
+  // Социальная сфера
+  { value: '/social/ideological-work', label: 'Идеологическая работа' },
+  { value: '/social/directive-12', label: 'Директива № 12' },
+  { value: '/social/information-day', label: 'Единый день информирования' },
+  { value: '/social/belarusian-woman-year', label: 'Год белорусской женщины' },
+  { value: '/social/memory', label: 'Память и боль белорусской земли' },
   { value: '/social/trade-union', label: 'Объединенная профсоюзная организация' },
+  { value: '/social/public-associations', label: 'Общественные объединения' },
   { value: '/social/belaya-rus', label: 'Белая Русь' },
   { value: '/social/brsm', label: 'БРСМ' },
   { value: '/social/women-union', label: 'Белорусский союз женщин' },
   { value: '/social/healthy-lifestyle', label: 'За здоровый образ жизни' },
-  { value: '/social/improvement-year', label: 'Год благоустройства' },
-  { value: '/social/memory', label: 'Память и боль белорусской земли' },
   
   // Новости
   { value: '/news', label: 'Все новости' },

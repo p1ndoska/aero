@@ -176,13 +176,13 @@ export default function ReceptionScheduleCalendar({ manager }: ReceptionSchedule
             <div className="flex justify-between items-center">
               <Button 
                 onClick={() => setIsCreateDialogOpen(true)}
-                className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Добавить слоты
               </Button>
               <div className="text-sm text-gray-500 flex items-center gap-2">
-                <Label htmlFor="slotDuration" className="text-[#213659] font-medium">Длительность слота (мин):</Label>
+                <Label htmlFor="slotDuration" className="text-[var(--color-primary)] font-medium">Длительность слота (мин):</Label>
                 <Input
                   id="slotDuration"
                   type="number"
@@ -190,7 +190,7 @@ export default function ReceptionScheduleCalendar({ manager }: ReceptionSchedule
                   max={120}
                   value={slotDuration}
                   onChange={(e) => setSlotDuration(parseInt(e.target.value) || 10)}
-                  className="w-24 bg-white border-[#B1D1E0] focus:border-[#213659]"
+                  className="w-24 bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
                 />
               </div>
             </div>
@@ -269,36 +269,36 @@ export default function ReceptionScheduleCalendar({ manager }: ReceptionSchedule
             
             <div className="space-y-4 py-4">
               <div>
-                <Label htmlFor="date" className="text-[#213659] font-medium">Дата *</Label>
+                <Label htmlFor="date" className="text-[var(--color-primary)] font-medium">Дата *</Label>
                 <Input
                   id="date"
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
-                  className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+                  className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="startTime" className="text-[#213659] font-medium">Время начала *</Label>
+                  <Label htmlFor="startTime" className="text-[var(--color-primary)] font-medium">Время начала *</Label>
                   <Input
                     id="startTime"
                     type="time"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
-                    className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+                    className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="endTime" className="text-[#213659] font-medium">Время окончания *</Label>
+                  <Label htmlFor="endTime" className="text-[var(--color-primary)] font-medium">Время окончания *</Label>
                   <Input
                     id="endTime"
                     type="time"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
-                    className="bg-white border-[#B1D1E0] focus:border-[#213659]"
+                    className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
                   />
                 </div>
               </div>
@@ -306,7 +306,7 @@ export default function ReceptionScheduleCalendar({ manager }: ReceptionSchedule
               {/* Предварительный просмотр слотов */}
               {previewSlots.length > 0 && (
                 <div>
-                  <Label className="text-[#213659] font-medium">Предварительный просмотр:</Label>
+                  <Label className="text-[var(--color-primary)] font-medium">Предварительный просмотр:</Label>
                   <div className="mt-2 p-3 bg-gray-50 rounded-lg">
                     <div className="text-sm text-gray-600 mb-2">
                       Будет создано {previewSlots.length} слотов по {Math.max(5, Math.min(120, slotDuration))} минут:
@@ -330,7 +330,7 @@ export default function ReceptionScheduleCalendar({ manager }: ReceptionSchedule
               <Button 
                 onClick={handleCreateSlots}
                 disabled={!selectedDate || !startTime || !endTime || previewSlots.length === 0}
-                className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
               >
                 <Check className="w-4 h-4 mr-2" />
                 Создать {previewSlots.length} слотов

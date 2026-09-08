@@ -828,7 +828,7 @@ export default function BranchManagement() {
   if (isLoading) {
     return (
       <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#213659] mx-auto mb-4"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)] mx-auto mb-4"></div>
         <p className="text-gray-600">Загрузка филиалов...</p>
       </div>
     );
@@ -837,7 +837,7 @@ export default function BranchManagement() {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-[#213659] mb-2 flex items-center justify-center gap-3">
+        <h2 className="text-2xl font-bold text-[var(--color-primary)] mb-2 flex items-center justify-center gap-3">
           <Building2 className="w-6 h-6" />
           Управление филиалами
         </h2>
@@ -847,7 +847,7 @@ export default function BranchManagement() {
       <div className="flex justify-end">
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm} className="bg-[#213659] hover:bg-[#1a2a4a] text-white flex items-center gap-2">
+            <Button onClick={resetForm} className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white flex items-center gap-2">
               <Plus className="w-4 h-4" />
               Добавить филиал
             </Button>
@@ -868,7 +868,7 @@ export default function BranchManagement() {
                 <Button 
                   type="submit"
                   disabled={isCreating}
-                  className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                  className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
                 >
                   {isCreating ? 'Создание...' : 'Создать'}
                 </Button>
@@ -879,7 +879,7 @@ export default function BranchManagement() {
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-[#213659]">Список филиалов</h3>
+        <h3 className="text-lg font-semibold text-[var(--color-primary)]">Список филиалов</h3>
         {!branches?.branches?.length ? (
           <div className="text-center py-12 bg-gray-50 rounded-lg">
             <Building2 className="w-16 h-16 mx-auto mb-4 text-gray-400" />
@@ -892,7 +892,7 @@ export default function BranchManagement() {
               <div key={branch.id} className="border border-gray-200 rounded-lg p-6 bg-white hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
-                    <h4 className="text-xl font-bold text-[#213659] mb-2">{branch.name}</h4>
+                    <h4 className="text-xl font-bold text-[var(--color-primary)] mb-2">{branch.name}</h4>
                     <div className="space-y-1">
                       <p className="text-gray-600 flex items-center gap-2">
                         <span className="font-medium">Адрес:</span>
@@ -922,7 +922,7 @@ export default function BranchManagement() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(branch)}
-                      className="border-[#B1D1E0] hover:border-[#213659]"
+                      className="border-[#B1D1E0] hover:border-[var(--color-primary)]"
                     >
                       <Edit className="w-4 h-4 mr-1" />
                       Редактировать
@@ -942,13 +942,13 @@ export default function BranchManagement() {
                 
                 {branch.description && (
                   <div className="mb-4">
-                    <span className="font-medium text-[#213659]">Описание:</span>
+                    <span className="font-medium text-[var(--color-primary)]">Описание:</span>
                     <p className="text-gray-600 mt-1">{branch.description}</p>
                   </div>
                 )}
 
                 <div className="mb-4">
-                  <span className="font-medium text-[#213659]">Контент:</span>
+                  <span className="font-medium text-[var(--color-primary)]">Контент:</span>
                   <div className="mt-2">
                     {renderContentPreview(branch.content || [])}
                   </div>
@@ -956,7 +956,7 @@ export default function BranchManagement() {
 
                 {branch.images && branch.images.length > 0 && (
                   <div>
-                    <span className="font-medium text-[#213659]">Изображения:</span>
+                    <span className="font-medium text-[var(--color-primary)]">Изображения:</span>
                     <div className="flex gap-2 mt-2">
                       {branch.images.slice(0, 3).map((image, index) => {
                         // Обрабатываем как относительные пути, так и полные URL
@@ -1012,7 +1012,7 @@ export default function BranchManagement() {
               <Button 
                 type="submit"
                 disabled={isUpdating}
-                className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
               >
                 {isUpdating ? 'Сохранение...' : 'Сохранить'}
               </Button>

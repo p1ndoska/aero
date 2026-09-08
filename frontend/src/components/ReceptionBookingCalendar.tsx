@@ -307,7 +307,7 @@ export default function ReceptionBookingCalendar({ manager }: ReceptionBookingCa
               <Button 
                 onClick={handleBookSlot}
                 disabled={!fullName.trim() || !email.trim()}
-                className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
               >
                 <Check className="w-4 h-4 mr-2" />
                 Записаться

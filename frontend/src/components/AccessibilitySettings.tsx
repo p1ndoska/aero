@@ -24,7 +24,7 @@ const AccessibilitySettings: React.FC<AccessibilitySettingsProps> = ({ variant =
       ? 'site-header__icon-btn site-header__a11y-btn'
       : variant === 'header-mobile'
         ? 'header-mobile__a11y-btn'
-        : 'flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border-[#213659] text-[#213659]';
+        : 'flex items-center gap-2 border-[var(--color-primary)] text-[var(--color-primary)] bg-[var(--a11y-settings-accent-soft)] hover:bg-[var(--a11y-settings-accent-soft-hover)]';
 
   const triggerContent =
     variant === 'header' || variant === 'header-mobile' ? (
@@ -49,7 +49,7 @@ const AccessibilitySettings: React.FC<AccessibilitySettingsProps> = ({ variant =
         </Button>
       </DialogTrigger>
       
-      <DialogContent className="max-w-2xl max-h-[90vh] bg-white flex flex-col">
+      <DialogContent className="accessibility-settings-dialog max-w-2xl max-h-[90vh] bg-white flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
@@ -72,6 +72,7 @@ const AccessibilitySettings: React.FC<AccessibilitySettingsProps> = ({ variant =
                   id="accessibility-mode"
                   checked={isAccessibilityMode}
                   onCheckedChange={toggleAccessibilityMode}
+                  className="focus-visible:ring-[var(--color-focus-ring)] data-[state=checked]:bg-[var(--color-primary)]"
                 />
               </div>
               <p className="text-sm text-gray-600 mt-2">
@@ -97,7 +98,7 @@ const AccessibilitySettings: React.FC<AccessibilitySettingsProps> = ({ variant =
                   min={1.0}
                   max={3.0}
                   step={0.1}
-                  className="mt-2"
+                  className="mt-2 accessibility-settings-slider [&_.bg-primary]:bg-[var(--color-primary)] [&_[role=slider]]:border-[var(--color-primary)]"
                 />
                 <p className="text-sm text-gray-600 mt-1">
                   {t('font_size_recommendation')}
@@ -115,7 +116,7 @@ const AccessibilitySettings: React.FC<AccessibilitySettingsProps> = ({ variant =
                   min={1.0}
                   max={2.0}
                   step={0.1}
-                  className="mt-2"
+                  className="mt-2 accessibility-settings-slider [&_.bg-primary]:bg-[var(--color-primary)] [&_[role=slider]]:border-[var(--color-primary)]"
                 />
                 <p className="text-sm text-gray-600 mt-1">
                   {t('line_spacing_recommendation')}
@@ -133,7 +134,7 @@ const AccessibilitySettings: React.FC<AccessibilitySettingsProps> = ({ variant =
                   min={0}
                   max={2}
                   step={0.1}
-                  className="mt-2"
+                  className="mt-2 accessibility-settings-slider [&_.bg-primary]:bg-[var(--color-primary)] [&_[role=slider]]:border-[var(--color-primary)]"
                 />
                 <p className="text-sm text-gray-600 mt-1">
                   {t('letter_spacing_recommendation')}
@@ -147,10 +148,10 @@ const AccessibilitySettings: React.FC<AccessibilitySettingsProps> = ({ variant =
                   value={settings.fontFamily}
                   onValueChange={(value: 'default' | 'arial') => updateSettings({ fontFamily: value })}
                 >
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger className="mt-2 focus:ring-[var(--color-focus-ring)] focus:border-[var(--color-primary)]">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="accessibility-settings-select-content">
                     <SelectItem value="default">{t('standard_font')}</SelectItem>
                     <SelectItem value="arial">{t('arial_font')}</SelectItem>
                   </SelectContent>
@@ -175,10 +176,10 @@ const AccessibilitySettings: React.FC<AccessibilitySettingsProps> = ({ variant =
                   value={settings.contrast}
                   onValueChange={(value: 'normal' | 'high') => updateSettings({ contrast: value })}
                 >
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger className="mt-2 focus:ring-[var(--color-focus-ring)] focus:border-[var(--color-primary)]">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="accessibility-settings-select-content">
                     <SelectItem value="normal">{t('normal_contrast')}</SelectItem>
                     <SelectItem value="high">{t('high_contrast')}</SelectItem>
                   </SelectContent>
@@ -193,10 +194,10 @@ const AccessibilitySettings: React.FC<AccessibilitySettingsProps> = ({ variant =
                   value={settings.colorScheme}
                   onValueChange={(value: 'normal' | 'dark' | 'inverted') => updateSettings({ colorScheme: value })}
                 >
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger className="mt-2 focus:ring-[var(--color-focus-ring)] focus:border-[var(--color-primary)]">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="accessibility-settings-select-content">
                     <SelectItem value="normal">{t('normal_contrast')}</SelectItem>
                     <SelectItem value="dark">{t('dark_scheme')}</SelectItem>
                     <SelectItem value="inverted">{t('inverted_scheme')}</SelectItem>
@@ -229,6 +230,7 @@ const AccessibilitySettings: React.FC<AccessibilitySettingsProps> = ({ variant =
                   id="reduce-motion"
                   checked={settings.reduceMotion}
                   onCheckedChange={(checked) => updateSettings({ reduceMotion: checked })}
+                  className="focus-visible:ring-[var(--color-focus-ring)] data-[state=checked]:bg-[var(--color-primary)]"
                 />
               </div>
 
@@ -246,6 +248,7 @@ const AccessibilitySettings: React.FC<AccessibilitySettingsProps> = ({ variant =
                   id="grayscale"
                   checked={settings.grayscale}
                   onCheckedChange={(checked) => updateSettings({ grayscale: checked })}
+                  className="focus-visible:ring-[var(--color-focus-ring)] data-[state=checked]:bg-[var(--color-primary)]"
                 />
               </div>
 
@@ -263,6 +266,7 @@ const AccessibilitySettings: React.FC<AccessibilitySettingsProps> = ({ variant =
                   id="hide-images"
                   checked={settings.hideImages}
                   onCheckedChange={(checked) => updateSettings({ hideImages: checked })}
+                  className="focus-visible:ring-[var(--color-focus-ring)] data-[state=checked]:bg-[var(--color-primary)]"
                 />
               </div>
 
@@ -280,6 +284,7 @@ const AccessibilitySettings: React.FC<AccessibilitySettingsProps> = ({ variant =
                   id="show-focus"
                   checked={settings.showFocus}
                   onCheckedChange={(checked) => updateSettings({ showFocus: checked })}
+                  className="focus-visible:ring-[var(--color-focus-ring)] data-[state=checked]:bg-[var(--color-primary)]"
                 />
               </div>
             </CardContent>
@@ -295,7 +300,10 @@ const AccessibilitySettings: React.FC<AccessibilitySettingsProps> = ({ variant =
               <RotateCcw className="h-4 w-4" />
               {t('reset')}
             </Button>
-            <Button onClick={() => setOpen(false)}>
+            <Button
+              onClick={() => setOpen(false)}
+              className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
+            >
               {t('apply_settings')}
             </Button>
           </div>

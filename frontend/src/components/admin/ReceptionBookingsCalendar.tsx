@@ -153,7 +153,7 @@ export default function ReceptionBookingsCalendar() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#213659] mb-2">Записи на приемы</h2>
+          <h2 className="text-2xl font-bold text-[var(--color-primary)] mb-2">Записи на приемы</h2>
           <p className="text-gray-600">Календарь записей на приемы к руководителям</p>
         </div>
         <div className="flex gap-2">
@@ -185,7 +185,7 @@ export default function ReceptionBookingsCalendar() {
         >
           <ChevronLeft className="w-4 h-4" />
         </Button>
-        <h3 className="text-xl font-semibold text-[#213659] min-w-[200px] text-center">
+        <h3 className="text-xl font-semibold text-[var(--color-primary)] min-w-[200px] text-center">
           {monthNames[currentMonth]} {currentYear}
         </h3>
         <Button
@@ -218,7 +218,7 @@ export default function ReceptionBookingsCalendar() {
             <Card key={managerId}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5 text-[#213659]" />
+                  <User className="w-5 h-5 text-[var(--color-primary)]" />
                   {managerData.manager?.name || 'Неизвестный руководитель'}
                   {managerData.manager?.position && (
                     <span className="text-sm font-normal text-gray-600">
@@ -277,7 +277,7 @@ export default function ReceptionBookingsCalendar() {
                                 {daySlots.map((slot) => (
                                   <div
                                     key={slot.id}
-                                    className="bg-gradient-to-r from-[#213659] to-[#1a2a4a] border-2 border-[#0f1e3a] rounded-md px-2 py-2 text-xs group relative cursor-pointer hover:from-[#1a2a4a] hover:to-[#0f1e3a] hover:shadow-lg transition-all shadow-md ring-1 ring-blue-300"
+                                    className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-hover)] border-2 border-[#0f1e3a] rounded-md px-2 py-2 text-xs group relative cursor-pointer hover:from-[var(--color-primary-hover)] hover:to-[#0f1e3a] hover:shadow-lg transition-all shadow-md ring-1 ring-blue-300"
                                     onClick={() => handleSlotClick(slot)}
                                   >
                                     <div className="flex items-center justify-between gap-1">
@@ -312,7 +312,7 @@ export default function ReceptionBookingsCalendar() {
         <DialogContent className="max-w-md bg-white">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-[#213659]" />
+              <Calendar className="w-5 h-5 text-[var(--color-primary)]" />
               Детали записи на прием
             </DialogTitle>
             <DialogDescription>

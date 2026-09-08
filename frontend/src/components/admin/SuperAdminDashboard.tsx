@@ -117,8 +117,8 @@ export default function SuperAdminDashboard() {
                                onClick={() => setActiveTab('statistics')}
                            >
                                <div className="text-center">
-                                   <BarChart3 className={`w-8 h-8 mx-auto mb-3 ${activeTab === 'statistics' ? 'text-[#213659]' : 'text-[#213659]'}`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <BarChart3 className={`w-8 h-8 mx-auto mb-3 ${activeTab === 'statistics' ? 'text-[var(--color-primary)]' : 'text-[var(--color-primary)]'}`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                                        Статистика
                                    </h3>
                                </div>
@@ -136,8 +136,8 @@ export default function SuperAdminDashboard() {
                     onClick={() => setActiveTab('roles')}
                 >
                     <div className="text-center">
-                                   <Edit className={`w-8 h-8 mx-auto mb-3 ${activeTab === 'roles' ? 'text-[#213659]' : 'text-[#213659]'}`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <Edit className={`w-8 h-8 mx-auto mb-3 ${activeTab === 'roles' ? 'text-[var(--color-primary)]' : 'text-[var(--color-primary)]'}`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                             Управление ролями
                         </h3>
                     </div>
@@ -155,8 +155,8 @@ export default function SuperAdminDashboard() {
                                onClick={() => setActiveTab('content-roles')}
                            >
                                <div className="text-center">
-                                   <LockIcon className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <LockIcon className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                                        Роли доступа к контенту
                         </h3>
                     </div>
@@ -174,8 +174,8 @@ export default function SuperAdminDashboard() {
                     onClick={() => setActiveTab('users')}
                 >
                     <div className="text-center">
-                                   <Users className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <Users className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                             Управление пользователями
                         </h3>
                     </div>
@@ -193,8 +193,8 @@ export default function SuperAdminDashboard() {
                     onClick={() => setActiveTab('categories')}
                 >
                     <div className="text-center">
-                                   <FolderOpen className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <FolderOpen className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                             Управление категориями
                         </h3>
                     </div>
@@ -212,8 +212,8 @@ export default function SuperAdminDashboard() {
                     onClick={() => setActiveTab('branches')}
                 >
                     <div className="text-center">
-                                   <Building2 className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <Building2 className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                             Управление филиалами
                         </h3>
                     </div>
@@ -231,8 +231,8 @@ export default function SuperAdminDashboard() {
                            onClick={() => setActiveTab('news')}
                        >
                            <div className="text-center">
-                                   <Newspaper className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <Newspaper className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                                    Управление новостями
                                </h3>
                            </div>
@@ -250,8 +250,8 @@ export default function SuperAdminDashboard() {
                            onClick={() => setActiveTab('management')}
                        >
                            <div className="text-center">
-                                   <UserCheck className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <UserCheck className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                                    Управление руководителями
                                </h3>
                            </div>
@@ -269,8 +269,8 @@ export default function SuperAdminDashboard() {
                            onClick={() => setActiveTab('vacancies')}
                        >
                            <div className="text-center">
-                                   <Briefcase className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <Briefcase className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                                    Управление вакансиями
                                </h3>
                            </div>
@@ -288,8 +288,8 @@ export default function SuperAdminDashboard() {
                            onClick={() => setActiveTab('resumes')}
                        >
                            <div className="text-center">
-                                   <FileText className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <FileText className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                                    Управление резюме
                                </h3>
                            </div>
@@ -307,8 +307,8 @@ export default function SuperAdminDashboard() {
                            onClick={() => setActiveTab('logos')}
                        >
                            <div className="text-center">
-                                   <Building className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <Building className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                                    Логотипы организаций
                                </h3>
                            </div>
@@ -326,8 +326,8 @@ export default function SuperAdminDashboard() {
                            onClick={() => setActiveTab('hero-image')}
                        >
                            <div className="text-center">
-                                   <ImageIcon className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <ImageIcon className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                                    Изображение верхнего блока
                                </h3>
                            </div>
@@ -345,8 +345,8 @@ export default function SuperAdminDashboard() {
                            onClick={() => setActiveTab('social-categories')}
                        >
                            <div className="text-center">
-                                   <Heart className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <Heart className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                                    Категории соц. работы
                                </h3>
                            </div>
@@ -364,8 +364,8 @@ export default function SuperAdminDashboard() {
                            onClick={() => setActiveTab('about-company-categories')}
                        >
                            <div className="text-center">
-                                   <Info className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <Info className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                                    Подкатегории "О предприятии"
                                </h3>
                            </div>
@@ -383,8 +383,8 @@ export default function SuperAdminDashboard() {
                                onClick={() => setActiveTab('aeronautical-info-categories')}
                            >
                                <div className="text-center">
-                                   <Plane className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <Plane className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                                        Подкатегории "Аэронавигационная информация"
                                    </h3>
                                </div>
@@ -402,8 +402,8 @@ export default function SuperAdminDashboard() {
                                onClick={() => setActiveTab('appeals-categories')}
                            >
                                <div className="text-center">
-                                   <Mail className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <Mail className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                                        Подкатегории "Обращения"
                                    </h3>
                                </div>
@@ -421,8 +421,8 @@ export default function SuperAdminDashboard() {
                                onClick={() => setActiveTab('services-categories')}
                            >
                                <div className="text-center">
-                                   <Settings className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <Settings className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                                        Подкатегории "Услуги"
                                    </h3>
                                </div>
@@ -440,8 +440,8 @@ export default function SuperAdminDashboard() {
                                onClick={() => setActiveTab('service-requests')}
                            >
                                <div className="text-center">
-                                   <Mail className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <Mail className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                                        Заявки на услуги
                                    </h3>
                                </div>
@@ -459,8 +459,8 @@ export default function SuperAdminDashboard() {
                                onClick={() => setActiveTab('reception-bookings')}
                            >
                                <div className="text-center">
-                                   <Calendar className={`w-8 h-8 mx-auto mb-3 text-[#213659]`} />
-                                   <h3 className={`font-semibold text-sm text-[#213659]`}>
+                                   <Calendar className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
                                        Записи на приемы
                                    </h3>
                                </div>
@@ -526,14 +526,14 @@ function RolesPanel() {
     return (
         <div className="space-y-6">
             <div className="text-center">
-                <h2 className="text-2xl font-bold text-[#213659] mb-2">Системные роли (только чтение)</h2>
+                <h2 className="text-2xl font-bold text-[var(--color-primary)] mb-2">Системные роли (только чтение)</h2>
                 <p className="text-gray-600">
                     Эти роли используются для прав доступа в системе. Их нельзя редактировать из панели администратора.
                 </p>
             </div>
 
             <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-[#213659]">Список ролей</h3>
+                <h3 className="text-lg font-semibold text-[var(--color-primary)]">Список ролей</h3>
                 {isLoading && <div className="text-center py-4 text-gray-500">Загрузка ролей...</div>}
                 {isError && (
                     <div className="text-center py-4 text-red-500">
@@ -551,7 +551,7 @@ function RolesPanel() {
                         className="flex items-center justify-between gap-3 border border-gray-200 p-4 bg-white rounded-lg"
                     >
                         <div>
-                            <div className="text-[#213659] font-medium uppercase tracking-wide">{r.name}</div>
+                            <div className="text-[var(--color-primary)] font-medium uppercase tracking-wide">{r.name}</div>
                             <div className="text-xs text-gray-500 mt-1">
                                 ID: {r.id}
                             </div>
@@ -643,7 +643,7 @@ function ContentRolesPanel() {
     return (
         <div className="space-y-6">
             <div className="text-center">
-                <h2 className="text-2xl font-bold text-[#213659] mb-2">Роли доступа к контенту</h2>
+                <h2 className="text-2xl font-bold text-[var(--color-primary)] mb-2">Роли доступа к контенту</h2>
                 <p className="text-gray-600">
                     Здесь вы можете создать дополнительные роли, которые будут использоваться для ограничения доступа к блокам контента.
                 </p>
@@ -652,12 +652,12 @@ function ContentRolesPanel() {
             {/* Создание новой роли */}
             <form onSubmit={create} className="flex flex-col md:flex-row gap-3 items-stretch md:items-end border border-gray-200 rounded-lg p-4 bg-gray-50">
                 <div className="flex-1">
-                    <Label className="text-sm text-[#213659]">Название новой роли</Label>
+                    <Label className="text-sm text-[var(--color-primary)]">Название новой роли</Label>
                     <Input
                         value={newRoleName}
                         onChange={(e) => setNewRoleName(e.target.value)}
                         placeholder="Например: CONTENT_MANAGERS"
-                        className="mt-1 bg-white border-[#B1D1E0] focus:border-[#213659]"
+                        className="mt-1 bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]"
                     />
                     <p className="text-xs text-gray-500 mt-1">
                         Рекомендуется использовать ЛАТИНСКИЕ БУКВЫ и подчеркивания (например, CONTENT_PILOTS).
@@ -665,7 +665,7 @@ function ContentRolesPanel() {
                 </div>
                 <Button
                     type="submit"
-                    className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+                    className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
                     disabled={isCreating}
                 >
                     {isCreating ? 'Создание...' : 'Создать роль'}
@@ -674,7 +674,7 @@ function ContentRolesPanel() {
 
             {/* Список ролей */}
             <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-[#213659]">Дополнительные роли</h3>
+                <h3 className="text-lg font-semibold text-[var(--color-primary)]">Дополнительные роли</h3>
                 {isLoading && <div className="text-center py-4 text-gray-500">Загрузка ролей...</div>}
                 {isError && (
                     <div className="text-center py-4 text-red-500">
@@ -693,9 +693,9 @@ function ContentRolesPanel() {
                                 <Input 
                                     value={editingName} 
                                     onChange={(e)=>setEditingName(e.target.value)} 
-                                           className="bg-white border-[#B1D1E0] focus:border-[#213659] flex-1"
+                                           className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)] flex-1"
                                 />
-                                       <Button onClick={save} className="bg-[#213659] hover:bg-[#1a2a4a] text-white" disabled={isUpdating}>
+                                       <Button onClick={save} className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white" disabled={isUpdating}>
                                     <Save className="w-4 h-4 mr-1"/>
                                     {isUpdating ? 'Сохранение...' : 'Сохранить'}
                                 </Button>
@@ -705,7 +705,7 @@ function ContentRolesPanel() {
                             </>
                         ) : (
                             <>
-                                       <div className="flex-1 text-[#213659] font-medium">{r.name}</div>
+                                       <div className="flex-1 text-[var(--color-primary)] font-medium">{r.name}</div>
                                 <Button variant="outline" size="sm" onClick={()=>{setEditingId(r.id); setEditingName(r.name)}}>
                                     <Edit className="w-4 h-4 mr-1"/>
                                     Редактировать
@@ -873,7 +873,7 @@ function UsersPanel() {
     return (
         <div className="space-y-6">
             <div className="text-center">
-                       <h2 className="text-2xl font-bold text-[#213659] mb-2">Управление пользователями</h2>
+                       <h2 className="text-2xl font-bold text-[var(--color-primary)] mb-2">Управление пользователями</h2>
                 <p className="text-gray-600">Создание, изменение ролей и удаление пользователей</p>
             </div>
 
@@ -891,12 +891,12 @@ function UsersPanel() {
                         <SelectTrigger>
                             <SelectValue placeholder={isLoadingRoles ? "Загрузка ролей..." : isErrorRoles ? "Ошибка загрузки ролей" : "Выберите роль"} />
                         </SelectTrigger>
-                        <SelectContent className="bg-white text-[#213659] border border-[#B1D1E0]">
+                        <SelectContent className="bg-white text-[var(--color-primary)] border border-[#B1D1E0]">
                             {isLoadingRoles && <SelectItem value="loading" disabled>Загрузка...</SelectItem>}
                             {isErrorRoles && <SelectItem value="error" disabled>Ошибка загрузки ролей</SelectItem>}
                             {!isLoadingRoles && !isErrorRoles && (!roles || roles.length === 0) && <SelectItem value="empty" disabled>Роли не найдены</SelectItem>}
                             {!isLoadingRoles && !isErrorRoles && roles && roles.length > 0 && roles.map((role) => (
-                                <SelectItem key={role.id} value={role.name} className="focus:bg-[#EFF6FF] focus:text-[#213659]">
+                                <SelectItem key={role.id} value={role.name} className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">
                                     {role.name}
                                 </SelectItem>
                             ))}
@@ -904,7 +904,7 @@ function UsersPanel() {
                     </Select>
                     <Button 
                         type="submit" 
-                        className="bg-[#213659] hover:bg-[#213659] text-white"
+                        className="bg-[var(--color-primary)] hover:bg-[var(--color-primary)] text-white"
                         disabled={!newUser.firstName?.trim() || !newUser.lastName?.trim() || !newUser.email?.trim() || !newUser.password?.trim() || !newUser.role?.trim()}
                     >
                         Создать пользователя
@@ -915,7 +915,7 @@ function UsersPanel() {
                 <div className="space-y-4 p-4 border border-gray-200 rounded-lg bg-white">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <Label htmlFor="search" className="text-sm font-medium text-[#213659] mb-2 block">Поиск по email или имени</Label>
+                            <Label htmlFor="search" className="text-sm font-medium text-[var(--color-primary)] mb-2 block">Поиск по email или имени</Label>
                             <Input
                                 id="search"
                                 placeholder="Введите email или имя..."
@@ -925,15 +925,15 @@ function UsersPanel() {
                             />
                         </div>
                         <div>
-                            <Label htmlFor="roleFilter" className="text-sm font-medium text-[#213659] mb-2 block">Фильтр по роли</Label>
+                            <Label htmlFor="roleFilter" className="text-sm font-medium text-[var(--color-primary)] mb-2 block">Фильтр по роли</Label>
                             <div className="flex gap-2">
                                 <Select value={roleFilter || undefined} onValueChange={setRoleFilter}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Все роли" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-white text-[#213659] border border-[#B1D1E0]">
+                                    <SelectContent className="bg-white text-[var(--color-primary)] border border-[#B1D1E0]">
                                         {availableRoles.map((role) => (
-                                            <SelectItem key={role} value={role} className="focus:bg-[#EFF6FF] focus:text-[#213659]">{role}</SelectItem>
+                                            <SelectItem key={role} value={role} className="focus:bg-[#EFF6FF] focus:text-[var(--color-primary)]">{role}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -955,7 +955,7 @@ function UsersPanel() {
                     {/* Фильтры по датам */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
                         <div>
-                            <Label className="text-sm font-medium text-[#213659] mb-2 block">Фильтр по дате создания</Label>
+                            <Label className="text-sm font-medium text-[var(--color-primary)] mb-2 block">Фильтр по дате создания</Label>
                             <div className="grid grid-cols-2 gap-2">
                                 <div>
                                     <Label htmlFor="createdFrom" className="text-xs text-gray-600 mb-1 block">От</Label>
@@ -995,7 +995,7 @@ function UsersPanel() {
                         </div>
                         
                         <div>
-                            <Label className="text-sm font-medium text-[#213659] mb-2 block">Фильтр по дате последнего входа</Label>
+                            <Label className="text-sm font-medium text-[var(--color-primary)] mb-2 block">Фильтр по дате последнего входа</Label>
                             <div className="grid grid-cols-2 gap-2">
                                 <div>
                                     <Label htmlFor="lastLoginFrom" className="text-xs text-gray-600 mb-1 block">От</Label>
@@ -1037,7 +1037,7 @@ function UsersPanel() {
                 </div>
 
             <div className="space-y-3">
-                       <h3 className="text-lg font-semibold text-[#213659]">
+                       <h3 className="text-lg font-semibold text-[var(--color-primary)]">
                            Список пользователей 
                            {filteredUsers.length !== users?.users?.length && (
                                <span className="text-sm text-gray-500 ml-2">
@@ -1053,7 +1053,7 @@ function UsersPanel() {
                     ) : filteredUsers.map((u: any) => (
                     <div key={u.id} className="flex items-center gap-3 border border-gray-200 p-4 bg-white rounded-lg hover:shadow-md transition-shadow">
                         <div className="flex-1">
-                               <div className="text-[#213659] font-medium">{u.email}</div>
+                               <div className="text-[var(--color-primary)] font-medium">{u.email}</div>
                             <div className="text-sm text-gray-500 mb-1">
                                 {u.firstName && u.lastName && `${u.firstName} ${u.lastName} • `}
                                 Текущая роль: {u.role?.name || 'Не назначена'}
@@ -1084,7 +1084,7 @@ function UsersPanel() {
                                 value={selected[u.id] || ""} 
                                 onValueChange={(value) => setSelected({ ...selected, [u.id]: value })}
                             >
-                                <SelectTrigger className="w-60 bg-white border-[#B1D1E0] focus:border-[#213659]">
+                                <SelectTrigger className="w-60 bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]">
                                     <SelectValue placeholder={isLoadingRoles ? "Загрузка ролей..." : isErrorRoles ? "Ошибка загрузки ролей" : "Выберите новую роль"} />
                                 </SelectTrigger>
                                 <SelectContent>

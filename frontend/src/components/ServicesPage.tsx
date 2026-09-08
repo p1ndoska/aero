@@ -114,7 +114,7 @@ const ServicesPage = () => {
                   )}
                   <div className="flex gap-2">
                     <Link to={`/services/${category.pageType}`} className="flex-1">
-                      <Button className="w-full transition-colors bg-[#213659] text-white hover:bg-[#1a2a4a] focus:ring-2 focus:ring-offset-2 focus:ring-[#213659]">
+                      <Button className="w-full transition-colors bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)]">
                         {language === 'en' ? 'Learn more' : language === 'be' ? 'Даведацца больш' : 'Подробнее'}
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
@@ -122,7 +122,7 @@ const ServicesPage = () => {
                     <Button
                       variant="outline"
                       onClick={() => handleRequestService(category.pageType, getTranslatedField(category, 'name'))}
-                      className="px-4 transition-colors border-[#213659] text-[#213659] hover:bg-[#213659] hover:text-white"
+                      className="px-4 transition-colors border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
                     >
                       <Send className="w-4 h-4" />
                     </Button>

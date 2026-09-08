@@ -20,7 +20,7 @@ export default function BranchesPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#213659] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)] mx-auto mb-4"></div>
           <p className="text-gray-600">{t('loading_branches') || 'Загрузка информации о филиалах...'}</p>
         </div>
       </div>
@@ -43,7 +43,7 @@ export default function BranchesPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-[#213659] mb-2 flex items-center justify-center gap-3">
+        <h1 className="text-3xl font-bold text-[var(--color-primary)] mb-2 flex items-center justify-center gap-3">
           <Building2 className="w-8 h-8" />
             {t('structural_units') || 'Структурные подразделения'}
         </h1>
@@ -68,7 +68,7 @@ export default function BranchesPage() {
                     <img
                       src={mainImage && mainImage.startsWith('http') ? mainImage : `${BASE_URL}${mainImage?.startsWith('/') ? '' : '/'}${mainImage}`}
                       alt={getTranslatedField(branch, 'name', language)}
-                      className="w-full h-48 md:h-56 rounded-xl object-cover object-center mb-4 border-2 border-[#213659]"
+                      className="w-full h-48 md:h-56 rounded-xl object-cover object-center mb-4 border-2 border-[var(--color-primary)]"
                       onError={(e) => {
                         console.error(' Ошибка загрузки изображения филиала:', mainImage);
                         const imageUrl = mainImage && mainImage.startsWith('http') ? mainImage : `${BASE_URL}${mainImage?.startsWith('/') ? '' : '/'}${mainImage}`;
@@ -83,12 +83,12 @@ export default function BranchesPage() {
                     />
                   ) : null}
                   {!mainImage && (
-                    <div className="w-full h-48 md:h-56 rounded-xl bg-[#213659] mb-4 flex items-center justify-center border-2 border-[#213659]">
+                    <div className="w-full h-48 md:h-56 rounded-xl bg-[var(--color-primary)] mb-4 flex items-center justify-center border-2 border-[var(--color-primary)]">
                       <ImageIcon className="w-10 h-10 text-white" />
                     </div>
                   )}
                   <Link to={`/about/branches/${branch.id}`} className="block">
-                    <h3 className="text-xl font-bold text-[#213659] hover:underline mb-3">
+                    <h3 className="text-xl font-bold text-[var(--color-primary)] hover:underline mb-3">
                       {getTranslatedField(branch, 'name', language)}
                     </h3>
                   </Link>
@@ -96,7 +96,7 @@ export default function BranchesPage() {
                   {/* Местоположение */}
                   {getTranslatedField(branch, 'address', language) && (
                     <div className="flex items-start gap-2 mb-3">
-                      <MapPin className="w-4 h-4 text-[#213659] mt-0.5 flex-shrink-0" />
+                      <MapPin className="w-4 h-4 text-[var(--color-primary)] mt-0.5 flex-shrink-0" />
                       <p className="text-sm text-gray-600 leading-relaxed">
                         {getTranslatedField(branch, 'address', language)}
                       </p>
@@ -107,10 +107,10 @@ export default function BranchesPage() {
                   <div className="space-y-2">
                     {branch.phone && (
                       <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-[#213659] flex-shrink-0" />
+                        <Phone className="w-4 h-4 text-[var(--color-primary)] flex-shrink-0" />
                         <a 
                           href={`tel:${branch.phone}`}
-                          className="text-sm text-gray-600 hover:text-[#213659] hover:underline"
+                          className="text-sm text-gray-600 hover:text-[var(--color-primary)] hover:underline"
                         >
                           {branch.phone}
                         </a>
@@ -118,10 +118,10 @@ export default function BranchesPage() {
                     )}
                     {branch.email && (
                       <div className="flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-[#213659] flex-shrink-0" />
+                        <Mail className="w-4 h-4 text-[var(--color-primary)] flex-shrink-0" />
                         <a 
                           href={`mailto:${branch.email}`}
-                          className="text-sm text-gray-600 hover:text-[#213659] hover:underline"
+                          className="text-sm text-gray-600 hover:text-[var(--color-primary)] hover:underline"
                         >
                           {branch.email}
                         </a>

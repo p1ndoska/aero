@@ -220,7 +220,7 @@ const ServicesCategoryManagement = () => {
         <h2 className="text-2xl font-bold">Управление подкатегориями услуг</h2>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-[#213659] hover:bg-[#1a2a4a] text-white" style={{backgroundColor: '#213659', color: 'white'}}>
+            <Button className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white" style={{backgroundColor: 'var(--color-primary)', color: 'white'}}>
               Добавить подкатегорию
             </Button>
           </DialogTrigger>
@@ -310,7 +310,7 @@ const ServicesCategoryManagement = () => {
                 <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                   Отмена
                 </Button>
-                <Button type="submit" className="bg-[#213659] hover:bg-[#1a2a4a] text-white">
+                <Button type="submit" className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white">
                   Создать
                 </Button>
               </div>
@@ -457,7 +457,7 @@ const ServicesCategoryManagement = () => {
                 <X className="w-4 h-4 mr-2" />
                 Отмена
               </Button>
-              <Button type="submit" className="bg-[#213659] hover:bg-[#1a2a4a] text-white">
+              <Button type="submit" className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white">
                 Сохранить
               </Button>
             </div>

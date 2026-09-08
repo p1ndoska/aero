@@ -57,7 +57,7 @@ export default function CookiePolicyPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 <div className="text-center">
                   <div className={`w-12 h-12 mx-auto mb-2 rounded-full flex items-center justify-center ${
-                    cookieConsent.necessary ? 'bg-[#213659]' : 'bg-gray-300'
+                    cookieConsent.necessary ? 'bg-[var(--color-primary)]' : 'bg-gray-300'
                   }`}>
                     <Shield className="w-6 h-6 text-white" />
                   </div>
@@ -66,7 +66,7 @@ export default function CookiePolicyPage() {
                 </div>
                 <div className="text-center">
                   <div className={`w-12 h-12 mx-auto mb-2 rounded-full flex items-center justify-center ${
-                    cookieConsent.functional ? 'bg-[#213659]' : 'bg-gray-300'
+                    cookieConsent.functional ? 'bg-[var(--color-primary)]' : 'bg-gray-300'
                   }`}>
                     <Settings className="w-6 h-6 text-white" />
                   </div>
@@ -77,7 +77,7 @@ export default function CookiePolicyPage() {
                 </div>
                 <div className="text-center">
                   <div className={`w-12 h-12 mx-auto mb-2 rounded-full flex items-center justify-center ${
-                    cookieConsent.analytics ? 'bg-[#213659]' : 'bg-gray-300'
+                    cookieConsent.analytics ? 'bg-[var(--color-primary)]' : 'bg-gray-300'
                   }`}>
                     <Info className="w-6 h-6 text-white" />
                   </div>
@@ -88,7 +88,7 @@ export default function CookiePolicyPage() {
                 </div>
                 <div className="text-center">
                   <div className={`w-12 h-12 mx-auto mb-2 rounded-full flex items-center justify-center ${
-                    cookieConsent.marketing ? 'bg-[#213659]' : 'bg-gray-300'
+                    cookieConsent.marketing ? 'bg-[var(--color-primary)]' : 'bg-gray-300'
                   }`}>
                     <Calendar className="w-6 h-6 text-white" />
                   </div>
@@ -130,9 +130,9 @@ export default function CookiePolicyPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Необходимые */}
-              <div className="border-l-4 border-[#213659] pl-4">
+              <div className="border-l-4 border-[var(--color-primary)] pl-4">
                 <h3 className="font-bold text-lg text-gray-900 mb-2 flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-[#213659]" />
+                  <Shield className="w-5 h-5 text-[var(--color-primary)]" />
                   {t('necessary_cookies') || 'Необходимые cookie'}
                 </h3>
                 <p className="text-gray-700 mb-3">
@@ -150,9 +150,9 @@ export default function CookiePolicyPage() {
               </div>
 
               {/* Функциональные */}
-              <div className="border-l-4 border-[#213659] pl-4">
+              <div className="border-l-4 border-[var(--color-primary)] pl-4">
                 <h3 className="font-bold text-lg text-gray-900 mb-2 flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-[#213659]" />
+                  <Settings className="w-5 h-5 text-[var(--color-primary)]" />
                   {t('functional_cookies') || 'Функциональные cookie'}
                 </h3>
                 <p className="text-gray-700 mb-3">
@@ -170,9 +170,9 @@ export default function CookiePolicyPage() {
               </div>
 
               {/* Аналитические */}
-              <div className="border-l-4 border-[#213659] pl-4">
+              <div className="border-l-4 border-[var(--color-primary)] pl-4">
                 <h3 className="font-bold text-lg text-gray-900 mb-2 flex items-center gap-2">
-                  <Info className="w-5 h-5 text-[#213659]" />
+                  <Info className="w-5 h-5 text-[var(--color-primary)]" />
                   {t('analytics_cookies') || 'Аналитические cookie'}
                 </h3>
                 <p className="text-gray-700 mb-3">
@@ -193,9 +193,9 @@ export default function CookiePolicyPage() {
               </div>
 
               {/* Маркетинговые */}
-              <div className="border-l-4 border-[#213659] pl-4">
+              <div className="border-l-4 border-[var(--color-primary)] pl-4">
                 <h3 className="font-bold text-lg text-gray-900 mb-2 flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-[#213659]" />
+                  <Calendar className="w-5 h-5 text-[var(--color-primary)]" />
                   {t('marketing_cookies') || 'Маркетинговые cookie'}
                 </h3>
                 <p className="text-gray-700 mb-3">

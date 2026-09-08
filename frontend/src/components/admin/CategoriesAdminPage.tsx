@@ -146,30 +146,30 @@ const CategoriesAdminPage = () => {
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex items-center justify-between mb-6">
-                <h1 className="text-3xl font-bold text-[#213659]">Категории новостей</h1>
+                <h1 className="text-3xl font-bold text-[var(--color-primary)]">Категории новостей</h1>
             </div>
 
             <Card className="mb-8">
                 <CardHeader>
-                    <CardTitle className="text-[#213659]">Добавить категорию</CardTitle>
+                    <CardTitle className="text-[var(--color-primary)]">Добавить категорию</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleCreate} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <Label htmlFor="new-category" className="text-[#213659]">Название (RU) *</Label>
+                                <Label htmlFor="new-category" className="text-[var(--color-primary)]">Название (RU) *</Label>
                                 <Input id="new-category" value={newName} onChange={(e) => setNewName(e.target.value)} className="bg-white border-[#B1D1E0]" required />
                             </div>
                             <div>
-                                <Label htmlFor="new-category-en" className="text-[#213659]">Название (EN)</Label>
+                                <Label htmlFor="new-category-en" className="text-[var(--color-primary)]">Название (EN)</Label>
                                 <Input id="new-category-en" value={newNameEn} onChange={(e) => setNewNameEn(e.target.value)} className="bg-white border-[#B1D1E0]" />
                             </div>
                             <div>
-                                <Label htmlFor="new-category-be" className="text-[#213659]">Название (BE)</Label>
+                                <Label htmlFor="new-category-be" className="text-[var(--color-primary)]">Название (BE)</Label>
                                 <Input id="new-category-be" value={newNameBe} onChange={(e) => setNewNameBe(e.target.value)} className="bg-white border-[#B1D1E0]" />
                             </div>
                         </div>
-                        <Button type="submit" className="bg-[#213659] hover:bg-[#1a2a4a] text-white" disabled={isCreating}>
+                        <Button type="submit" className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white" disabled={isCreating}>
                             <Plus className="w-4 h-4 mr-2" />Создать
                         </Button>
                     </form>
@@ -178,14 +178,14 @@ const CategoriesAdminPage = () => {
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-[#213659]">Список категорий</CardTitle>
+                    <CardTitle className="text-[var(--color-primary)]">Список категорий</CardTitle>
                     <p className="text-sm text-gray-600 mt-2">
                         💡 Категории можно удалить вместе с новостями. При попытке удалить категорию с новостями система предложит каскадное удаление.
                     </p>
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
-                        <div className="text-[#213659]">Загрузка...</div>
+                        <div className="text-[var(--color-primary)]">Загрузка...</div>
                     ) : !data?.length ? (
                         <div className="text-[#6A81A9]">Категорий нет</div>
                     ) : (
@@ -196,27 +196,27 @@ const CategoriesAdminPage = () => {
                                             <div className="space-y-4">
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                     <div>
-                                                        <Label className="text-[#213659]">Название (RU) *</Label>
-                                                        <Input value={editingName} onChange={(e) => setEditingName(e.target.value)} className="bg-white border-[#B1D1E0] focus:border-[#213659]" required />
+                                                        <Label className="text-[var(--color-primary)]">Название (RU) *</Label>
+                                                        <Input value={editingName} onChange={(e) => setEditingName(e.target.value)} className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]" required />
                                                     </div>
                                                     <div>
-                                                        <Label className="text-[#213659]">Название (EN)</Label>
-                                                        <Input value={editingNameEn} onChange={(e) => setEditingNameEn(e.target.value)} className="bg-white border-[#B1D1E0] focus:border-[#213659]" />
+                                                        <Label className="text-[var(--color-primary)]">Название (EN)</Label>
+                                                        <Input value={editingNameEn} onChange={(e) => setEditingNameEn(e.target.value)} className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]" />
                                                     </div>
                                                     <div>
-                                                        <Label className="text-[#213659]">Название (BE)</Label>
-                                                        <Input value={editingNameBe} onChange={(e) => setEditingNameBe(e.target.value)} className="bg-white border-[#B1D1E0] focus:border-[#213659]" />
+                                                        <Label className="text-[var(--color-primary)]">Название (BE)</Label>
+                                                        <Input value={editingNameBe} onChange={(e) => setEditingNameBe(e.target.value)} className="bg-white border-[#B1D1E0] focus:border-[var(--color-primary)]" />
                                                     </div>
                                                 </div>
                                                 <div className="flex gap-2">
-                                                    <Button onClick={applyEdit} className="bg-[#213659] hover:bg-[#1a2a4a] text-white" disabled={isUpdating}>Сохранить</Button>
+                                                    <Button onClick={applyEdit} className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white" disabled={isUpdating}>Сохранить</Button>
                                                     <Button variant="outline" onClick={() => { setEditingId(null); setEditingName(""); setEditingNameEn(""); setEditingNameBe(""); }}>Отмена</Button>
                                                 </div>
                                             </div>
                                         ) : (
                                             <div className="flex items-center justify-between">
                                                 <div className="flex-1">
-                                                    <div className="text-[#213659] font-medium">{c.name}</div>
+                                                    <div className="text-[var(--color-primary)] font-medium">{c.name}</div>
                                                     {(c.nameEn || c.nameBe) && (
                                                         <div className="text-sm text-gray-500 mt-1">
                                                             {c.nameEn && <span>EN: {c.nameEn}</span>}

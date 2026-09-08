@@ -318,7 +318,7 @@ export default function DynamicForm({
           <Button 
             type="submit" 
             disabled={isSubmitting}
-            className="bg-[#213659] hover:bg-[#1a2a4a] text-white"
+            className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white"
           >
             {isSubmitting ? 'Отправка...' : submitButtonText}
           </Button>

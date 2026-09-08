@@ -76,8 +76,8 @@ const router = createBrowserRouter([
             { path: "/about/:pageType", element: <DynamicPage pageType="about" /> },
             { path: "/social", element: (
                 <CategoryListPage
-                    title="Социальная и идеологическая работа"
-                    subtitle="Разделы социальной и идеологической работы"
+                    title="Социальная сфера"
+                    subtitle="Разделы социальной сферы"
                     // @ts-ignore
                     useCategoriesHook={useGetAllSocialWorkCategoriesQuery as any}
                     slugField="pageType"
