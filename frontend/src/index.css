@@ -775,6 +775,14 @@ body.color-scheme-inverted [data-slot="dropdown-menu-content"] [data-highlighted
   pointer-events: none;
 }
 
+.hero-video-banner__fallback {
+  display: block;
+  width: 100%;
+  height: 56vh;
+  object-fit: cover;
+  object-position: center;
+}
+
 .hero-video-banner__video::-webkit-media-controls {
   display: none !important;
 }
