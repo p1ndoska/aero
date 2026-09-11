@@ -23,7 +23,10 @@ const canAttemptHeroVideo = () => {
         navigator as Navigator & { connection?: NetworkConnection }
     ).connection;
 
-    return Boolean(!connection?.saveData && connection?.effectiveType === '4g');
+    return Boolean(
+        !connection?.saveData &&
+            (connection?.effectiveType === undefined || connection.effectiveType === '4g'),
+    );
 };
 
 const STRIP_PATHS = [
