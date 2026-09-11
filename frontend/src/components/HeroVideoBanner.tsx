@@ -9,6 +9,28 @@ import { HOME_SERVICE_CARDS } from '@/constants/homeServiceCards';
 const HERO_VIDEO_SRC = `${BASE_URL}/uploads/hero/openvideo.mp4`;
 const HERO_FALLBACK_SRC = `${BASE_URL}/uploads/hero/plain.jpg`;
 
+type NetworkConnection = {
+    effectiveType?: string;
+    saveData?: boolean;
+    downlink?: number;
+};
+
+const shouldUseHeroFallback = () => {
+    if (typeof navigator === 'undefined') return false;
+
+    const connection = (
+        navigator as Navigator & { connection?: NetworkConnection }
+    ).connection;
+
+    return Boolean(
+        connection?.saveData ||
+            connection?.effectiveType === 'slow-2g' ||
+            connection?.effectiveType === '2g' ||
+            connection?.effectiveType === '3g' ||
+            (connection?.downlink !== undefined && connection.downlink < 1.5),
+    );
+};
+
 const STRIP_PATHS = [
     'M -30 36 Q 110 8, 250 92 T 520 28 T 790 168 T 1060 48 T 1330 142 T 1500 64',
     'M -20 188 C 160 40, 340 176, 520 62 S 860 196, 1060 74 S 1320 18, 1500 118',
@@ -106,10 +128,15 @@ const HeroArrowsStrip = () => (
 export const HeroVideoBanner = () => {
     const { pathname } = useLocation();
     const videoRef = useRef<HTMLVideoElement>(null);
-    const [showFallback, setShowFallback] = useState(false);
+    const [showFallback, setShowFallback] = useState(shouldUseHeroFallback);
     const { t } = useLanguage();
 
     useEffect(() => {
+        if (shouldUseHeroFallback()) {
+            setShowFallback(true);
+            return;
+        }
+
         const video = videoRef.current;
         if (!video) return;
 
