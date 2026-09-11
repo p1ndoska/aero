@@ -13,6 +13,7 @@ type NetworkConnection = {
     effectiveType?: string;
     saveData?: boolean;
     downlink?: number;
+    rtt?: number;
 };
 
 const shouldUseHeroFallback = () => {
@@ -27,6 +28,9 @@ const shouldUseHeroFallback = () => {
             connection?.effectiveType === 'slow-2g' ||
             connection?.effectiveType === '2g' ||
             connection?.effectiveType === '3g' ||
+            (connection?.effectiveType === '4g' &&
+                ((connection.downlink !== undefined && connection.downlink < 5) ||
+                    (connection.rtt !== undefined && connection.rtt > 250))) ||
             (connection?.downlink !== undefined && connection.downlink < 1.5),
     );
 };
