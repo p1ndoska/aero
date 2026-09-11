@@ -150,10 +150,16 @@ export const HeroVideoBanner = () => {
 
         const fallbackTimer = window.setTimeout(() => {
             setShowFallback(true);
-        }, 5000);
+        }, 1500);
+        const handleCanPlay = () => {
+            window.clearTimeout(fallbackTimer);
+            setShowFallback(false);
+        };
+        video.addEventListener('canplay', handleCanPlay);
 
         return () => {
             window.clearTimeout(fallbackTimer);
+            video.removeEventListener('canplay', handleCanPlay);
         };
     }, [pathname]);
 
@@ -178,6 +184,7 @@ export const HeroVideoBanner = () => {
                         disablePictureInPicture
                         controls={false}
                         preload="auto"
+                        poster={HERO_FALLBACK_SRC}
                         onError={() => setShowFallback(true)}
                     />
                 )}
