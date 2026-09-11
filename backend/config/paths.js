@@ -19,6 +19,8 @@ const DOCUMENTS_DIR = process.env.DOCUMENTS_DIR || path.join(UPLOADS_DIR, 'docum
 
 // Имя файла hero изображения
 const HERO_IMAGE_FILENAME = process.env.HERO_IMAGE_FILENAME || 'hero-bg.jpg';
+const HERO_VIDEO_FILENAME = process.env.HERO_VIDEO_FILENAME || 'openvideo.mp4';
+const HERO_FALLBACK_IMAGE_FILENAME = process.env.HERO_FALLBACK_IMAGE_FILENAME || 'plain.jpg';
 
 module.exports = {
   UPLOADS_DIR,
@@ -26,6 +28,8 @@ module.exports = {
   HERO_IMAGES_DIR,
   DOCUMENTS_DIR,
   HERO_IMAGE_FILENAME,
+  HERO_VIDEO_FILENAME,
+  HERO_FALLBACK_IMAGE_FILENAME,
   // Вспомогательные функции
   getUploadsPath: (relativePath) => {
     return path.join(UPLOADS_DIR, relativePath);
@@ -35,6 +39,18 @@ module.exports = {
   },
   getHeroImageUrl: () => {
     return `${UPLOADS_URL_PREFIX}/hero/${HERO_IMAGE_FILENAME}`;
+  },
+  getHeroVideoPath: () => {
+    return path.join(HERO_IMAGES_DIR, HERO_VIDEO_FILENAME);
+  },
+  getHeroVideoUrl: () => {
+    return `${UPLOADS_URL_PREFIX}/hero/${HERO_VIDEO_FILENAME}`;
+  },
+  getHeroFallbackImagePath: () => {
+    return path.join(HERO_IMAGES_DIR, HERO_FALLBACK_IMAGE_FILENAME);
+  },
+  getHeroFallbackImageUrl: () => {
+    return `${UPLOADS_URL_PREFIX}/hero/${HERO_FALLBACK_IMAGE_FILENAME}`;
   },
   normalizeUploadPath: (rawPath) => {
     // Нормализует путь к файлу для использования в URL
@@ -101,4 +117,3 @@ module.exports = {
     return `${UPLOADS_URL_PREFIX}/${normalized}`;
   }
 };
-

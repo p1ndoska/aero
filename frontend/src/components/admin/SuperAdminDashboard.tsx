@@ -36,6 +36,7 @@ export default function SuperAdminDashboard() {
     const roleValue = user?.role;
     const roleName = (typeof roleValue === "string" ? roleValue : roleValue?.name) ?? "";
     const permissions = getRolePermissions(roleName);
+    const canManageHeroMedia = ['SUPER_ADMIN', 'MEDIA_ADMIN'].includes(roleName.toUpperCase());
     
     // Проверяем, есть ли у пользователя хотя бы одно разрешение
     const canAccess = Object.values(permissions).some(permission => permission === true);
@@ -315,8 +316,8 @@ export default function SuperAdminDashboard() {
                        </div>
                        )}
 
-                       {/* Управление изображением верхнего блока - SUPER_ADMIN и MEDIA_ADMIN */}
-                       {(permissions.canManageRoles || permissions.canManageHomePage) && (
+                       {/* Управление медиа верхнего блока - SUPER_ADMIN и MEDIA_ADMIN */}
+                       {canManageHeroMedia && (
                        <div
                            className={`bg-white rounded-xl p-6 cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl border-2 ${
                                activeTab === 'hero-image'
@@ -328,7 +329,7 @@ export default function SuperAdminDashboard() {
                            <div className="text-center">
                                    <ImageIcon className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
                                    <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
-                                   Изображение верхнего блока
+                                   Медиа верхнего блока
                                </h3>
                            </div>
                        </div>
@@ -487,7 +488,7 @@ export default function SuperAdminDashboard() {
                 {activeTab === 'appeals-categories' && permissions.canManageAppeals && <AppealsCategoryManagement />}
                 {activeTab === 'services-categories' && permissions.canManageServices && <ServicesCategoryManagement />}
                 {activeTab === 'service-requests' && permissions.canManageServices && <ServiceRequestManagement />}
-                {activeTab === 'hero-image' && (permissions.canManageRoles || permissions.canManageHomePage) && <HeroImageManagement />}
+                {activeTab === 'hero-image' && canManageHeroMedia && <HeroImageManagement />}
                 {(activeTab === 'reception-bookings' && (permissions.canManageManagement || permissions.canManageRoles)) && <ReceptionBookingsCalendar />}
             </div>
         </div>
