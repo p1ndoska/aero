@@ -8,6 +8,7 @@ import { HOME_SERVICE_CARDS } from '@/constants/homeServiceCards';
 
 const HERO_VIDEO_SRC = `${BASE_URL}/uploads/hero/openvideo.mp4`;
 const HERO_FALLBACK_SRC = `${BASE_URL}/uploads/hero/plain.jpg`;
+const MIN_VIDEO_SPEED_MBPS = 1.5;
 
 type NetworkConnection = {
     effectiveType?: string;
@@ -151,7 +152,7 @@ export const HeroVideoBanner = () => {
                 const elapsedSeconds = (performance.now() - startedAt) / 1000;
                 const megabitsPerSecond = (body.byteLength * 8) / elapsedSeconds / 1_000_000;
 
-                if (active && megabitsPerSecond >= 5) {
+                if (active && megabitsPerSecond >= MIN_VIDEO_SPEED_MBPS) {
                     setVideoAllowed(true);
                 }
             })
