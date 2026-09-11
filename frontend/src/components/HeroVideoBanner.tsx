@@ -16,7 +16,7 @@ type NetworkConnection = {
     rtt?: number;
 };
 
-const shouldUseHeroFallback = () => {
+const shouldUseHeroVideo = () => {
     if (typeof navigator === 'undefined') return false;
 
     const connection = (
@@ -24,14 +24,12 @@ const shouldUseHeroFallback = () => {
     ).connection;
 
     return Boolean(
-        connection?.saveData ||
-            connection?.effectiveType === 'slow-2g' ||
-            connection?.effectiveType === '2g' ||
-            connection?.effectiveType === '3g' ||
-            (connection?.effectiveType === '4g' &&
-                ((connection.downlink !== undefined && connection.downlink < 5) ||
-                    (connection.rtt !== undefined && connection.rtt > 250))) ||
-            (connection?.downlink !== undefined && connection.downlink < 1.5),
+        !connection?.saveData &&
+            connection.effectiveType === '4g' &&
+            connection.downlink !== undefined &&
+            connection.downlink >= 5 &&
+            connection.rtt !== undefined &&
+            connection.rtt <= 250,
     );
 };
 
@@ -132,11 +130,11 @@ const HeroArrowsStrip = () => (
 export const HeroVideoBanner = () => {
     const { pathname } = useLocation();
     const videoRef = useRef<HTMLVideoElement>(null);
-    const [showFallback, setShowFallback] = useState(shouldUseHeroFallback);
+    const [showFallback, setShowFallback] = useState(() => !shouldUseHeroVideo());
     const { t } = useLanguage();
 
     useEffect(() => {
-        if (shouldUseHeroFallback()) {
+        if (!shouldUseHeroVideo()) {
             setShowFallback(true);
             return;
         }
