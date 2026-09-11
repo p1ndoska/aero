@@ -6,3 +6,5 @@ node_modules
 
 # Игнорируем всю папку с загрузками и тяжелыми медиафайлами
 backend/uploads/
+uploads/hero/openvideo.mp4
+uploads/hero/plain.jpg
