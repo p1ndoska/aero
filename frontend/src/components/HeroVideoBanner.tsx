@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { BASE_URL } from '@/constants';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -7,6 +7,7 @@ import { ContentContainer } from '@/components/ContentContainer';
 import { HOME_SERVICE_CARDS } from '@/constants/homeServiceCards';
 
 const HERO_VIDEO_SRC = `${BASE_URL}/uploads/hero/openvideo.mp4`;
+const HERO_FALLBACK_SRC = `${BASE_URL}/uploads/hero/plain.jpg`;
 
 const STRIP_PATHS = [
     'M -30 36 Q 110 8, 250 92 T 520 28 T 790 168 T 1060 48 T 1330 142 T 1500 64',
@@ -105,14 +106,24 @@ const HeroArrowsStrip = () => (
 export const HeroVideoBanner = () => {
     const { pathname } = useLocation();
     const videoRef = useRef<HTMLVideoElement>(null);
+    const [showFallback, setShowFallback] = useState(false);
     const { t } = useLanguage();
 
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
+        setShowFallback(false);
         video.muted = true;
         video.play().catch(() => {});
+
+        const fallbackTimer = window.setTimeout(() => {
+            setShowFallback(true);
+        }, 5000);
+
+        return () => {
+            window.clearTimeout(fallbackTimer);
+        };
     }, [pathname]);
 
     if (pathname !== '/') {
@@ -122,18 +133,23 @@ export const HeroVideoBanner = () => {
     return (
         <div className="hero-video-banner">
             <div className="hero-video-banner__media" aria-hidden="true">
-                <video
-                    ref={videoRef}
-                    className="hero-video-banner__video"
-                    src={HERO_VIDEO_SRC}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    disablePictureInPicture
-                    controls={false}
-                    preload="auto"
-                />
+                {showFallback ? (
+                    <img className="hero-video-banner__fallback" src={HERO_FALLBACK_SRC} alt="" />
+                ) : (
+                    <video
+                        ref={videoRef}
+                        className="hero-video-banner__video"
+                        src={HERO_VIDEO_SRC}
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        disablePictureInPicture
+                        controls={false}
+                        preload="auto"
+                        onError={() => setShowFallback(true)}
+                    />
+                )}
             </div>
             <div className="hero-home-overlap">
                 <HeroArrowsStrip />
