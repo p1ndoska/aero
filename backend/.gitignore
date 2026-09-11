@@ -3,3 +3,6 @@ node_modules
 .env
 
 /generated/prisma
+
+# Игнорируем всю папку с загрузками и тяжелыми медиафайлами
+backend/uploads/
