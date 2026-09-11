@@ -16,21 +16,14 @@ type NetworkConnection = {
     rtt?: number;
 };
 
-const shouldUseHeroVideo = () => {
+const canAttemptHeroVideo = () => {
     if (typeof navigator === 'undefined') return false;
 
     const connection = (
         navigator as Navigator & { connection?: NetworkConnection }
     ).connection;
 
-    return Boolean(
-        !connection?.saveData &&
-            connection.effectiveType === '4g' &&
-            connection.downlink !== undefined &&
-            connection.downlink >= 5 &&
-            connection.rtt !== undefined &&
-            connection.rtt <= 250,
-    );
+    return Boolean(!connection?.saveData && connection?.effectiveType === '4g');
 };
 
 const STRIP_PATHS = [
@@ -130,19 +123,49 @@ const HeroArrowsStrip = () => (
 export const HeroVideoBanner = () => {
     const { pathname } = useLocation();
     const videoRef = useRef<HTMLVideoElement>(null);
+    const [videoAllowed, setVideoAllowed] = useState(false);
     const [videoReady, setVideoReady] = useState(false);
     const { t } = useLanguage();
 
     useEffect(() => {
-        if (!shouldUseHeroVideo()) {
-            setVideoReady(false);
+        setVideoAllowed(false);
+        setVideoReady(false);
+        if (!canAttemptHeroVideo()) {
             return;
         }
+
+        let active = true;
+        const controller = new AbortController();
+        const startedAt = performance.now();
+
+        fetch(`${HERO_FALLBACK_SRC}?probe=${Date.now()}`, {
+            cache: 'no-store',
+            signal: controller.signal,
+        })
+            .then(async (response) => {
+                if (!response.ok) return;
+                const body = await response.arrayBuffer();
+                const elapsedSeconds = (performance.now() - startedAt) / 1000;
+                const megabitsPerSecond = (body.byteLength * 8) / elapsedSeconds / 1_000_000;
+
+                if (active && megabitsPerSecond >= 5) {
+                    setVideoAllowed(true);
+                }
+            })
+            .catch(() => {});
+
+        return () => {
+            active = false;
+            controller.abort();
+        };
+    }, [pathname]);
+
+    useEffect(() => {
+        if (!videoAllowed) return;
 
         const video = videoRef.current;
         if (!video) return;
 
-        setVideoReady(false);
         video.muted = true;
         video.play().catch(() => {});
 
@@ -154,7 +177,7 @@ export const HeroVideoBanner = () => {
         return () => {
             video.removeEventListener('canplay', handleCanPlay);
         };
-    }, [pathname]);
+    }, [pathname, videoAllowed]);
 
     if (pathname !== '/') {
         return null;
@@ -164,7 +187,7 @@ export const HeroVideoBanner = () => {
         <div className="hero-video-banner">
             <div className="hero-video-banner__media" aria-hidden="true">
                 <img className="hero-video-banner__fallback" src={HERO_FALLBACK_SRC} alt="" />
-                {shouldUseHeroVideo() && (
+                {videoAllowed && (
                     <video
                         ref={videoRef}
                         className={`hero-video-banner__video${videoReady ? ' hero-video-banner__video--ready' : ''}`}
