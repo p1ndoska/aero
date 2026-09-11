@@ -6,7 +6,7 @@ import { HeroFeatureCard } from '@/components/HeroFeatureCard';
 import { ContentContainer } from '@/components/ContentContainer';
 import { HOME_SERVICE_CARDS } from '@/constants/homeServiceCards';
 
-const HERO_VIDEO_SRC = `${BASE_URL}/uploads/hero/${encodeURIComponent('Центр УВД 2023.mp4')}`;
+const HERO_VIDEO_SRC = `${BASE_URL}/uploads/hero/openvideo.mp4`;
 
 const STRIP_PATHS = [
     'M -30 36 Q 110 8, 250 92 T 520 28 T 790 168 T 1060 48 T 1330 142 T 1500 64',
