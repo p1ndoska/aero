@@ -130,33 +130,28 @@ const HeroArrowsStrip = () => (
 export const HeroVideoBanner = () => {
     const { pathname } = useLocation();
     const videoRef = useRef<HTMLVideoElement>(null);
-    const [showFallback, setShowFallback] = useState(() => !shouldUseHeroVideo());
+    const [videoReady, setVideoReady] = useState(false);
     const { t } = useLanguage();
 
     useEffect(() => {
         if (!shouldUseHeroVideo()) {
-            setShowFallback(true);
+            setVideoReady(false);
             return;
         }
 
         const video = videoRef.current;
         if (!video) return;
 
-        setShowFallback(false);
+        setVideoReady(false);
         video.muted = true;
         video.play().catch(() => {});
 
-        const fallbackTimer = window.setTimeout(() => {
-            setShowFallback(true);
-        }, 1500);
         const handleCanPlay = () => {
-            window.clearTimeout(fallbackTimer);
-            setShowFallback(false);
+            setVideoReady(true);
         };
         video.addEventListener('canplay', handleCanPlay);
 
         return () => {
-            window.clearTimeout(fallbackTimer);
             video.removeEventListener('canplay', handleCanPlay);
         };
     }, [pathname]);
@@ -168,12 +163,11 @@ export const HeroVideoBanner = () => {
     return (
         <div className="hero-video-banner">
             <div className="hero-video-banner__media" aria-hidden="true">
-                {showFallback ? (
-                    <img className="hero-video-banner__fallback" src={HERO_FALLBACK_SRC} alt="" />
-                ) : (
+                <img className="hero-video-banner__fallback" src={HERO_FALLBACK_SRC} alt="" />
+                {shouldUseHeroVideo() && (
                     <video
                         ref={videoRef}
-                        className="hero-video-banner__video"
+                        className={`hero-video-banner__video${videoReady ? ' hero-video-banner__video--ready' : ''}`}
                         src={HERO_VIDEO_SRC}
                         autoPlay
                         muted
@@ -183,7 +177,7 @@ export const HeroVideoBanner = () => {
                         controls={false}
                         preload="auto"
                         poster={HERO_FALLBACK_SRC}
-                        onError={() => setShowFallback(true)}
+                        onError={() => setVideoReady(false)}
                     />
                 )}
             </div>

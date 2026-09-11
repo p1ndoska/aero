@@ -761,18 +761,27 @@ body.color-scheme-inverted [data-slot="dropdown-menu-content"] [data-highlighted
 }
 
 .hero-video-banner__media {
+  position: relative;
   overflow: hidden;
   line-height: 0;
   background: #000;
 }
 
 .hero-video-banner__video {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 56vh;
   object-fit: cover;
   object-position: center;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.hero-video-banner__video--ready {
+  opacity: 1;
 }
 
 .hero-video-banner__fallback {
