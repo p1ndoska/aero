@@ -3,7 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useGetCurrentHeroImageQuery, useUploadHeroImageMutation, useRemoveHeroImageMutation } from '@/app/services/heroImageApi';
+import {
+  useGetCurrentHeroMediaQuery,
+  useUploadHeroVideoMutation,
+  useUploadHeroFallbackImageMutation,
+  useGetCurrentHeroImageQuery,
+  useUploadHeroImageMutation,
+  useRemoveHeroImageMutation,
+} from '@/app/services/heroImageApi';
 import { toast } from 'sonner';
 import { Upload, Trash2, Image as ImageIcon, Video } from 'lucide-react';
 import { BASE_URL } from '@/constants';
