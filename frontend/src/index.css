@@ -1082,27 +1082,35 @@ body.color-scheme-inverted [data-slot="dropdown-menu-content"] [data-highlighted
 
 @media (min-width: 1101px) {
   .hero-home-overlap__cards--remainder-1 > :nth-last-child(1) {
-    grid-column: 2;
+    grid-column: 2 / span 2;
+    width: calc(50% - 0.625rem);
+    justify-self: center;
+    margin-top: 0;
   }
 
   .hero-home-overlap__cards--remainder-2 > :nth-last-child(2) {
-    grid-column: 1;
+    grid-column: 2;
+    margin-top: 0;
   }
 
   .hero-home-overlap__cards--remainder-2 > :last-child {
     grid-column: 3;
+    margin-top: 0;
   }
 
   .hero-home-overlap__cards--remainder-3 > :nth-last-child(3) {
     grid-column: 1;
+    margin-top: 0;
   }
 
   .hero-home-overlap__cards--remainder-3 > :nth-last-child(2) {
     grid-column: 2;
+    margin-top: 0;
   }
 
   .hero-home-overlap__cards--remainder-3 > :last-child {
-    grid-column: 4;
+    grid-column: 3;
+    margin-top: 0;
   }
 }
 
