@@ -6,6 +6,7 @@ import { HeroFeatureCard } from '@/components/HeroFeatureCard';
 import { ContentContainer } from '@/components/ContentContainer';
 import { HOME_SERVICE_CARDS } from '@/constants/homeServiceCards';
 import { useGetHomeServiceCardsQuery, type HomeServiceCard } from '@/app/services/homeServiceCardApi';
+import { HomeNewsSection } from '@/components/HomeNewsSection';
 
 const HERO_VIDEO_SRC = `${BASE_URL}/uploads/hero/openvideo.mp4`;
 const HERO_FALLBACK_SRC = `${BASE_URL}/uploads/hero/plain.jpg`;
@@ -245,6 +246,7 @@ export const HeroVideoBanner = () => {
                     </ContentContainer>
                 </div>
             </div>
+            <HomeNewsSection />
         </div>
     );
 };
