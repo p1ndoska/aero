@@ -1076,6 +1076,10 @@ body.color-scheme-inverted [data-slot="dropdown-menu-content"] [data-highlighted
   margin-bottom: calc(var(--hero-strip-height) * -0.52);
 }
 
+.hero-home-overlap__cards:has(> :nth-child(5)) > :nth-child(n + 5):nth-child(odd) {
+  margin-top: 1.25rem;
+}
+
 @media (max-width: 1100px) {
   .hero-home-overlap__cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));

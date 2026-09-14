@@ -197,7 +197,13 @@ export default function HomeServiceCardsManagement() {
                             <Button variant="outline" size="icon" onClick={() => startEdit(card)} aria-label="Редактировать">
                                 <Edit className="h-4 w-4" />
                             </Button>
-                            <Button variant="destructive" size="icon" onClick={() => remove(card.id)} aria-label="Удалить">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="border-red-600 bg-red-600 text-white hover:border-red-700 hover:bg-red-700 hover:text-white"
+                                onClick={() => remove(card.id)}
+                                aria-label="Удалить"
+                            >
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                         </CardContent>
