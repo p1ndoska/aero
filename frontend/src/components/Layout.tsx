@@ -2,6 +2,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { Header } from "./Header";
 import { HeroVideoBanner } from "./HeroVideoBanner";
+import { HomeNewsSection } from "./HomeNewsSection";
 import { PageHeroImageStrip } from "./PageHeroImageStrip";
 import { PageNavSidebar, shouldShowPageSidebar } from "./PageNavSidebar";
 import { ContentContainer } from "./ContentContainer";
@@ -26,6 +27,7 @@ export const Layout = () => {
         <div className="flex flex-col min-h-screen relative z-10 bg-[var(--color-page-bg)]">
             <Header />
             <HeroVideoBanner />
+            {pathname === "/" && <HomeNewsSection />}
             {showServiceHeroStrip && (
                 <PageHeroImageStrip
                     src="/plain.jpg"

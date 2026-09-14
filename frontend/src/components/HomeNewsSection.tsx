@@ -53,11 +53,9 @@ const NewsCard = ({ news, language }: { news: NewsItem; language: string }) => {
 
 export const HomeNewsSection = () => {
     const { language, t } = useLanguage();
-    const { data: news = [], isLoading } = useGetAllNewsQuery();
+    const { data: news = [], isLoading, isError } = useGetAllNewsQuery();
     const [startIndex, setStartIndex] = useState(0);
     const maxStartIndex = Math.max(0, news.length - NEWS_PER_VIEW);
-
-    if (!isLoading && news.length === 0) return null;
 
     return (
         <section className="home-news" aria-labelledby="home-news-title">
@@ -70,6 +68,8 @@ export const HomeNewsSection = () => {
                 </div>
                 {isLoading ? (
                     <div className="home-news__loading">{language === 'en' ? 'Loading news…' : language === 'be' ? 'Загрузка навін…' : 'Загрузка новостей…'}</div>
+                ) : isError || news.length === 0 ? (
+                    <div className="home-news__loading">{language === 'en' ? 'No news available' : language === 'be' ? 'Навін пакуль няма' : 'Новостей пока нет'}</div>
                 ) : (
                     <div className="home-news__carousel">
                         <button
