@@ -1080,9 +1080,29 @@ body.color-scheme-inverted [data-slot="dropdown-menu-content"] [data-highlighted
   margin-top: 1.25rem;
 }
 
-@media (min-width: 641px) {
-  .hero-home-overlap__cards:has(> :nth-child(5)):not(:has(> :nth-child(6))) > :nth-child(5) {
+@media (min-width: 1101px) {
+  .hero-home-overlap__cards--remainder-1 > :nth-last-child(1) {
     grid-column: 2;
+  }
+
+  .hero-home-overlap__cards--remainder-2 > :nth-last-child(2) {
+    grid-column: 1;
+  }
+
+  .hero-home-overlap__cards--remainder-2 > :last-child {
+    grid-column: 3;
+  }
+
+  .hero-home-overlap__cards--remainder-3 > :nth-last-child(3) {
+    grid-column: 1;
+  }
+
+  .hero-home-overlap__cards--remainder-3 > :nth-last-child(2) {
+    grid-column: 2;
+  }
+
+  .hero-home-overlap__cards--remainder-3 > :last-child {
+    grid-column: 4;
   }
 }
 
@@ -1099,6 +1119,12 @@ body.color-scheme-inverted [data-slot="dropdown-menu-content"] [data-highlighted
 
   .hero-home-overlap__cards:has(> :nth-child(5)) > :nth-child(n + 5):nth-child(odd) {
     margin-top: 0;
+  }
+
+  .hero-home-overlap__cards--remainder-1 > *,
+  .hero-home-overlap__cards--remainder-2 > *,
+  .hero-home-overlap__cards--remainder-3 > * {
+    grid-column: auto;
   }
 }
 

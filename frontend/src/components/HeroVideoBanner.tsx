@@ -138,6 +138,14 @@ export const HeroVideoBanner = () => {
     const [videoReady, setVideoReady] = useState(false);
     const { t, language } = useLanguage();
     const { data: dynamicCards } = useGetHomeServiceCardsQuery();
+    const cards = dynamicCards?.length
+        ? dynamicCards
+        : HOME_SERVICE_CARDS.map((card, index) => ({
+              id: index,
+              title: t(card.titleKey),
+              href: card.href,
+              imageUrl: null,
+          }));
 
     useEffect(() => {
         setVideoAllowed(false);
@@ -222,13 +230,8 @@ export const HeroVideoBanner = () => {
                     <h2 className="hero-home-overlap__title">{t('services')}</h2>
                 </ContentContainer>
                 <div className="hero-home-overlap__body a11y-content">
-                    <ContentContainer className="hero-home-overlap__cards">
-                        {(dynamicCards?.length ? dynamicCards : HOME_SERVICE_CARDS.map((card, index) => ({
-                            id: index,
-                            title: t(card.titleKey),
-                            href: card.href,
-                            imageUrl: null,
-                        }))).map((card) => {
+                    <ContentContainer className={`hero-home-overlap__cards hero-home-overlap__cards--remainder-${cards.length % 4}`}>
+                        {cards.map((card) => {
                             const title = 'titleKey' in card ? card.title : getCardTitle(card, language);
                             return (
                                 <HeroFeatureCard
