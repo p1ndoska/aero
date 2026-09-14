@@ -8,6 +8,7 @@ import { appealsCategoryApi } from "../app/services/appealsCategoryApi";
 import { servicesCategoryApi } from "../app/services/servicesCategoryApi";
 import { heroImageApi } from "../app/services/heroImageApi";
 import { searchApi } from "../app/services/searchApi";
+import { homeServiceCardApi } from "../app/services/homeServiceCardApi";
 import auth from "../features/user/userSlice";
 
 export const store = configureStore({
@@ -21,6 +22,7 @@ export const store = configureStore({
     [servicesCategoryApi.reducerPath]: servicesCategoryApi.reducer,
     [heroImageApi.reducerPath]: heroImageApi.reducer,
     [searchApi.reducerPath]: searchApi.reducer,
+    [homeServiceCardApi.reducerPath]: homeServiceCardApi.reducer,
     auth,
   },
   middleware: (getDefaultMiddleware) =>
@@ -33,7 +35,8 @@ export const store = configureStore({
       appealsCategoryApi.middleware,
       servicesCategoryApi.middleware,
       heroImageApi.middleware,
-      searchApi.middleware
+      searchApi.middleware,
+      homeServiceCardApi.middleware
     ),
 });
 

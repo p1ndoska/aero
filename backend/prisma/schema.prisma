@@ -458,6 +458,22 @@ model ServicesPageContent {
   updatedAt   DateTime  @updatedAt
 }
 
+// Карточки услуг на главной странице
+model HomeServiceCard {
+  id        Int      @id @default(autoincrement())
+  title     String
+  titleEn   String?
+  titleBe   String?
+  href      String
+  imageUrl  String?
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
 // Заявки на услуги
 model ServiceRequest {
   id              Int       @id @default(autoincrement())
@@ -520,4 +536,3 @@ model UserActivityLog {
   @@index([userId, createdAt])
   @@index([action, createdAt])
 }
-

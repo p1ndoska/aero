@@ -25,6 +25,7 @@ import ServicesCategoryManagement from "./ServicesCategoryManagement";
 import ServiceRequestManagement from "./ServiceRequestManagement";
 import ResumeManagement from "./ResumeManagement";
 import HeroImageManagement from "./HeroImageManagement";
+import HomeServiceCardsManagement from "./HomeServiceCardsManagement";
 import ReceptionBookingsCalendar from "./ReceptionBookingsCalendar";
 import StatisticsPanel from "./StatisticsPanel";
 
@@ -81,6 +82,7 @@ export default function SuperAdminDashboard() {
         | 'services-categories'
         | 'service-requests'
         | 'hero-image'
+        | 'home-service-cards'
         | 'reception-bookings'
         | 'statistics'
     >(getFirstAvailableTab());
@@ -335,6 +337,24 @@ export default function SuperAdminDashboard() {
                        </div>
                        )}
 
+                       {canManageHeroMedia && (
+                       <div
+                           className={`bg-white rounded-xl p-6 cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl border-2 ${
+                               activeTab === 'home-service-cards'
+                                       ? 'border-[#2A52BE] bg-[#E8F0FF]'
+                                   : 'border-gray-200 hover:border-[#2A52BE]'
+                           }`}
+                           onClick={() => setActiveTab('home-service-cards')}
+                       >
+                           <div className="text-center">
+                                   <ImageIcon className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
+                                   Карточки услуг
+                               </h3>
+                           </div>
+                       </div>
+                       )}
+
                        {/* Категории соц. работы - SOCIAL_ADMIN и SUPER_ADMIN */}
                        {permissions.canManageSocial && (
                        <div
@@ -489,6 +509,7 @@ export default function SuperAdminDashboard() {
                 {activeTab === 'services-categories' && permissions.canManageServices && <ServicesCategoryManagement />}
                 {activeTab === 'service-requests' && permissions.canManageServices && <ServiceRequestManagement />}
                 {activeTab === 'hero-image' && canManageHeroMedia && <HeroImageManagement />}
+                {activeTab === 'home-service-cards' && canManageHeroMedia && <HomeServiceCardsManagement />}
                 {(activeTab === 'reception-bookings' && (permissions.canManageManagement || permissions.canManageRoles)) && <ReceptionBookingsCalendar />}
             </div>
         </div>

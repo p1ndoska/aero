@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const {UserController, AdminController, NewsController, CategoryController, RoleController, ManagementController, IncidentReportController, BranchController, VacancyController, VacancyPageContentController, HistoryPageContentController, AboutCompanyPageContentController, SecurityPolicyPageContentController, SocialWorkPageContentController, OrganizationLogoController, SocialWorkCategoryController, AboutCompanyCategoryController, AeronauticalInfoCategoryController, AppealsCategoryController, ServicesCategoryController, ReceptionSlotController, UserProfileController, AeronauticalInfoPageContentController, AppealsPageContentController, ServicesPageContentController, ServiceRequestController, StatisticsController, ResumeController} = require("../controllers");
+const {UserController, AdminController, NewsController, CategoryController, RoleController, ManagementController, IncidentReportController, BranchController, VacancyController, VacancyPageContentController, HistoryPageContentController, AboutCompanyPageContentController, SecurityPolicyPageContentController, SocialWorkPageContentController, OrganizationLogoController, SocialWorkCategoryController, AboutCompanyCategoryController, AeronauticalInfoCategoryController, AppealsCategoryController, ServicesCategoryController, HomeServiceCardController, ReceptionSlotController, UserProfileController, AeronauticalInfoPageContentController, AppealsPageContentController, ServicesPageContentController, ServiceRequestController, StatisticsController, ResumeController} = require("../controllers");
 const emailService = require('../utils/emailService');
 const nodemailer = require('nodemailer');
 const {authenticationToken} = require("../middleware/auth");
@@ -411,6 +411,44 @@ router.post('/services-categories', authenticationToken, checkRole(['SUPER_ADMIN
 router.put('/services-categories/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServicesCategoryController.update);
 router.delete('/services-categories/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServicesCategoryController.remove);
 router.put('/services-categories/order', authenticationToken, checkRole(['SUPER_ADMIN', 'SERVICES_ADMIN']), ServicesCategoryController.updateOrder);
+
+router.get('/home-service-cards', HomeServiceCardController.getAll);
+router.get('/home-service-cards/admin', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), HomeServiceCardController.getAllForAdmin);
+router.post(
+    '/home-service-cards',
+    authenticationToken,
+    checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']),
+    (req, res, next) => {
+        upload.single('image')(req, res, (err) => {
+            if (err) {
+                if (err.code === 'LIMIT_FILE_SIZE') {
+                    return res.status(413).json({ error: 'Файл слишком большой. Максимальный размер: 20MB' });
+                }
+                return res.status(400).json({ error: `Ошибка загрузки изображения: ${err.message}` });
+            }
+            next();
+        });
+    },
+    HomeServiceCardController.create,
+);
+router.put(
+    '/home-service-cards/:id',
+    authenticationToken,
+    checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']),
+    (req, res, next) => {
+        upload.single('image')(req, res, (err) => {
+            if (err) {
+                if (err.code === 'LIMIT_FILE_SIZE') {
+                    return res.status(413).json({ error: 'Файл слишком большой. Максимальный размер: 20MB' });
+                }
+                return res.status(400).json({ error: `Ошибка загрузки изображения: ${err.message}` });
+            }
+            next();
+        });
+    },
+    HomeServiceCardController.update,
+);
+router.delete('/home-service-cards/:id', authenticationToken, checkRole(['SUPER_ADMIN', 'MEDIA_ADMIN']), HomeServiceCardController.remove);
 
 //aeronautical info page content routes
 router.get('/aeronautical-info-page-content/:pageType', AeronauticalInfoPageContentController.getAeronauticalInfoPageContentByPageType);

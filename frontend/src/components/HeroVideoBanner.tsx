@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { HeroFeatureCard } from '@/components/HeroFeatureCard';
 import { ContentContainer } from '@/components/ContentContainer';
 import { HOME_SERVICE_CARDS } from '@/constants/homeServiceCards';
+import { useGetHomeServiceCardsQuery, type HomeServiceCard } from '@/app/services/homeServiceCardApi';
 
 const HERO_VIDEO_SRC = `${BASE_URL}/uploads/hero/openvideo.mp4`;
 const HERO_FALLBACK_SRC = `${BASE_URL}/uploads/hero/plain.jpg`;
@@ -42,6 +43,12 @@ const STRIP_PATHS = [
     'M -40 132 Q 150 16, 330 176 T 640 54 T 940 198 T 1240 22 T 1500 164',
     'M 200 8 C 380 154, 560 12, 740 128 S 1100 196, 1280 58 S 1460 172, 1580 36',
 ];
+
+const getCardTitle = (card: HomeServiceCard, language: string) => {
+    if (language === 'en' && card.titleEn) return card.titleEn;
+    if (language === 'be' && card.titleBe) return card.titleBe;
+    return card.title;
+};
 
 function mulberry32(seed: number) {
     return () => {
@@ -129,7 +136,8 @@ export const HeroVideoBanner = () => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [videoAllowed, setVideoAllowed] = useState(false);
     const [videoReady, setVideoReady] = useState(false);
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
+    const { data: dynamicCards } = useGetHomeServiceCardsQuery();
 
     useEffect(() => {
         setVideoAllowed(false);
@@ -215,13 +223,19 @@ export const HeroVideoBanner = () => {
                 </ContentContainer>
                 <div className="hero-home-overlap__body a11y-content">
                     <ContentContainer className="hero-home-overlap__cards">
-                        {HOME_SERVICE_CARDS.map((card) => {
-                            const title = t(card.titleKey);
+                        {(dynamicCards?.length ? dynamicCards : HOME_SERVICE_CARDS.map((card, index) => ({
+                            id: index,
+                            title: t(card.titleKey),
+                            href: card.href,
+                            imageUrl: null,
+                        }))).map((card) => {
+                            const title = 'titleKey' in card ? card.title : getCardTitle(card, language);
                             return (
                                 <HeroFeatureCard
-                                    key={card.href}
+                                    key={`${card.id}-${card.href}`}
                                     href={card.href}
                                     title={title}
+                                    imageSrc={'imageUrl' in card ? card.imageUrl || undefined : undefined}
                                 />
                             );
                         })}

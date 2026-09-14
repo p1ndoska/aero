@@ -26,6 +26,7 @@ const ServicesPageContentController = require('./ServicesPageContentController')
 const ServiceRequestController = require('./ServiceRequestController');
 const StatisticsController = require('./StatisticsController');
 const ResumeController = require('./ResumeController');
+const HomeServiceCardController = require('./HomeServiceCardController');
 
 module.exports = {
     UserController,
@@ -56,4 +57,5 @@ module.exports = {
     ServiceRequestController,
     StatisticsController,
     ResumeController,
+    HomeServiceCardController,
 }

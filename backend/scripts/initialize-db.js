@@ -15,6 +15,7 @@ const { seedServicesCategories } = require('./seed-services-categories');
 const { updateAboutCompanyPageContentTitles } = require('./update-about-company-page-content-titles');
 const { updateSocialWorkPageContentTitles } = require('./update-social-work-page-content-titles');
 const { addQualityQuestionnaireCategories } = require('./add-quality-questionnaire-categories');
+const { seedHomeServiceCards } = require('./seed-home-service-cards');
 
 const prisma = new PrismaClient();
 
@@ -183,6 +184,15 @@ async function initializeDatabase() {
     } catch (error) {
       console.warn('⚠️ Предупреждение при создании категорий анкет качества:', error.message);
       // Не прерываем выполнение, это не критично
+    }
+
+    // 11. Создаем карточки услуг на главной при пустой таблице
+    console.log('\n🃏 Шаг 11: Создание карточек услуг на главной...');
+    try {
+      await seedHomeServiceCards();
+      console.log(' Карточки услуг на главной проверены');
+    } catch (error) {
+      console.warn('⚠️ Предупреждение при создании карточек услуг:', error.message);
     }
     
     console.log('\n База данных успешно инициализирована!');

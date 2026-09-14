@@ -5,6 +5,7 @@ const { seedSocialWorkCategories } = require('./seed-social-categories')
 const { seedAeronauticalInfoCategories } = require('./seed-aeronautical-info-categories')
 const { seedAppealsCategories } = require('./seed-appeals-categories')
 const { seedServicesCategories } = require('./seed-services-categories')
+const { seedHomeServiceCards } = require('./seed-home-service-cards')
 
 const prisma = new PrismaClient()
 
@@ -75,6 +76,7 @@ async function main() {
   await seedAeronauticalInfoCategories()
   await seedAppealsCategories()
   await seedServicesCategories()
+  await seedHomeServiceCards()
 }
 
 main()
