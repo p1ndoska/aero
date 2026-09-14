@@ -1076,10 +1076,6 @@ body.color-scheme-inverted [data-slot="dropdown-menu-content"] [data-highlighted
   margin-bottom: calc(var(--hero-strip-height) * -0.52);
 }
 
-.hero-home-overlap__cards:has(> :nth-child(5)) > :nth-child(n + 5):nth-child(odd) {
-  margin-top: 1.25rem;
-}
-
 @media (min-width: 1101px) {
   .hero-home-overlap__cards--remainder-1 > :nth-last-child(1) {
     grid-column: 2 / span 2;
@@ -1123,10 +1119,6 @@ body.color-scheme-inverted [data-slot="dropdown-menu-content"] [data-highlighted
 @media (max-width: 640px) {
   .hero-home-overlap__cards {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .hero-home-overlap__cards:has(> :nth-child(5)) > :nth-child(n + 5):nth-child(odd) {
-    margin-top: 0;
   }
 
   .hero-home-overlap__cards--remainder-1 > *,
