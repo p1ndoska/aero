@@ -305,7 +305,7 @@ export const NewsAllPage: React.FC = () => {
                 {isAdmin && (
                     <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)]">
+                            <Button className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] !text-white">
                                 <Plus className="w-4 h-4 mr-2" />
                                 {t('create_news')}
                             </Button>
