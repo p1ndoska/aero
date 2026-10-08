@@ -9,7 +9,12 @@ RUN find /tmp/corp-certs -type f \( -name '*.crt' -o -name '*.cer' -o -name '*.p
 ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
 COPY package*.json ./
 # Игнорируем конфликты React 19
-RUN npm ci --legacy-peer-deps
+ARG NPM_STRICT_SSL=true
+RUN if [ "$NPM_STRICT_SSL" = "false" ]; then \
+      export NODE_TLS_REJECT_UNAUTHORIZED=0; \
+      npm config set strict-ssl false; \
+    fi && \
+    npm ci --legacy-peer-deps
 COPY . .
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
