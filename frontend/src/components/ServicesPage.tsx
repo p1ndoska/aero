@@ -58,30 +58,8 @@ const ServicesPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <div className="bg-white/90 backdrop-blur-sm shadow-lg">
-        <div className="max-w-6xl mx-auto px-8 py-12">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <FileText className="w-12 h-12 text-blue-600" />
-              <h1 className="text-4xl font-bold text-gray-900">
-                {language === 'en' ? 'Services' : language === 'be' ? 'Паслугі' : 'Услуги'}
-              </h1>
-            </div>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              {language === 'en' 
-                ? 'Information about the services provided by the enterprise.' 
-                : language === 'be' 
-                ? 'Інфармацыя пра паслугі, якія прадастаўляе прадпрыемства.'
-                : 'Информация об услугах, предоставляемых предприятием.'
-              }
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Services Grid */}
-      <div className="max-w-6xl mx-auto px-8 py-12">
+      <div className="max-w-6xl mx-auto pb-12">
         {categories.length === 0 ? (
           <div className="text-center py-12">
             <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
