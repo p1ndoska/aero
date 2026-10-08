@@ -3,6 +3,13 @@ FROM node:18-alpine
 
 WORKDIR /app
 
+# Корневые сертификаты корпоративной сети: положите *.crt / *.cer / *.pem (Base-64) в certs/
+COPY certs/ /tmp/corp-certs/
+RUN find /tmp/corp-certs -type f \( -name '*.crt' -o -name '*.cer' -o -name '*.pem' \) \
+      -exec sh -c 'sed "s/\r$//" "$1"; echo' _ {} \; >> /etc/ssl/certs/ca-certificates.crt && \
+    rm -rf /tmp/corp-certs
+ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
+
 # Corporate SSL-inspecting proxies often require legacy TLS renegotiation.
 # Node.js ignores OPENSSL_CONF, but Alpine wget uses system OpenSSL and respects it.
 COPY docker/openssl-legacy.cnf /etc/ssl/openssl-legacy.cnf

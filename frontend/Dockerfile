@@ -1,6 +1,12 @@
 # ЭТАП 1: Сборка
 FROM node:20-alpine AS builder
 WORKDIR /app
+# Корневые сертификаты корпоративной сети: положите *.crt / *.cer / *.pem (Base-64) в certs/
+COPY certs/ /tmp/corp-certs/
+RUN find /tmp/corp-certs -type f \( -name '*.crt' -o -name '*.cer' -o -name '*.pem' \) \
+      -exec sh -c 'sed "s/\r$//" "$1"; echo' _ {} \; >> /etc/ssl/certs/ca-certificates.crt && \
+    rm -rf /tmp/corp-certs
+ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
 COPY package*.json ./
 # Игнорируем конфликты React 19
 RUN npm ci --legacy-peer-deps
