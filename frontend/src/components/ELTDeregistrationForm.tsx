@@ -161,7 +161,7 @@ export default function ELTDeregistrationForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${BASE_URL}/api/elt-deregistration/submit`, {
+      const response = await fetch(`${BASE_URL}/api/elt-deregistration/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -169,41 +169,25 @@ export default function ELTDeregistrationForm() {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || 'Ошибка при отправке формы');
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Ошибка при формировании документа');
       }
 
-      toast.success('Заявление успешно отправлено');
-      
-      // Очистка формы
-      setFormData({
-        eltCode: Array(15).fill(''),
-        eltModel: '',
-        eltSerialNumber: '',
-        aircraftType: '',
-        aircraftModel: '',
-        aircraftRegistration: '',
-        operator: '',
-        operatorAddress: '',
-        operatorWorkPhone: '',
-        operatorMobilePhone: '',
-        operatorEmail: '',
-        responsiblePerson: '',
-        responsiblePhone: '',
-        responsibleEmail: '',
-        billingFullName: '',
-        billingShortName: '',
-        billingLegalAddress: '',
-        billingMailingAddress: '',
-        billingUNP: '',
-        date: new Date().toLocaleDateString('ru-RU'),
-        signature: ''
-      });
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'Заявление о снятии с регистрации ELT.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+
+      toast.success('Документ сформирован');
     } catch (error: any) {
-      console.error('Ошибка при отправке:', error);
-      toast.error(error.message || t('error_sending_form'));
+      console.error('Ошибка при формировании документа:', error);
+      toast.error(error.message || 'Ошибка при формировании документа');
     } finally {
       setIsSubmitting(false);
     }
@@ -479,7 +463,7 @@ export default function ELTDeregistrationForm() {
                   backgroundColor: 'var(--color-primary)'
                 }}
               >
-                {isSubmitting ? t('sending') : t('submit_application')}
+                {isSubmitting ? t('generating_document') : t('generate_document')}
               </Button>
             </div>
           </form>

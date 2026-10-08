@@ -220,5 +220,33 @@ router.post('/submit', async (req, res) => {
   }
 });
 
-module.exports = router;
+// POST /generate — формирует Excel-документ и отдаёт его на скачивание
+router.post('/generate', async (req, res) => {
+  try {
+    const formData = req.body;
 
+    // Валидация обязательных полей
+    if (!formData.eltCode || formData.eltCode.some((char) => !char)) {
+      return res.status(400).json({ error: 'Заполните 15-значный код ELT' });
+    }
+
+    if (!formData.eltModel || !formData.eltSerialNumber) {
+      return res.status(400).json({ error: 'Заполните информацию по ELT' });
+    }
+
+    const { filePath } = await createELTDeregistrationExcelFile(formData);
+
+    res.download(filePath, 'Заявление о снятии с регистрации ELT.xlsx', (err) => {
+      if (err) console.error('Ошибка при отправке документа:', err);
+      fs.unlink(filePath, () => {});
+    });
+  } catch (error) {
+    console.error('Ошибка при формировании документа ELT:', error);
+    res.status(500).json({
+      error: 'Ошибка при формировании документа',
+      details: error.message
+    });
+  }
+});
+
+module.exports = router;

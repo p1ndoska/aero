@@ -176,7 +176,7 @@ export default function ELTRegistrationForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${BASE_URL}/api/elt-registration/submit`, {
+      const response = await fetch(`${BASE_URL}/api/elt-registration/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -184,40 +184,25 @@ export default function ELTRegistrationForm() {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || 'Ошибка при отправке формы');
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Ошибка при формировании документа');
       }
 
-      toast.success('Заявление успешно отправлено');
-      
-      // Очистка формы
-      setFormData({
-        registrationType: '',
-        eltCode: Array(15).fill(''),
-        eltModel: '',
-        eltSerialNumber: '',
-        eltManufacturer: '',
-        aircraftType: '',
-        aircraftModel: '',
-        aircraftRegistration: '',
-        maxPeopleOnBoard: '',
-        operator: '',
-        operatorAddress: ['', '', ''],
-        emergencyContacts: [{ workPhone: '', mobilePhone: '', email: '' }, { workPhone: '', mobilePhone: '', email: '' }],
-        responsiblePersons: [{ name: '', phone: '', email: '' }, { name: '', phone: '', email: '' }],
-        billingFullName: '',
-        billingShortName: '',
-        billingLegalAddress: '',
-        billingMailingAddress: '',
-        billingUNP: '',
-        date: new Date().toLocaleDateString('ru-RU'),
-        signature: ''
-      });
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'Заявление о регистрации ELT.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+
+      toast.success('Документ сформирован');
     } catch (error: any) {
-      console.error('Ошибка при отправке:', error);
-      toast.error(error.message || t('error_sending_form'));
+      console.error('Ошибка при формировании документа:', error);
+      toast.error(error.message || 'Ошибка при формировании документа');
     } finally {
       setIsSubmitting(false);
     }
@@ -569,7 +554,7 @@ export default function ELTRegistrationForm() {
                   backgroundColor: 'var(--color-primary)'
                 }}
               >
-                {isSubmitting ? t('sending') : t('submit_application')}
+                {isSubmitting ? t('generating_document') : t('generate_document')}
               </Button>
             </div>
           </form>
