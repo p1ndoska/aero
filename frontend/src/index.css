@@ -952,8 +952,7 @@ body.color-scheme-inverted [data-slot="dropdown-menu-content"] [data-highlighted
 }
 
 .page-nav-sidebar {
-  position: sticky;
-  top: calc(var(--header-height) + 1rem);
+  position: relative;
   z-index: 2;
   background: var(--color-white);
   border-radius: 1rem;
