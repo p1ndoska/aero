@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const { UPLOADS_DIR } = require('../config/paths');
 
-const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png'];
+const ALLOWED_EXTENSIONS = ['.pdf'];
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
 const upload = multer({
@@ -19,8 +19,9 @@ const upload = multer({
   }),
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    if (!ALLOWED_EXTENSIONS.includes(ext)) {
-      return cb(new Error('Допустимые форматы файла: PDF, JPG, PNG'));
+    const isPdfType = !file.mimetype || ['application/pdf', 'application/octet-stream'].includes(file.mimetype);
+    if (!ALLOWED_EXTENSIONS.includes(ext) || !isPdfType) {
+      return cb(new Error('Прикрепите файл в формате PDF'));
     }
     cb(null, true);
   },
@@ -50,6 +51,14 @@ function scanSubmitHandlers(sendEmail) {
           formData = JSON.parse(req.body.formData || '{}');
         } catch {
           return res.status(400).json({ error: 'Некорректные данные формы' });
+        }
+
+        const signature = Buffer.alloc(5);
+        const fd = fs.openSync(req.file.path, 'r');
+        fs.readSync(fd, signature, 0, 5, 0);
+        fs.closeSync(fd);
+        if (signature.toString() !== '%PDF-') {
+          return res.status(400).json({ error: 'Прикрепите файл в формате PDF' });
         }
 
         const originalName = Buffer.from(req.file.originalname, 'latin1').toString('utf8');

@@ -68,9 +68,16 @@ export default function ELTScanUpload({ endpoint, formData }: ELTScanUploadProps
           id="elt-scan"
           ref={inputRef}
           type="file"
-          accept=".pdf,.jpg,.jpeg,.png"
+          accept=".pdf,application/pdf"
           onChange={(e) => {
-            setFile(e.target.files?.[0] || null);
+            const selected = e.target.files?.[0] || null;
+            if (selected && !selected.name.toLowerCase().endsWith('.pdf')) {
+              toast.error(t('scan_pdf_only'));
+              e.target.value = '';
+              setFile(null);
+              return;
+            }
+            setFile(selected);
             setIsSent(false);
           }}
         />
