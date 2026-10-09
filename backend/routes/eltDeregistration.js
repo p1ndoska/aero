@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const ExcelJS = require('exceljs');
 const emailService = require('../utils/emailService');
-const { worksheetToPdf } = require('../utils/worksheetToPdf');
+const { createDeregistrationPdf } = require('../utils/eltPdf');
 const path = require('path');
 const fs = require('fs');
 const { UPLOADS_DIR } = require('../config/paths');
@@ -170,7 +170,7 @@ async function createELTDeregistrationExcelFile(formData) {
   
   await workbook.xlsx.writeFile(filePath);
   
-  return { filePath, fileName, workbook };
+  return { filePath, fileName };
 }
 
 // POST /api/elt-deregistration/submit
@@ -235,10 +235,7 @@ router.post('/generate', async (req, res) => {
       return res.status(400).json({ error: 'Заполните информацию по ELT' });
     }
 
-    const { filePath, workbook } = await createELTDeregistrationExcelFile(formData);
-    fs.unlink(filePath, () => {});
-
-    const pdf = await worksheetToPdf(workbook.worksheets[0], 'ЗАЯВЛЕНИЕ о снятии с регистрации аварийного радиомаяка (ELT)');
+    const pdf = await createDeregistrationPdf(formData);
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'inline; filename="elt-deregistration.pdf"');
