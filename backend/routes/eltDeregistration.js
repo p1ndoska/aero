@@ -174,10 +174,15 @@ async function createELTDeregistrationExcelFile(formData) {
   return { filePath, fileName };
 }
 
-// POST /api/elt-deregistration/submit-scan — отправляет на почту скан подписанного заявления
+// POST /api/elt-deregistration/submit-scan — сохраняет заявление со сканом в БД и отправляет на почту
 router.post(
   '/submit-scan',
-  ...scanSubmitHandlers((formData, filePath, fileName) => emailService.sendELTDeregistrationEmail(formData, filePath, fileName))
+  ...scanSubmitHandlers({
+    type: 'deregistration',
+    createPdf: createDeregistrationPdf,
+    createExcel: createELTDeregistrationExcelFile,
+    sendEmail: (formData, attachments) => emailService.sendELTDeregistrationEmail(formData, attachments),
+  })
 );
 
 // POST /api/elt-deregistration/submit

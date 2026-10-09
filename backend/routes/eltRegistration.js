@@ -187,10 +187,15 @@ async function createELTExcelFile(formData) {
   return { filePath, fileName };
 }
 
-// POST /api/elt-registration/submit-scan — отправляет на почту скан подписанного заявления
+// POST /api/elt-registration/submit-scan — сохраняет заявление со сканом в БД и отправляет на почту
 router.post(
   '/submit-scan',
-  ...scanSubmitHandlers((formData, filePath, fileName) => emailService.sendELTRegistrationEmail(formData, filePath, fileName))
+  ...scanSubmitHandlers({
+    type: 'registration',
+    createPdf: createRegistrationPdf,
+    createExcel: createELTExcelFile,
+    sendEmail: (formData, attachments) => emailService.sendELTRegistrationEmail(formData, attachments),
+  })
 );
 
 // POST /api/elt-registration/submit

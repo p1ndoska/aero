@@ -23,6 +23,7 @@ import AeronauticalInfoCategoryManagement from "./AeronauticalInfoCategoryManage
 import AppealsCategoryManagement from "./AppealsCategoryManagement";
 import ServicesCategoryManagement from "./ServicesCategoryManagement";
 import ServiceRequestManagement from "./ServiceRequestManagement";
+import ELTApplicationsManagement from "./ELTApplicationsManagement";
 import ResumeManagement from "./ResumeManagement";
 import HeroImageManagement from "./HeroImageManagement";
 import HomeServiceCardsManagement from "./HomeServiceCardsManagement";
@@ -66,6 +67,7 @@ export default function SuperAdminDashboard() {
 
     const [activeTab, setActiveTab] = useState<
         'roles'
+        | 'elt-applications'
         | 'content-roles'
         | 'users'
         | 'categories'
@@ -469,6 +471,25 @@ export default function SuperAdminDashboard() {
                            </div>
                        )}
 
+                       {/* Заявления ELT - SERVICES_ADMIN и SUPER_ADMIN */}
+                       {permissions.canManageServices && (
+                           <div
+                               className={`bg-white rounded-xl p-6 cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl border-2 ${
+                                   activeTab === 'elt-applications'
+                                       ? 'border-[#2A52BE] bg-[#E8F0FF]'
+                                       : 'border-gray-200 hover:border-[#2A52BE]'
+                               }`}
+                               onClick={() => setActiveTab('elt-applications')}
+                           >
+                               <div className="text-center">
+                                   <FileText className={`w-8 h-8 mx-auto mb-3 text-[var(--color-primary)]`} />
+                                   <h3 className={`font-semibold text-sm text-[var(--color-primary)]`}>
+                                       Заявления ELT
+                                   </h3>
+                               </div>
+                           </div>
+                       )}
+
                        {/* Записи на приемы - MEDIA_ADMIN и SUPER_ADMIN */}
                        {(permissions.canManageManagement || permissions.canManageRoles) && (
                            <div
@@ -508,6 +529,7 @@ export default function SuperAdminDashboard() {
                 {activeTab === 'appeals-categories' && permissions.canManageAppeals && <AppealsCategoryManagement />}
                 {activeTab === 'services-categories' && permissions.canManageServices && <ServicesCategoryManagement />}
                 {activeTab === 'service-requests' && permissions.canManageServices && <ServiceRequestManagement />}
+                {activeTab === 'elt-applications' && permissions.canManageServices && <ELTApplicationsManagement />}
                 {activeTab === 'hero-image' && canManageHeroMedia && <HeroImageManagement />}
                 {activeTab === 'home-service-cards' && canManageHeroMedia && <HomeServiceCardsManagement />}
                 {(activeTab === 'reception-bookings' && (permissions.canManageManagement || permissions.canManageRoles)) && <ReceptionBookingsCalendar />}

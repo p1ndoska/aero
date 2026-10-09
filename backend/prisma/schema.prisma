@@ -536,3 +536,23 @@ model UserActivityLog {
   @@index([userId, createdAt])
   @@index([action, createdAt])
 }
+
+// Заявления ELT (регистрация / снятие с регистрации) со сканом подписанного документа
+model EltApplication {
+  id                   Int      @id @default(autoincrement())
+  type                 String   // registration | deregistration
+  eltCode              String
+  operator             String?
+  aircraftRegistration String?
+  formData             Json
+  scanFileName         String
+  scanFile             Bytes
+  pdfFile              Bytes
+  excelFile            Bytes
+  emailSent            Boolean  @default(false)
+  emailError           String?
+  createdAt            DateTime @default(now())
+
+  @@index([type])
+  @@index([createdAt])
+}

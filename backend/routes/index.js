@@ -592,6 +592,9 @@ router.use('/elt-registration', require('./eltRegistration'));
 //ELT deregistration routes
 router.use('/elt-deregistration', require('./eltDeregistration'));
 
+//ELT applications (admin)
+router.use('/elt-applications', require('./eltApplications'));
+
 // Search routes
 router.use('/search', require('./search'));
 

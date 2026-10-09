@@ -642,7 +642,7 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             }
 
             // Читаем файл
-            const fileContent = fs.readFileSync(filePath);
+            const attachments = Array.isArray(filePath) ? filePath : [{ filename: fileName, content: fs.readFileSync(filePath) }];
 
             const htmlContent = `
                 <!DOCTYPE html>
@@ -814,19 +814,14 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             console.log('To:', recipientEmail);
             console.log('From:', fromEmail);
             console.log('Subject: Заявление о регистрации ELT');
-            console.log('Attachment:', fileName);
+            console.log('Attachments:', attachments.map((a) => a.filename).join(', '));
 
             const mailOptions = {
                 from: `"ГП «Белаэронавигация»" <${fromEmail}>`,
                 to: recipientEmail,
                 subject: 'Заявление о регистрации ELT',
                 html: htmlContent,
-                attachments: [
-                    {
-                        filename: fileName,
-                        content: fileContent
-                    }
-                ]
+                attachments
             };
 
             const result = await this.transporter.sendMail(mailOptions);
@@ -873,7 +868,7 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             }
 
             // Читаем файл
-            const fileContent = fs.readFileSync(filePath);
+            const attachments = Array.isArray(filePath) ? filePath : [{ filename: fileName, content: fs.readFileSync(filePath) }];
 
             const htmlContent = `
                 <!DOCTYPE html>
@@ -1057,19 +1052,14 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             console.log('To:', recipientEmail);
             console.log('From:', fromEmail);
             console.log('Subject: Заявление о снятии с регистрации ELT');
-            console.log('Attachment:', fileName);
+            console.log('Attachments:', attachments.map((a) => a.filename).join(', '));
 
             const mailOptions = {
                 from: `"ГП «Белаэронавигация»" <${fromEmail}>`,
                 to: recipientEmail,
                 subject: 'Заявление о снятии с регистрации ELT',
                 html: htmlContent,
-                attachments: [
-                    {
-                        filename: fileName,
-                        content: fileContent
-                    }
-                ]
+                attachments
             };
 
             const result = await this.transporter.sendMail(mailOptions);
