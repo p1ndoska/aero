@@ -15,6 +15,15 @@ ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
 COPY docker/openssl-legacy.cnf /etc/ssl/openssl-legacy.cnf
 ENV OPENSSL_CONF=/etc/ssl/openssl-legacy.cnf
 
+# Prisma engines: берутся из prisma-engines/ или скачиваются wget (system OpenSSL + legacy renegotiation).
+# Слой стоит до package.json, чтобы смена зависимостей не вызывала повторную загрузку.
+COPY docker/download-prisma-engines.sh /tmp/download-prisma-engines.sh
+COPY prisma-engines/ /tmp/local-engines/
+ARG NPM_STRICT_SSL=true
+RUN if [ "$NPM_STRICT_SSL" = "false" ]; then export WGET_INSECURE=1; fi && \
+    sed -i 's/\r$//' /tmp/download-prisma-engines.sh && sh /tmp/download-prisma-engines.sh && \
+    rm -rf /tmp/local-engines
+
 # Copy package files
 COPY package*.json ./
 
@@ -26,19 +35,13 @@ RUN if [ "$NPM_STRICT_SSL" = "false" ]; then \
     fi && \
     npm ci --ignore-scripts
 
-# Download Prisma engine binaries with wget (uses system OpenSSL + legacy renegotiation config)
-COPY docker/download-prisma-engines.sh /tmp/download-prisma-engines.sh
-ARG NPM_STRICT_SSL=true
-RUN if [ "$NPM_STRICT_SSL" = "false" ]; then export WGET_INSECURE=1; fi && \
-    sed -i 's/\r$//' /tmp/download-prisma-engines.sh && sh /tmp/download-prisma-engines.sh
-
 # Copy Prisma schema
 COPY prisma ./prisma
 
 # Generate Prisma Client using pre-downloaded engines
 ARG NPM_STRICT_SSL=true
-ENV PRISMA_QUERY_ENGINE_LIBRARY=/app/node_modules/@prisma/engines/libquery_engine-linux-musl-openssl-3.0.x.so.node
-ENV PRISMA_SCHEMA_ENGINE_BINARY=/app/node_modules/@prisma/engines/schema-engine-linux-musl-openssl-3.0.x
+ENV PRISMA_QUERY_ENGINE_LIBRARY=/opt/prisma-engines/libquery_engine-linux-musl-openssl-3.0.x.so.node
+ENV PRISMA_SCHEMA_ENGINE_BINARY=/opt/prisma-engines/schema-engine-linux-musl-openssl-3.0.x
 RUN if [ "$NPM_STRICT_SSL" = "false" ]; then export NODE_TLS_REJECT_UNAUTHORIZED=0; fi && \
     npx prisma generate
 
