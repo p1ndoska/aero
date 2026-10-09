@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { printPdf } from '@/lib/printPdf';
+import ELTScanUpload from './ELTScanUpload';
 import { BASE_URL } from '@/constants';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -72,6 +73,7 @@ export default function ELTDeregistrationForm() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDocumentGenerated, setIsDocumentGenerated] = useState(false);
 
   const handleInputChange = (field: keyof ELTDeregistrationData, value: string) => {
     setFormData(prev => ({
@@ -176,6 +178,7 @@ export default function ELTDeregistrationForm() {
       }
 
       printPdf(await response.blob());
+      setIsDocumentGenerated(true);
 
       toast.success('Документ сформирован');
     } catch (error: any) {
@@ -459,6 +462,8 @@ export default function ELTDeregistrationForm() {
               </Button>
             </div>
           </form>
+
+          {isDocumentGenerated && <ELTScanUpload endpoint="/api/elt-deregistration/submit-scan" formData={formData} />}
         </CardContent>
       </Card>
     </div>

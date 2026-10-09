@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const ExcelJS = require('exceljs');
 const emailService = require('../utils/emailService');
+const { scanSubmitHandlers } = require('../utils/eltScanUpload');
 const { createRegistrationPdf } = require('../utils/eltPdf');
 const path = require('path');
 const fs = require('fs');
@@ -185,6 +186,12 @@ async function createELTExcelFile(formData) {
   
   return { filePath, fileName };
 }
+
+// POST /api/elt-registration/submit-scan — отправляет на почту скан подписанного заявления
+router.post(
+  '/submit-scan',
+  ...scanSubmitHandlers((formData, filePath, fileName) => emailService.sendELTRegistrationEmail(formData, filePath, fileName))
+);
 
 // POST /api/elt-registration/submit
 router.post('/submit', async (req, res) => {

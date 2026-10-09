@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { printPdf } from '@/lib/printPdf';
+import ELTScanUpload from './ELTScanUpload';
 import { BASE_URL } from '@/constants';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -84,6 +85,7 @@ export default function ELTRegistrationForm() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDocumentGenerated, setIsDocumentGenerated] = useState(false);
 
   const handleInputChange = (field: keyof ELTRegistrationData, value: any) => {
     setFormData(prev => ({
@@ -191,6 +193,7 @@ export default function ELTRegistrationForm() {
       }
 
       printPdf(await response.blob());
+      setIsDocumentGenerated(true);
 
       toast.success('Документ сформирован');
     } catch (error: any) {
@@ -550,6 +553,8 @@ export default function ELTRegistrationForm() {
               </Button>
             </div>
           </form>
+
+          {isDocumentGenerated && <ELTScanUpload endpoint="/api/elt-registration/submit-scan" formData={formData} />}
         </CardContent>
       </Card>
     </div>

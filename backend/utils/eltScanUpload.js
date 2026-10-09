@@ -1,0 +1,73 @@
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const { UPLOADS_DIR } = require('../config/paths');
+
+const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png'];
+const MAX_FILE_SIZE = 20 * 1024 * 1024;
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+      cb(null, UPLOADS_DIR);
+    },
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      cb(null, `elt-scan-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
+    },
+  }),
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      return cb(new Error('Допустимые форматы файла: PDF, JPG, PNG'));
+    }
+    cb(null, true);
+  },
+  limits: { fileSize: MAX_FILE_SIZE },
+});
+
+// Принимает скан подписанного заявления (поле scan) и данные формы (поле formData, JSON) и отправляет их на почту
+function scanSubmitHandlers(sendEmail) {
+  return [
+    (req, res, next) => {
+      upload.single('scan')(req, res, (err) => {
+        if (err) {
+          const message = err.code === 'LIMIT_FILE_SIZE' ? 'Файл больше 20 МБ' : err.message;
+          return res.status(400).json({ error: message });
+        }
+        next();
+      });
+    },
+    async (req, res) => {
+      if (!req.file) {
+        return res.status(400).json({ error: 'Прикрепите отсканированный документ' });
+      }
+
+      try {
+        let formData = {};
+        try {
+          formData = JSON.parse(req.body.formData || '{}');
+        } catch {
+          return res.status(400).json({ error: 'Некорректные данные формы' });
+        }
+
+        const originalName = Buffer.from(req.file.originalname, 'latin1').toString('utf8');
+        const result = await sendEmail(formData, req.file.path, originalName);
+
+        if (!result.success) {
+          return res.status(500).json({ error: 'Ошибка при отправке заявления', details: result.error });
+        }
+
+        res.json({ success: true, message: 'Заявление отправлено' });
+      } catch (error) {
+        console.error('Ошибка при отправке скана заявления ELT:', error);
+        res.status(500).json({ error: 'Ошибка при отправке заявления', details: error.message });
+      } finally {
+        fs.unlink(req.file.path, () => {});
+      }
+    },
+  ];
+}
+
+module.exports = { scanSubmitHandlers };
