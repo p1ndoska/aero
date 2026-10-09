@@ -442,7 +442,6 @@ export default function ELTDeregistrationForm() {
                   id="signature"
                   value={formData.signature}
                   onChange={(e) => handleInputChange('signature', e.target.value)}
-                  required
                 />
               </div>
             </div>
