@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
+import { printPdf } from '@/lib/printPdf';
 import { BASE_URL } from '@/constants';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -189,15 +190,7 @@ export default function ELTRegistrationForm() {
         throw new Error(data.error || 'Ошибка при формировании документа');
       }
 
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'Заявление о регистрации ELT.xlsx';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
+      printPdf(await response.blob());
 
       toast.success('Документ сформирован');
     } catch (error: any) {

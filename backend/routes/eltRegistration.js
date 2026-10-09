@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const ExcelJS = require('exceljs');
 const emailService = require('../utils/emailService');
+const { worksheetToPdf } = require('../utils/worksheetToPdf');
 const path = require('path');
 const fs = require('fs');
 const { UPLOADS_DIR } = require('../config/paths');
@@ -182,7 +183,7 @@ async function createELTExcelFile(formData) {
   
   await workbook.xlsx.writeFile(filePath);
   
-  return { filePath, fileName };
+  return { filePath, fileName, workbook };
 }
 
 // POST /api/elt-registration/submit
@@ -233,7 +234,7 @@ router.post('/submit', async (req, res) => {
   }
 });
 
-// POST /generate — формирует Excel-документ и отдаёт его на скачивание
+// POST /generate — формирует PDF-документ для печати
 router.post('/generate', async (req, res) => {
   try {
     const formData = req.body;
@@ -247,12 +248,14 @@ router.post('/generate', async (req, res) => {
       return res.status(400).json({ error: 'Заполните 15-значный код ELT' });
     }
 
-    const { filePath } = await createELTExcelFile(formData);
+    const { filePath, workbook } = await createELTExcelFile(formData);
+    fs.unlink(filePath, () => {});
 
-    res.download(filePath, 'Заявление о регистрации ELT.xlsx', (err) => {
-      if (err) console.error('Ошибка при отправке документа:', err);
-      fs.unlink(filePath, () => {});
-    });
+    const pdf = await worksheetToPdf(workbook.worksheets[0], 'ЗАЯВЛЕНИЕ о регистрации аварийного радиомаяка (ELT)');
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="elt-registration.pdf"');
+    res.send(pdf);
   } catch (error) {
     console.error('Ошибка при формировании документа ELT:', error);
     res.status(500).json({
