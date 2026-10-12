@@ -117,7 +117,7 @@ ${comments || 'Не указано'}
     // Отправляем email
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER, // Можно настроить отдельный email для анкет
+      to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
       subject: `Анкета потребителя САИ Республики Беларусь от ${organizationName}`,
       text: emailText
     };

@@ -131,9 +131,7 @@ router.post('/dynamic-form-submission', async (req, res) => {
             return res.status(400).json({ error: 'Некорректные данные формы' });
         }
 
-        // Для динамических форм всегда отправляем только на EMAIL_USER,
-        // чтобы исключить старые некорректные ADMIN_EMAIL
-        const adminEmail = process.env.EMAIL_USER;
+        const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
         if (!adminEmail) {
             console.error('ADMIN_EMAIL/EMAIL_USER not configured');
             return res.status(500).json({ error: 'Email получателя не настроен' });

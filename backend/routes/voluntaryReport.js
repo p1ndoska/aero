@@ -64,7 +64,7 @@ router.post('/send', async (req, res) => {
     // Настройка письма
     const mailOptions = {
       from: process.env.EMAIL_USER || 'kovaleva7855@gmail.com',
-      to: 'kovaleva7855@gmail.com',
+      to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
       subject: 'Добровольное сообщение о небезопасном событии',
       html: htmlContent
     };

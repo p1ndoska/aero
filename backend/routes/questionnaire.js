@@ -70,7 +70,7 @@ router.post('/send-questionnaire', async (req, res) => {
     // Настройка письма
     const mailOptions = {
       from: process.env.EMAIL_USER || 'kovaleva7855@gmail.com',
-      to: 'kovaleva7855@gmail.com',
+      to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
       subject: 'Анкета потребителя аэронавигационных услуг',
       html: htmlContent,
       replyTo: email // для ответа на email пользователя
