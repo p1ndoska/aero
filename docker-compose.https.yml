@@ -41,7 +41,7 @@ services:
       JWT_SECRET: ${SECRET_KEY}
       
       # Frontend URL for CORS
-      FRONTEND_URL: ${FRONTEND_URL:-https://localhost:8443}
+      FRONTEND_URL: ${FRONTEND_URL:-https://aero.ban.by:8443}
       
       # Email Configuration
       SMTP_HOST: ${SMTP_HOST}
