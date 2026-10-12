@@ -105,6 +105,9 @@ class EmailService {
      * Использует ту же логику, что и initializeTransporter
      */
     getFromEmail() {
+        if (process.env.EMAIL_FROM) {
+            return process.env.EMAIL_FROM;
+        }
         const smtpHost = process.env.SMTP_HOST;
         if (smtpHost) {
             // Для кастомного SMTP используем SMTP_USER, если указан
@@ -113,6 +116,10 @@ class EmailService {
             // Для Gmail используем EMAIL_USER, если указан
             return process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@belaeronavigatsia.by';
         }
+    }
+
+    getAdminEmail() {
+        return process.env.ADMIN_EMAIL || this.getFromEmail();
     }
 
     /**
@@ -390,9 +397,8 @@ ${notes ? `- Цель визита: ${notes}` : ''}
                 </html>
             `;
 
-            // Используем EMAIL_USER для адреса администратора, чтобы избежать ошибок с несуществующими доменами
-            const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER || process.env.SMTP_USER;
-            const fromEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@belaeronavigatsia.by';
+            const adminEmail = this.getAdminEmail();
+            const fromEmail = this.getFromEmail();
             
             if (!adminEmail) {
                 console.warn('⚠️ ADMIN_EMAIL not set, skipping admin notification');
@@ -430,9 +436,8 @@ ${notes ? `- Цель визита: ${notes}` : ''}
     // Уведомление о новой заявке на услугу (администратору)
     async sendServiceRequestNotification(serviceRequest) {
         try {
-            // Используем EMAIL_USER для адреса администратора, чтобы избежать ошибок с несуществующими доменами
-            const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER || process.env.SMTP_USER;
-            const fromEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@belaeronavigatsia.by';
+            const adminEmail = this.getAdminEmail();
+            const fromEmail = this.getFromEmail();
             
             if (!adminEmail) {
                 console.warn('⚠️ ADMIN_EMAIL not set, skipping admin notification');
@@ -632,9 +637,8 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             const fs = require('fs');
             const path = require('path');
 
-            // Используем EMAIL_USER для адреса получателя
-            const recipientEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER || process.env.SMTP_USER;
-            const fromEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@belaeronavigatsia.by';
+            const recipientEmail = this.getAdminEmail();
+            const fromEmail = this.getFromEmail();
             
             if (!recipientEmail) {
                 console.warn('⚠️ ADMIN_EMAIL not set, using EMAIL_USER');
@@ -858,9 +862,8 @@ ${notes ? `- Цель визита: ${notes}` : ''}
             const fs = require('fs');
             const path = require('path');
 
-            // Используем EMAIL_USER для адреса получателя
-            const recipientEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER || process.env.SMTP_USER;
-            const fromEmail = process.env.EMAIL_USER || process.env.SMTP_USER || 'noreply@belaeronavigatsia.by';
+            const recipientEmail = this.getAdminEmail();
+            const fromEmail = this.getFromEmail();
             
             if (!recipientEmail) {
                 console.warn('⚠️ ADMIN_EMAIL not set, using EMAIL_USER');
@@ -1091,7 +1094,7 @@ ${notes ? `- Цель визита: ${notes}` : ''}
                 return { success: false, error: 'Email transporter is not initialized' };
             }
 
-            const recipientEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER || process.env.SMTP_USER;
+            const recipientEmail = this.getAdminEmail();
             const fromEmail = this.getFromEmail();
 
             if (!recipientEmail) {

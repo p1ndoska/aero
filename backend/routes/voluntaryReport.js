@@ -1,15 +1,7 @@
 const express = require('express');
-const nodemailer = require('nodemailer');
+const emailService = require('../utils/emailService');
 const router = express.Router();
 
-// Настройка Nodemailer
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
 
 // POST /api/voluntary-report/send
 router.post('/send', async (req, res) => {
@@ -63,14 +55,14 @@ router.post('/send', async (req, res) => {
 
     // Настройка письма
     const mailOptions = {
-      from: process.env.EMAIL_USER || 'kovaleva7855@gmail.com',
-      to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
+      from: `"ГП «Белаэронавигация»" <${emailService.getFromEmail()}>`,
+      to: emailService.getAdminEmail(),
       subject: 'Добровольное сообщение о небезопасном событии',
       html: htmlContent
     };
 
     // Отправка письма
-    await transporter.sendMail(mailOptions);
+    await emailService.transporter.sendMail(mailOptions);
 
     res.json({ 
       success: true, 

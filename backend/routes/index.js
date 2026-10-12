@@ -5,7 +5,6 @@ const path = require('path');
 const fs = require('fs');
 const {UserController, AdminController, NewsController, CategoryController, RoleController, ManagementController, IncidentReportController, BranchController, VacancyController, VacancyPageContentController, HistoryPageContentController, AboutCompanyPageContentController, SecurityPolicyPageContentController, SocialWorkPageContentController, OrganizationLogoController, SocialWorkCategoryController, AboutCompanyCategoryController, AeronauticalInfoCategoryController, AppealsCategoryController, ServicesCategoryController, HomeServiceCardController, ReceptionSlotController, UserProfileController, AeronauticalInfoPageContentController, AppealsPageContentController, ServicesPageContentController, ServiceRequestController, StatisticsController, ResumeController} = require("../controllers");
 const emailService = require('../utils/emailService');
-const nodemailer = require('nodemailer');
 const {authenticationToken} = require("../middleware/auth");
 const checkRole = require('../middleware/checkRole');
 const { UPLOADS_DIR, UPLOADS_URL_PREFIX, DOCUMENTS_DIR, normalizeUploadPath } = require('../config/paths');
@@ -113,14 +112,6 @@ router.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Транспортер для динамических форм (как в статических анкетах)
-const dynamicFormTransporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
 
 // Приём динамических форм с сайта (конструктор форм)
 router.post('/dynamic-form-submission', async (req, res) => {
@@ -131,7 +122,7 @@ router.post('/dynamic-form-submission', async (req, res) => {
             return res.status(400).json({ error: 'Некорректные данные формы' });
         }
 
-        const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
+        const adminEmail = emailService.getAdminEmail();
         if (!adminEmail) {
             console.error('ADMIN_EMAIL/EMAIL_USER not configured');
             return res.status(500).json({ error: 'Email получателя не настроен' });
@@ -173,14 +164,14 @@ router.post('/dynamic-form-submission', async (req, res) => {
         `;
 
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: `"ГП «Белаэронавигация»" <${emailService.getFromEmail()}>`,
             to: adminEmail,
             subject: title,
             text: textLines.join('\n'),
             html: htmlContent,
         };
 
-        await dynamicFormTransporter.sendMail(mailOptions);
+        await emailService.transporter.sendMail(mailOptions);
 
         res.json({ success: true, message: 'Форма успешно отправлена' });
     } catch (error) {

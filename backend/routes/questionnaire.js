@@ -1,15 +1,7 @@
 const express = require('express');
-const nodemailer = require('nodemailer');
+const emailService = require('../utils/emailService');
 const router = express.Router();
 
-// Настройка nodemailer
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
 
 // Маршрут для отправки анкеты потребителя
 router.post('/send-questionnaire', async (req, res) => {
@@ -69,15 +61,15 @@ router.post('/send-questionnaire', async (req, res) => {
 
     // Настройка письма
     const mailOptions = {
-      from: process.env.EMAIL_USER || 'kovaleva7855@gmail.com',
-      to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
+      from: `"ГП «Белаэронавигация»" <${emailService.getFromEmail()}>`,
+      to: emailService.getAdminEmail(),
       subject: 'Анкета потребителя аэронавигационных услуг',
       html: htmlContent,
       replyTo: email // для ответа на email пользователя
     };
 
     // Отправка письма
-    await transporter.sendMail(mailOptions);
+    await emailService.transporter.sendMail(mailOptions);
 
     res.json({ 
       success: true, 
