@@ -37,32 +37,36 @@ if [[ ! -f nginx/ssl/cert.pem ]]; then
   echo "[SOZDANIE] Popytka avtomaticheskogo sozdaniya..."
   echo
 
+  SSL_EXIT=1
   if command -v openssl >/dev/null 2>&1; then
     set +e
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
       -keyout nginx/ssl/key.pem \
       -out nginx/ssl/cert.pem \
       -subj "/C=BY/ST=Minsk/L=Minsk/O=BelAeronavigatsia/CN=localhost"
-    OPENSSL_EXIT=$?
+    SSL_EXIT=$?
     set -e
+  else
+    echo "[OSHIBKA] OpenSSL ne nayden!"
+  fi
 
-    if [[ $OPENSSL_EXIT -eq 0 ]]; then
-      echo "[OK] SSL sertifikaty sozdany"
-    else
-      echo "[OSHIBKA] Oshibka pri sozdanii sertifikatov"
-      echo
-      echo "Varianty resheniya:"
-      echo "1. Ustanovite OpenSSL (apt install openssl ili analogichno dlya vashey OS)"
-      echo "2. Sozdayte sertifikaty vruchnuyu v papke nginx/ssl"
-      echo
-      echo "[VAZHNO] Bez SSL sertifikatov HTTPS ne budet rabotat!"
+  if [[ $SSL_EXIT -ne 0 ]]; then
+    echo
+    echo "[OSHIBKA] Ne udalos sozdat SSL sertifikaty avtomaticheski!"
+    echo
+    echo "Varianty resheniya:"
+    echo "1. Ustanovite OpenSSL: sudo apt install openssl"
+    echo "2. Ili sozdayte vruchnuyu: cd nginx && bash generate-ssl.sh"
+    echo
+    echo "[VAZHNO] Bez SSL sertifikatov nginx NE zapustitsya!"
+    echo "[INFO] Mozhno takzhe sozdat cherez Docker:"
+    echo "  docker run --rm -v \"$PWD/nginx/ssl:/ssl\" alpine/openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /ssl/key.pem -out /ssl/cert.pem -subj \"/CN=localhost\""
+    read -r -p "Prodolzhit vse ravno? (y/n): " CONTINUE
+    if [[ ! "$CONTINUE" =~ ^[Yy]$ ]]; then
       exit 1
     fi
   else
-    echo "[OSHIBKA] OpenSSL ne nayden!"
-    echo "Ustanovite OpenSSL (apt install openssl ili analogichno dlya vashey OS)"
-    echo "[VAZHNO] Bez SSL sertifikatov HTTPS ne budet rabotat!"
-    exit 1
+    echo "[OK] SSL sertifikaty uspeshno sozdany"
   fi
 else
   echo "[OK] SSL sertifikaty naydeny"
@@ -109,7 +113,10 @@ echo
 # Shag 5: Zapusk PostgreSQL
 echo "[Shag 5] Zapusk PostgreSQL..."
 echo "[ZAPUSK] Zapusk/obnovlenie konteynera bazy dannyh..."
-$DC -f docker-compose.https.yml up -d postgres
+if ! $DC -f docker-compose.https.yml up -d postgres; then
+  echo "[OSHIBKA] Ne udalos zapustit PostgreSQL!"
+  exit 1
+fi
 
 echo "[OZHIDANIE] Ozhidanie gotovnosti PostgreSQL..."
 until $DC -f docker-compose.https.yml exec -T postgres pg_isready -U prisma >/dev/null 2>&1; do
@@ -126,7 +133,15 @@ echo "[INFO] BD i volumes NE budut udaleny"
 echo
 
 echo "[SBORKA] Sbornka konteynerov (tolko pri neobhodimosti)..."
-$DC -f docker-compose.https.yml build
+if ! $DC -f docker-compose.https.yml build; then
+  echo "[OSHIBKA] Oshibka pri sbornke!"
+  echo
+  echo "Esli v logah est SELF_SIGNED_CERT_IN_CHAIN, ECONNRESET ili TLS certificate not trusted:"
+  echo "  Ubedites, chto v .env est: NPM_STRICT_SSL=false"
+  echo "  i zapustite START.sh snova."
+  echo
+  exit 1
+fi
 echo
 
 echo "[ZAPUSK] Zapusk/obnovlenie vseh servisov..."
@@ -140,7 +155,19 @@ echo "[INFO] Nginx budet rabotat na HTTPS (port 8443)"
 echo "[INFO] Sushestvuyushchie konteynery budut perezapushcheny tolko pri neobhodimosti"
 echo
 
-$DC -f docker-compose.https.yml up -d
+if ! $DC -f docker-compose.https.yml up -d; then
+  echo
+  echo "[OSHIBKA] Ne udalos zapustit proekt!"
+  echo
+  echo "Proverte logi:"
+  echo "  $DC -f docker-compose.https.yml logs"
+  echo
+  echo "Ili logi konkretnogo servisa:"
+  echo "  $DC -f docker-compose.https.yml logs backend"
+  echo "  $DC -f docker-compose.https.yml logs postgres"
+  echo
+  exit 1
+fi
 
 echo
 echo "[PROVERKA] Ozhidanie zapuska servisov i inicializacii BD..."
